@@ -1,0 +1,6 @@
+services:
+  hello:
+    build: containers/hello
+    image: hello
+    container_name: hello
+    restart: on-failure
