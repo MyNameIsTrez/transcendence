@@ -1,11 +1,8 @@
-# --project-directory tells docker which directory docker-compose.yml is in
-#       and is better than -f since docker-compose.yml uses relative paths
 # --build rebuilds images before starting the containers
 # --detach runs the containers in the background
-# --remove-orphans removes containers for services not defined in the Compose file
 .PHONY: up
 up:
-	docker-compose up --build
+	docker-compose up --build --detach
 
 .PHONY: down
 down:
