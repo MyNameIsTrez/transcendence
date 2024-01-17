@@ -7,4 +7,5 @@ services:
 
   db:
     image: postgres:alpine
+    container_name: db
     env_file: .env
