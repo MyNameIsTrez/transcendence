@@ -1,13 +1,14 @@
 FROM node
 
-RUN mkdir -p /nestjs/app
-
-# TODO: Can we make it so not everything is global without too much hassle?
+# Essentially a permanent `cd /nestjs`,
+# even when `exec`ing into the container
 WORKDIR /nestjs
-RUN npm install @nestjs/cli @nestjs/websockets socket.io @nestjs/platform-socket.io socket.io-client
-# RUN npm install --prefix /nestjs/app
 
-COPY tools/startup.sh /home/startup.sh
-CMD [ "/home/startup.sh" ]
+# Copy all files in program/
+COPY program/ ./
 
-EXPOSE 4242
+# Install dependencies to node_modules,
+# referring to package.json and package-lock.json
+RUN npm install
+
+CMD [ "npm", "run", "start" ]
