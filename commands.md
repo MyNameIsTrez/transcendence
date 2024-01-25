@@ -32,14 +32,16 @@ Start off by doing `cd containers/nestjs`
 
 Make sure to remove the generated `.git` directory from it!
 
-## Regenerate package.json and package-lock.json w/ nestjs
+Also change the port in `src/main.ts` from 3000 to 4242.
 
-`npm install @nestjs/cli`
+## Manually run, with hot reloading
 
-## Install additional dependency
+`npm run start:dev`
 
-`npm install cowsay`
+## Install additional dependencies
+
+`npm install @nestjs/websockets @nestjs/platform-socket.io`
 
 ## Remove dependency
 
-`npm uninstall cowsay`
+`npm uninstall foo`
