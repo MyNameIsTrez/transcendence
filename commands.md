@@ -1,3 +1,9 @@
+# General
+
+Enter a container:
+
+`docker compose exec <container> bash`
+
 # NestJS
 
 # postgres
@@ -8,13 +14,21 @@ Log into the database:
 
 `psql --username=postgres`
 
+List all commands:
+
+`\?`
+
 List all databases:
 
-`\list` or `\l`
+`\l`
 
-Connect to a database:
+Display connection info:
 
-`\connect` or `\c`
+`\conninfo`
+
+Connect to the `postgres` database:
+
+`\c postgres`
 
 ## Without entering psql
 
