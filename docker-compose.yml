@@ -5,7 +5,26 @@ services:
     container_name: hello
     restart: on-failure
 
+  nestjs:
+    build: containers/nestjs
+    image: nestjs
+    container_name: nestjs
+    restart: on-failure
+    ports:
+      - "4242:4242"
+    # TODO: DON'T PUSH THIS
+    volumes:
+      - nestjs-vol:/nestjs
+
   db:
     image: postgres:alpine
     container_name: db
     env_file: .env
+
+# TODO: DON'T PUSH THIS
+volumes:
+  nestjs-vol:
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/vbenneko/Documents/projects/ft_transcendence/containers/nestjs/volume

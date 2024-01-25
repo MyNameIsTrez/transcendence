@@ -1,6 +1,7 @@
 # --build rebuilds images before starting the containers
 # --detach runs the containers in the background
 # --remove-orphans removes containers for services not defined in the Compose file
+# TODO: DON'T PUSH THE "-d" AND MAKE SURE IT ISN'T IN THE FINAL VERSION
 .PHONY: up
 up:
 	docker-compose up --build --detach --remove-orphans
@@ -8,6 +9,10 @@ up:
 .PHONY: down
 down:
 	docker compose down
+
+.PHONY: rmvol
+rmvol: down
+	rm -fr containers/nestjs/volume/*
 
 # $$ is an escaped $, and it gives sh, rather than Make, the chance to expand it
 # 2> /dev/null ignores errors when $$(docker ps -qa) expands to an empty result
