@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
+import { Pong } from './pong';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -51,12 +52,11 @@ export class AppGateway
 
   afterInit() {
     const interval_ms = 1000 / 60;
-    const width = 1920;
-    const height = 1080;
-    const data = { ball: { pos: { x: width / 2, y: height / 2 } } };
+    const pong = new Pong();
+    pong.start();
     setInterval(() => {
-      this.broadcast('pong', data);
-      // data.ball.pos.x += 1;
+      pong.update();
+      this.broadcast('pong', pong._data);
     }, interval_ms);
   }
 
