@@ -50,9 +50,13 @@ export class AppGateway
   }
 
   afterInit() {
-    const interval_ms = 1000;
+    const interval_ms = 1000 / 60;
+    const width = 1920;
+    const height = 1080;
+    const data = { ball: { pos: { x: width / 2, y: height / 2 } } };
     setInterval(() => {
-      this.broadcast('pong', { x: 200, y: 400 });
+      this.broadcast('pong', data);
+      // data.ball.pos.x += 1;
     }, interval_ms);
   }
 
