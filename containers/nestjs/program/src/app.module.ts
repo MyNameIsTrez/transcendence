@@ -9,8 +9,6 @@ import { AppGateway } from './app.gateway';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),
-      // TOOD: Sander couldn't verify that this does anything; remove?
-      exclude: ['/api/(.*)'],
     }),
   ],
   controllers: [AppController],
