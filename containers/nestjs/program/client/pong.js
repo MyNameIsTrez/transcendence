@@ -47,23 +47,25 @@ class ScoreBoard {
     this._canvas = canvas;
     this._context = this._canvas.getContext('2d');
     this._numbers = new Numbers(this._canvas.width / 2, 50);
+    this._align = this._canvas.width / 3;
+    this._CHAR_W = this._numbers.char_pixel * 4;
   }
-  updateScore(paddles) {
-    const align = this._canvas.width / 3;
-    const CHAR_W = this._numbers.char_pixel * 4;
-    paddles.forEach((paddle, i) => {
-      const chars = paddle.score.toString().split('');
-      const offset =
-        align * (i + 1) -
-        CHAR_W * (chars.length / 2) +
-        this._numbers.char_pixel / 2;
-      chars.forEach((char, pos) => {
-        this._context.drawImage(
-          this._numbers._numbers[char | 0],
-          offset + pos * CHAR_W,
-          20,
-        );
-      });
+  updateScore(leftScore, rightScore) {
+    this.drawScore(leftScore, 0);
+    this.drawScore(rightScore, 1);
+  }
+  drawScore(score, i) {
+    const chars = score.toString().split('');
+    const offset =
+      this._align * (i + 1) -
+      this._CHAR_W * (chars.length / 2) +
+      this._numbers.char_pixel / 2;
+    chars.forEach((char, pos) => {
+      this._context.drawImage(
+        this._numbers._numbers[char | 0],
+        offset + pos * this._CHAR_W,
+        20,
+      );
     });
   }
 }
@@ -120,7 +122,10 @@ class Pong {
     this.drawObject('white', data.leftPaddle);
     this.drawObject('white', data.rightPaddle);
 
-    // this._scoreBoard.updateScore(this._paddles);
+    this._scoreBoard.updateScore(
+      data.leftPaddle.score.score,
+      data.rightPaddle.score.score,
+    );
   }
   start() {
     this._ball._hidden = false;
@@ -157,6 +162,6 @@ socket.on('disconnect', () => {
 });
 socket.on('pong', (data) => {
   // pong._ball._pos = data.ball.pos;
-  // console.log(data);
+  console.log(data);
   pong.render(data);
 });

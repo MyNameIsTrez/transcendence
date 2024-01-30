@@ -121,10 +121,10 @@ class Rect {
 }
 
 class Paddle extends Rect {
-  _score: number;
+  _score: ScoreData;
   constructor(w, h, x, y) {
     super(w, h, x, y);
-    this._score = 0;
+    this._score = new ScoreData(0);
   }
   set score(score) {
     this._score = score;
@@ -141,7 +141,7 @@ class Paddle extends Rect {
     }
   }
   addPoint() {
-    this._score++;
+    this._score.score++;
   }
   updatePos(newY) {
     if (WINDOW_HEIGHT - newY < this._size.h / 2) {
@@ -166,25 +166,24 @@ class Ball extends Rect {
     this._hidden = true;
     this._speed = 10;
   }
-  updatePos(paddles) {
+  updatePos(leftPaddle: Paddle, rightPaddle: Paddle) {
     this._pos.x += this._vel.dx;
     this._pos.y += this._vel.dy;
 
-    for (let i = 0; i < paddles.length; i++) {
-      this.collideWithPaddle(paddles[i]);
-    }
-    this.collideWithBorder(paddles);
+    this.collideWithPaddle(leftPaddle);
+    this.collideWithPaddle(rightPaddle);
+    this.collideWithBorder(leftPaddle, rightPaddle);
   }
-  collideWithBorder(paddles) {
+  collideWithBorder(leftPaddle: Paddle, rightPaddle: Paddle) {
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
       this._vel.invertdY();
     }
     if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
       if (this.top <= 0) {
-        paddles[0].addPoint();
+        leftPaddle.addPoint();
       } else {
-        paddles[1].addPoint();
+        rightPaddle.addPoint();
       }
       this._vel.invertdY();
       this.resetPos();
@@ -237,28 +236,40 @@ class Ball extends Rect {
 class ObjectData {
   pos: Pos;
   size: Size;
-
   constructor(pos: Pos, size: Size) {
     this.pos = pos;
     this.size = size;
   }
 }
-
+class ScoreData {
+  score: number;
+  constructor(score: number) {
+    this.score = score;
+  }
+}
+class PaddleData extends ObjectData {
+  score: ScoreData;
+  constructor(paddle: Paddle) {
+    super(paddle._pos, paddle._size);
+    this.score = paddle.score;
+  }
+}
 class Data {
   ball: ObjectData;
-  leftPaddle: ObjectData;
-  rightPaddle: ObjectData;
+  leftPaddle: PaddleData;
+  rightPaddle: PaddleData;
 
-  constructor(ball: Ball, paddles: Paddle[]) {
+  constructor(ball: Ball, leftPaddle: Paddle, rightPaddle: Paddle) {
     this.ball = new ObjectData(ball._pos, ball._size);
-    this.leftPaddle = new ObjectData(paddles[0]._pos, paddles[0]._size);
-    this.rightPaddle = new ObjectData(paddles[1]._pos, paddles[1]._size);
+    this.leftPaddle = new PaddleData(leftPaddle);
+    this.rightPaddle = new PaddleData(rightPaddle);
   }
 }
 
 export class Pong {
   _ball: Ball;
-  _paddles: Paddle[];
+  _leftPaddle: Paddle;
+  _rightPaddle: Paddle;
   _data: Data;
 
   constructor() {
@@ -273,16 +284,24 @@ export class Pong {
     const PADDLE_RIGHT_X = WINDOW_WIDTH - WINDOW_WIDTH * 0.03;
     const PADDLE_Y = WINDOW_HEIGHT / 2 - WINDOW_HEIGHT * 0.1;
     this._ball = new Ball(BALL_SIZE, BALL_X, BALL_Y);
-    this._paddles = [
-      new Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_LEFT_X, PADDLE_Y),
-      new Paddle(PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_RIGHT_X, PADDLE_Y),
-    ];
+    this._leftPaddle = new Paddle(
+      PADDLE_WIDTH,
+      PADDLE_HEIGHT,
+      PADDLE_LEFT_X,
+      PADDLE_Y,
+    );
+    this._rightPaddle = new Paddle(
+      PADDLE_WIDTH,
+      PADDLE_HEIGHT,
+      PADDLE_RIGHT_X,
+      PADDLE_Y,
+    );
 
-    this._data = new Data(this._ball, this._paddles);
+    this._data = new Data(this._ball, this._leftPaddle, this._rightPaddle);
   }
   update() {
-    this._paddles[1].updatePos(this._ball._pos.y); // Follow the ball
-    this._ball.updatePos(this._paddles);
+    this._rightPaddle.updatePos(this._ball._pos.y); // Follow the ball
+    this._ball.updatePos(this._leftPaddle, this._rightPaddle);
   }
   start() {
     this._ball._hidden = false;
