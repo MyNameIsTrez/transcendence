@@ -20,6 +20,10 @@
       socket.on('disconnect', () => {
         console.log('Disconnected');
       });
+      socket.on('increment', (nbr) => {
+        console.log('Incremented to ' + nbr);
+        // edit div so text is incremented
+      });
     </script>
   </head>
 
