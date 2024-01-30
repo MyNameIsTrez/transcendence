@@ -42,7 +42,7 @@ export class AppGateway
     // console.log('Client disconnected');
   }
 
-  private broadcast(event: string, message: string) {
+  private broadcast(event: string, message: any) {
     this.clients.forEach((client) => {
       client.emit(event, message);
       // console.log('Sent message to client');
@@ -50,11 +50,9 @@ export class AppGateway
   }
 
   afterInit() {
-    let i = 0;
-    const interval_ms = 1000 / 60;
+    const interval_ms = 1000;
     setInterval(() => {
-      this.broadcast('increment', i.toString());
-      i++;
+      this.broadcast('pong', { x: 200, y: 400 });
     }, interval_ms);
   }
 
