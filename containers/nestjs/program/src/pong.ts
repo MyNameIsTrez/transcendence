@@ -4,7 +4,7 @@ const WINDOW_HEIGHT = 1080;
 class Pos {
   x: number;
   y: number;
-  constructor(x, y) {
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
@@ -13,7 +13,7 @@ class Pos {
 class Size {
   w: number;
   h: number;
-  constructor(w, h) {
+  constructor(w:number, h:number) {
     this.w = w;
     this.h = h;
   }
@@ -22,7 +22,7 @@ class Size {
 class Rect {
   _pos: Pos;
   _size: Size;
-  constructor(w, h, x, y) {
+  constructor(w:number, h:number, x:number, y:number) {
     this._pos = new Pos(x, y);
     this._size = new Size(w, h);
   }
@@ -123,7 +123,7 @@ class Velocity {
 class Paddle extends Rect {
   dyUp: number;
   dyDown: number;
-  constructor(w, h, x, y) {
+  constructor(w: number, h: number, x: number, y: number) {
 	  super(w, h, x, y);
 	  this.dyUp = 0;
 	  this.dyDown = 0;
@@ -136,7 +136,7 @@ class Paddle extends Rect {
       this._pos.y = 0;
     }
   }
-  updatePos(newY) {
+  updatePos(newY: number) {
     if (WINDOW_HEIGHT - newY < this._size.h / 2) {
       this._pos.y = WINDOW_HEIGHT - this._size.h;
       return;
