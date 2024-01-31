@@ -123,28 +123,34 @@ class Velocity {
 class Paddle extends Rect {
   dyUp: number;
   dyDown: number;
+
   constructor(w: number, h: number, x: number, y: number) {
     super(w, h, x, y);
     this.dyUp = 0;
     this.dyDown = 0;
   }
+
   collideWithBorder() {
     if (this.top > WINDOW_HEIGHT) {
       this._pos.y = WINDOW_HEIGHT - this._size.h;
     }
+
     if (this.bottom < 0) {
       this._pos.y = 0;
     }
   }
+
   updatePos(newY: number) {
     if (WINDOW_HEIGHT - newY < this._size.h / 2) {
       this._pos.y = WINDOW_HEIGHT - this._size.h;
       return;
     }
+
     if (newY < this._size.h / 2) {
       this._pos.y = 0;
       return;
     }
+
     this._pos.y = newY - this._size.h / 2;
   }
 }
@@ -199,6 +205,7 @@ class Ball extends Rect {
 
     this.collideWithBorder(leftPlayer, rightPlayer);
   }
+
   collideWithBorder(leftPlayer: Player, rightPlayer: Player) {
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
@@ -308,25 +315,19 @@ export class Pong {
     };
   }
 
-  clientPressedKey(keyName: string) {
-    // console.log(keyName)
-    if (keyName === 'w' || keyName === 'ArrowUp') {
-      this._leftPlayer.paddle.dyUp = -10;
-      this._rightPlayer.paddle.dyUp = -10;
-    } else if (keyName === 's' || keyName === 'ArrowDown') {
-      this._leftPlayer.paddle.dyDown = 10;
-      this._rightPlayer.paddle.dyDown = 10;
-    }
+  clientPressedKey(keyName: string, player: Player) {
+    this.clientMoved(keyName, player, true);
   }
 
-  clientReleasedKey(keyName: string) {
-    // console.log(keyName)
+  clientReleasedKey(keyName: string, player: Player) {
+    this.clientMoved(keyName, player, false);
+  }
+
+  clientMoved(keyName: string, player: Player, pressed: boolean) {
     if (keyName === 'w' || keyName === 'ArrowUp') {
-      this._leftPlayer.paddle.dyUp = 0;
-      this._rightPlayer.paddle.dyUp = 0;
+      player.paddle.dyUp = pressed ? -10 : 0;
     } else if (keyName === 's' || keyName === 'ArrowDown') {
-      this._leftPlayer.paddle.dyDown = 0;
-      this._rightPlayer.paddle.dyDown = 0;
+      player.paddle.dyDown = pressed ? 10 : 0;
     }
   }
 }

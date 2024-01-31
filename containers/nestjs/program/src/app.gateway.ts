@@ -6,6 +6,7 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
@@ -20,11 +21,22 @@ export class AppGateway
   @WebSocketServer()
   server!: Server;
 
-  clients = new Set<Socket>();
-
   pong = new Pong();
+
+  player1: Socket | null = null;
+  player2: Socket | null = null;
+
   handleConnection(client: Socket) {
-    this.clients.add(client);
+    if (this.player1 == null) {
+      this.player1 = client;
+      console.log('Player 1 joined');
+    } else if (this.player2 == null) {
+      this.player2 = client;
+      console.log('Player 2 joined');
+    } else {
+      console.log('A third player tried to join!');
+    }
+
     // this.broadcast('events', 'A player connected');
     // console.log('Client connected');
 
@@ -38,17 +50,8 @@ export class AppGateway
     // }, interval_ms);
   }
 
-  handleDisconnect(client: Socket) {
-    this.clients.delete(client);
-    this.broadcast('events', 'A player disconnected');
+  handleDisconnect() {
     // console.log('Client disconnected');
-  }
-
-  private broadcast(event: string, message: any) {
-    this.clients.forEach((client) => {
-      client.emit(event, message);
-      // console.log('Sent message to client');
-    });
   }
 
   afterInit() {
@@ -56,7 +59,9 @@ export class AppGateway
     this.pong.start();
     setInterval(() => {
       this.pong.update();
-      this.broadcast('pong', this.pong.getData());
+      const data = this.pong.getData();
+      this.player1?.emit('pong', data);
+      this.player2?.emit('pong', data);
     }, interval_ms);
   }
 
@@ -66,12 +71,32 @@ export class AppGateway
   }
 
   @SubscribeMessage('pressed')
-  async pressed(@MessageBody() keyName: string) {
-    this.pong.clientPressedKey(keyName);
+  async pressed(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() keyName: string,
+  ) {
+    const isPlayer1 = client.id === this.player1?.id;
+    const isPlayer2 = client.id === this.player2?.id;
+
+    if (isPlayer1) {
+      this.pong.clientPressedKey(keyName, this.pong._leftPlayer);
+    } else if (isPlayer2) {
+      this.pong.clientPressedKey(keyName, this.pong._rightPlayer);
+    }
   }
 
   @SubscribeMessage('released')
-  async released(@MessageBody() keyName: string) {
-    this.pong.clientReleasedKey(keyName);
+  async released(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() keyName: string,
+  ) {
+    const isPlayer1 = client.id === this.player1?.id;
+    const isPlayer2 = client.id === this.player2?.id;
+
+    if (isPlayer1) {
+      this.pong.clientReleasedKey(keyName, this.pong._leftPlayer);
+    } else if (isPlayer2) {
+      this.pong.clientReleasedKey(keyName, this.pong._rightPlayer);
+    }
   }
 }
