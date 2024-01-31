@@ -162,6 +162,24 @@ socket.on('disconnect', () => {
 });
 socket.on('pong', (data) => {
   // pong._ball._pos = data.ball.pos;
-  console.log(data);
+//   console.log(data);
   pong.render(data);
 });
+
+document.addEventListener(
+	"keydown",
+	(event) => {
+		const keyName = event.key;
+		console.log(keyName);
+		socket.emit('pressed', keyName);
+	}
+)
+
+document.addEventListener(
+	"keyup",
+	(event) => {
+		const keyName = event.key;
+		console.log(keyName);
+		socket.emit('released', keyName);
+	}
+)

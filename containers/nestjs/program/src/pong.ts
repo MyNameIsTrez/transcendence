@@ -122,9 +122,13 @@ class Rect {
 
 class Paddle extends Rect {
   _score: ScoreData;
+  dyUp: number;
+  dyDown: number;
   constructor(w, h, x, y) {
-    super(w, h, x, y);
-    this._score = new ScoreData(0);
+	  super(w, h, x, y);
+	  this._score = new ScoreData(0);
+	  this.dyUp = 0;
+	  this.dyDown = 0;
   }
   set score(score) {
     this._score = score;
@@ -299,12 +303,33 @@ export class Pong {
 
     this._data = new Data(this._ball, this._leftPaddle, this._rightPaddle);
   }
+
   update() {
+	this._leftPaddle.updatePos(this._leftPaddle._pos.y + this._leftPaddle.dyUp + this._leftPaddle.dyDown + this._leftPaddle._size.h / 2);
     this._rightPaddle.updatePos(this._ball._pos.y); // Follow the ball
     this._ball.updatePos(this._leftPaddle, this._rightPaddle);
   }
+
   start() {
     this._ball._hidden = false;
     this._ball.resetPos();
+  }
+
+  clientPressedKey(keyName: string) {
+	// console.log(keyName)
+	if (keyName === 'w' || keyName === 'ArrowUp') {
+		this._leftPaddle.dyUp = -10;
+	} else if (keyName === 's' || keyName === 'ArrowDown') {
+		this._leftPaddle.dyDown = 10;
+	}
+  }
+
+  clientReleasedKey(keyName: string) {
+	// console.log(keyName)
+	if (keyName === 'w' || keyName === 'ArrowUp') {
+		this._leftPaddle.dyUp = 0;
+	} else if (keyName === 's' || keyName === 'ArrowDown') {
+		this._leftPaddle.dyDown = 0;
+	}
   }
 }
