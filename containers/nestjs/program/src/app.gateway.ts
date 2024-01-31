@@ -15,14 +15,14 @@ import { Pong } from './pong';
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' } })
 export class AppGateway
-implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-	@WebSocketServer()
-	server: Server;
+  @WebSocketServer()
+  server: Server;
 
-	clients = new Set<Socket>();
+  clients = new Set<Socket>();
 
-	pong = new Pong();
+  pong = new Pong();
   handleConnection(client: Socket) {
     this.clients.add(client);
     // this.broadcast('events', 'A player connected');
@@ -67,11 +67,11 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 
   @SubscribeMessage('pressed')
   async pressed(@MessageBody() keyName: string) {
-	this.pong.clientPressedKey(keyName)
+    this.pong.clientPressedKey(keyName);
   }
 
   @SubscribeMessage('released')
   async released(@MessageBody() keyName: string) {
-	this.pong.clientReleasedKey(keyName)
+    this.pong.clientReleasedKey(keyName);
   }
 }

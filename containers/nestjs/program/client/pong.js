@@ -122,10 +122,7 @@ class Pong {
     this.drawObject('white', data.leftPlayer.paddle);
     this.drawObject('white', data.rightPlayer.paddle);
 
-    this._scoreBoard.updateScore(
-      data.leftPlayer.score,
-      data.rightPlayer.score,
-    );
+    this._scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
   }
   start() {
     this._ball._hidden = false;
@@ -162,24 +159,18 @@ socket.on('disconnect', () => {
 });
 socket.on('pong', (data) => {
   // pong._ball._pos = data.ball.pos;
-//   console.log(data);
+  //   console.log(data);
   pong.render(data);
 });
 
-document.addEventListener(
-	"keydown",
-	(event) => {
-		const keyName = event.key;
-		console.log(keyName);
-		socket.emit('pressed', keyName);
-	}
-)
+document.addEventListener('keydown', (event) => {
+  const keyName = event.key;
+  console.log(keyName);
+  socket.emit('pressed', keyName);
+});
 
-document.addEventListener(
-	"keyup",
-	(event) => {
-		const keyName = event.key;
-		console.log(keyName);
-		socket.emit('released', keyName);
-	}
-)
+document.addEventListener('keyup', (event) => {
+  const keyName = event.key;
+  console.log(keyName);
+  socket.emit('released', keyName);
+});

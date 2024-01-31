@@ -13,7 +13,7 @@ class Pos {
 class Size {
   w: number;
   h: number;
-  constructor(w:number, h:number) {
+  constructor(w: number, h: number) {
     this.w = w;
     this.h = h;
   }
@@ -22,7 +22,7 @@ class Size {
 class Rect {
   _pos: Pos;
   _size: Size;
-  constructor(w:number, h:number, x:number, y:number) {
+  constructor(w: number, h: number, x: number, y: number) {
     this._pos = new Pos(x, y);
     this._size = new Size(w, h);
   }
@@ -124,9 +124,9 @@ class Paddle extends Rect {
   dyUp: number;
   dyDown: number;
   constructor(w: number, h: number, x: number, y: number) {
-	  super(w, h, x, y);
-	  this.dyUp = 0;
-	  this.dyDown = 0;
+    super(w, h, x, y);
+    this.dyUp = 0;
+    this.dyDown = 0;
   }
   collideWithBorder() {
     if (this.top > WINDOW_HEIGHT) {
@@ -153,7 +153,7 @@ class Player {
   _score: number;
   paddle: Paddle;
   constructor(x: number) {
-	  this._score = 0;
+    this._score = 0;
 
     this.paddle = new Paddle(
       WINDOW_WIDTH * 0.02,
@@ -164,7 +164,12 @@ class Player {
   }
 
   update() {
-    this.paddle.updatePos(this.paddle._pos.y + this.paddle.dyUp + this.paddle.dyDown + this.paddle._size.h / 2);
+    this.paddle.updatePos(
+      this.paddle._pos.y +
+        this.paddle.dyUp +
+        this.paddle.dyDown +
+        this.paddle._size.h / 2,
+    );
   }
 
   addPoint() {
@@ -207,7 +212,7 @@ class Ball extends Rect {
       }
       this._vel.invertdY();
       this.reset();
-	  }
+    }
   }
   collideWithPaddle(paddle: Paddle) {
     const SPEED_MULTIPLIER = 1.05;
@@ -291,15 +296,15 @@ export class Pong {
         paddle: {
           pos: this._leftPlayer.paddle._pos,
           size: this._leftPlayer.paddle._size,
-        }
+        },
       },
       rightPlayer: {
         score: this._rightPlayer._score,
         paddle: {
           pos: this._rightPlayer.paddle._pos,
           size: this._rightPlayer.paddle._size,
-        }
-      }
+        },
+      },
     };
   }
 
