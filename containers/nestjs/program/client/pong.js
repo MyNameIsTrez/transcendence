@@ -119,12 +119,12 @@ class Pong {
     this.drawCanvas();
 
     this.drawObject('white', data.ball);
-    this.drawObject('white', data.leftPaddle);
-    this.drawObject('white', data.rightPaddle);
+    this.drawObject('white', data.leftPlayer.paddle);
+    this.drawObject('white', data.rightPlayer.paddle);
 
     this._scoreBoard.updateScore(
-      data.leftPaddle.score.score,
-      data.rightPaddle.score.score,
+      data.leftPlayer.score,
+      data.rightPlayer.score,
     );
   }
   start() {

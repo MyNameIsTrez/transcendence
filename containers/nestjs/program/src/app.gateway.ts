@@ -56,7 +56,7 @@ implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
     this.pong.start();
     setInterval(() => {
       this.pong.update();
-      this.broadcast('pong', this.pong._data);
+      this.broadcast('pong', this.pong.getData());
     }, interval_ms);
   }
 

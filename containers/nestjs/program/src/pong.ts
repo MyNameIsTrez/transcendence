@@ -1,6 +1,45 @@
 const WINDOW_WIDTH = 1920;
 const WINDOW_HEIGHT = 1080;
 
+class Pos {
+  x: number;
+  y: number;
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class Size {
+  w: number;
+  h: number;
+  constructor(w, h) {
+    this.w = w;
+    this.h = h;
+  }
+}
+
+class Rect {
+  _pos: Pos;
+  _size: Size;
+  constructor(w, h, x, y) {
+    this._pos = new Pos(x, y);
+    this._size = new Size(w, h);
+  }
+  get left() {
+    return this._pos.x;
+  }
+  get right() {
+    return this._pos.x + this._size.w;
+  }
+  get top() {
+    return this._pos.y;
+  }
+  get bottom() {
+    return this._pos.y + this._size.h;
+  }
+}
+
 class Velocity {
   _dx: number;
   _dy: number;
@@ -81,60 +120,13 @@ class Velocity {
   }
 }
 
-class Pos {
-  x: number;
-  y: number;
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class Size {
-  w: number;
-  h: number;
-  constructor(w, h) {
-    this.w = w;
-    this.h = h;
-  }
-}
-
-class Rect {
-  _pos: Pos;
-  _size: Size;
-  constructor(w, h, x, y) {
-    this._pos = new Pos(x, y);
-    this._size = new Size(w, h);
-  }
-  get left() {
-    return this._pos.x;
-  }
-  get right() {
-    return this._pos.x + this._size.w;
-  }
-  get top() {
-    return this._pos.y;
-  }
-  get bottom() {
-    return this._pos.y + this._size.h;
-  }
-}
-
 class Paddle extends Rect {
-  _score: ScoreData;
   dyUp: number;
   dyDown: number;
   constructor(w, h, x, y) {
 	  super(w, h, x, y);
-	  this._score = new ScoreData();
 	  this.dyUp = 0;
 	  this.dyDown = 0;
-  }
-  set score(score) {
-    this._score = score;
-  }
-  get score() {
-    return this._score;
   }
   collideWithBorder() {
     if (this.top > WINDOW_HEIGHT) {
@@ -143,9 +135,6 @@ class Paddle extends Rect {
     if (this.bottom < 0) {
       this._pos.y = 0;
     }
-  }
-  addPoint() {
-    this._score.score++;
   }
   updatePos(newY) {
     if (WINDOW_HEIGHT - newY < this._size.h / 2) {
@@ -160,40 +149,67 @@ class Paddle extends Rect {
   }
 }
 
+class Player {
+  _score: number;
+  paddle: Paddle;
+  constructor(x: number) {
+	  this._score = 0;
+
+    this.paddle = new Paddle(
+      WINDOW_WIDTH * 0.02,
+      WINDOW_HEIGHT * 0.2,
+      x,
+      WINDOW_HEIGHT / 2 - WINDOW_HEIGHT * 0.1,
+    );
+  }
+
+  update() {
+    this.paddle.updatePos(this.paddle._pos.y + this.paddle.dyUp + this.paddle.dyDown + this.paddle._size.h / 2);
+  }
+
+  addPoint() {
+    this._score++;
+  }
+}
+
 class Ball extends Rect {
   _vel: Velocity;
   _hidden: boolean;
   _speed: number;
-  constructor(size, x, y) {
+  constructor(size = 30, x = WINDOW_WIDTH / 2, y = WINDOW_HEIGHT / 2) {
     super(size, size, x - size / 2, y - size / 2);
     this._vel = new Velocity();
     this._hidden = true;
     this._speed = 10;
   }
-  updatePos(leftPaddle: Paddle, rightPaddle: Paddle) {
+  updatePos() {
     this._pos.x += this._vel.dx;
     this._pos.y += this._vel.dy;
-
-    this.collideWithPaddle(leftPaddle);
-    this.collideWithPaddle(rightPaddle);
-    this.collideWithBorder(leftPaddle, rightPaddle);
   }
-  collideWithBorder(leftPaddle: Paddle, rightPaddle: Paddle) {
+
+  // TODO: Maybe don't pass this method the players?
+  collide(leftPlayer: Player, rightPlayer: Player) {
+    this.collideWithPaddle(leftPlayer.paddle);
+    this.collideWithPaddle(rightPlayer.paddle);
+
+    this.collideWithBorder(leftPlayer, rightPlayer);
+  }
+  collideWithBorder(leftPlayer: Player, rightPlayer: Player) {
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
       this._vel.invertdY();
     }
     if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
       if (this.left <= 0) {
-        leftPaddle.addPoint();
+        rightPlayer.addPoint();
       } else {
-        rightPaddle.addPoint();
+        leftPlayer.addPoint();
       }
       this._vel.invertdY();
       this.reset();
-	}
+	  }
   }
-  collideWithPaddle(paddle) {
+  collideWithPaddle(paddle: Paddle) {
     const SPEED_MULTIPLIER = 1.05;
     if (
       this.left <= paddle.right &&
@@ -236,78 +252,27 @@ class Ball extends Rect {
   // }
 }
 
-// TODO: Nest this inside of the Data class
-class ObjectData {
-  pos: Pos;
-  size: Size;
-  constructor(pos: Pos, size: Size) {
-    this.pos = pos;
-    this.size = size;
-  }
-}
-class ScoreData {
-  score: number;
-  constructor() {
-    this.score = 0;
-  }
-}
-class PaddleData extends ObjectData {
-  score: ScoreData;
-  constructor(paddle: Paddle) {
-    super(paddle._pos, paddle._size);
-    this.score = paddle.score;
-  }
-}
-class Data {
-  ball: ObjectData;
-  leftPaddle: PaddleData;
-  rightPaddle: PaddleData;
-
-  constructor(ball: Ball, leftPaddle: Paddle, rightPaddle: Paddle) {
-    this.ball = new ObjectData(ball._pos, ball._size);
-    this.leftPaddle = new PaddleData(leftPaddle);
-    this.rightPaddle = new PaddleData(rightPaddle);
-  }
-}
-
 export class Pong {
   _ball: Ball;
-  _leftPaddle: Paddle;
-  _rightPaddle: Paddle;
-  _data: Data;
+  _leftPlayer: Player;
+  _rightPlayer: Player;
 
   constructor() {
-    const BALL_SIZE = 30;
-    const BALL_X = WINDOW_WIDTH / 2;
-    const BALL_Y = WINDOW_HEIGHT / 2;
-
-    const PADDLE_WIDTH = WINDOW_WIDTH * 0.02;
-    const PADDLE_HEIGHT = WINDOW_HEIGHT * 0.2;
-
     const PADDLE_LEFT_X = WINDOW_WIDTH * 0.01;
     const PADDLE_RIGHT_X = WINDOW_WIDTH - WINDOW_WIDTH * 0.03;
-    const PADDLE_Y = WINDOW_HEIGHT / 2 - WINDOW_HEIGHT * 0.1;
-    this._ball = new Ball(BALL_SIZE, BALL_X, BALL_Y);
-    this._leftPaddle = new Paddle(
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      PADDLE_LEFT_X,
-      PADDLE_Y,
-    );
-    this._rightPaddle = new Paddle(
-      PADDLE_WIDTH,
-      PADDLE_HEIGHT,
-      PADDLE_RIGHT_X,
-      PADDLE_Y,
-    );
 
-    this._data = new Data(this._ball, this._leftPaddle, this._rightPaddle);
+    this._ball = new Ball();
+
+    this._leftPlayer = new Player(PADDLE_LEFT_X);
+    this._rightPlayer = new Player(PADDLE_RIGHT_X);
   }
 
   update() {
-	this._leftPaddle.updatePos(this._leftPaddle._pos.y + this._leftPaddle.dyUp + this._leftPaddle.dyDown + this._leftPaddle._size.h / 2);
-    // this._rightPaddle.updatePos(this._ball._pos.y); // Follow the ball
-    this._ball.updatePos(this._leftPaddle, this._rightPaddle);
+    this._leftPlayer.update();
+    this._rightPlayer.update();
+
+    this._ball.updatePos();
+    this._ball.collide(this._leftPlayer, this._rightPlayer);
   }
 
   start() {
@@ -315,21 +280,48 @@ export class Pong {
     this._ball.reset();
   }
 
+  getData() {
+    return {
+      ball: {
+        pos: this._ball._pos,
+        size: this._ball._size,
+      },
+      leftPlayer: {
+        score: this._leftPlayer._score,
+        paddle: {
+          pos: this._leftPlayer.paddle._pos,
+          size: this._leftPlayer.paddle._size,
+        }
+      },
+      rightPlayer: {
+        score: this._rightPlayer._score,
+        paddle: {
+          pos: this._rightPlayer.paddle._pos,
+          size: this._rightPlayer.paddle._size,
+        }
+      }
+    };
+  }
+
   clientPressedKey(keyName: string) {
-	// console.log(keyName)
-	if (keyName === 'w' || keyName === 'ArrowUp') {
-		this._leftPaddle.dyUp = -10;
-	} else if (keyName === 's' || keyName === 'ArrowDown') {
-		this._leftPaddle.dyDown = 10;
-	}
+    // console.log(keyName)
+    if (keyName === 'w' || keyName === 'ArrowUp') {
+      this._leftPlayer.paddle.dyUp = -10;
+      this._rightPlayer.paddle.dyUp = -10;
+    } else if (keyName === 's' || keyName === 'ArrowDown') {
+      this._leftPlayer.paddle.dyDown = 10;
+      this._rightPlayer.paddle.dyDown = 10;
+    }
   }
 
   clientReleasedKey(keyName: string) {
-	// console.log(keyName)
-	if (keyName === 'w' || keyName === 'ArrowUp') {
-		this._leftPaddle.dyUp = 0;
-	} else if (keyName === 's' || keyName === 'ArrowDown') {
-		this._leftPaddle.dyDown = 0;
-	}
+    // console.log(keyName)
+    if (keyName === 'w' || keyName === 'ArrowUp') {
+      this._leftPlayer.paddle.dyUp = 0;
+      this._rightPlayer.paddle.dyUp = 0;
+    } else if (keyName === 's' || keyName === 'ArrowDown') {
+      this._leftPlayer.paddle.dyDown = 0;
+      this._rightPlayer.paddle.dyDown = 0;
+    }
   }
 }
