@@ -67,7 +67,7 @@ class Velocity {
     const angleRange = Math.PI / 4;
     return Math.random() * angleRange;
   }
-  calculateRandomVelocity(speed: number) {
+  setRandomVelocity(speed: number) {
     if (speed == 0) {
       this._dx = 0;
       this._dy = 0;
@@ -126,7 +126,7 @@ class Paddle extends Rect {
   dyDown: number;
   constructor(w, h, x, y) {
 	  super(w, h, x, y);
-	  this._score = new ScoreData(0);
+	  this._score = new ScoreData();
 	  this.dyUp = 0;
 	  this.dyDown = 0;
   }
@@ -184,14 +184,14 @@ class Ball extends Rect {
       this._vel.invertdY();
     }
     if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
-      if (this.top <= 0) {
+      if (this.left <= 0) {
         leftPaddle.addPoint();
       } else {
         rightPaddle.addPoint();
       }
       this._vel.invertdY();
-      this.resetPos();
-    }
+      this.reset();
+	}
   }
   collideWithPaddle(paddle) {
     const SPEED_MULTIPLIER = 1.05;
@@ -221,11 +221,11 @@ class Ball extends Rect {
     }
   }
 
-  resetPos() {
+  reset() {
     this._pos.x = WINDOW_WIDTH / 2;
     this._pos.y = WINDOW_HEIGHT / 2;
-    // TODO: Move this to a different spot
-    this._vel.calculateRandomVelocity(this._speed);
+
+    this._vel.setRandomVelocity(this._speed);
   }
 
   // get ballCenter() {
@@ -247,8 +247,8 @@ class ObjectData {
 }
 class ScoreData {
   score: number;
-  constructor(score: number) {
-    this.score = score;
+  constructor() {
+    this.score = 0;
   }
 }
 class PaddleData extends ObjectData {
@@ -306,13 +306,13 @@ export class Pong {
 
   update() {
 	this._leftPaddle.updatePos(this._leftPaddle._pos.y + this._leftPaddle.dyUp + this._leftPaddle.dyDown + this._leftPaddle._size.h / 2);
-    this._rightPaddle.updatePos(this._ball._pos.y); // Follow the ball
+    // this._rightPaddle.updatePos(this._ball._pos.y); // Follow the ball
     this._ball.updatePos(this._leftPaddle, this._rightPaddle);
   }
 
   start() {
     this._ball._hidden = false;
-    this._ball.resetPos();
+    this._ball.reset();
   }
 
   clientPressedKey(keyName: string) {
