@@ -24,13 +24,13 @@ Print all databases:
 
 # nestjs
 
-Start off by doing `cd containers/nestjs`
+Start off by doing `cd containers`
 
 ## Regenerate the frontend and backend
 
 We're using npx to directly execute these commands without installing them, since installing them globally with `npm install -g` gives permission denied errors, due to protected directories on our school's computers.
 
-`npx @nestjs/cli@latest new program`
+`npx @nestjs/cli@latest new .`
 
 `npx @vue/cli create client`
 
