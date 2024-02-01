@@ -287,9 +287,11 @@ export class Pong {
     this._ball.collide(this._leftPlayer, this._rightPlayer);
   }
 
-  start() {
+  resetGame() {
     this._ball._hidden = false;
     this._ball.reset();
+	this._leftPlayer._score = 0;
+	this._rightPlayer._score = 0;
   }
 
   getData() {

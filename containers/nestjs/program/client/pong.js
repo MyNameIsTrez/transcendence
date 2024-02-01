@@ -139,38 +139,51 @@ class Pong {
 
 const pong = new Pong();
 
-const socket = io('http://localhost:4242');
-socket.on('connect', () => {
-  console.log('Connected');
+let socket;
 
-  socket.emit('events', { test: 'test' });
-  socket.emit('identity', 0, (response) => {
-    console.log('Identity:', response);
-  });
-});
-socket.on('events', (data) => {
-  console.log('event', data);
-});
-socket.on('exception', (data) => {
-  console.log('event', data);
-});
-socket.on('disconnect', () => {
-  console.log('Disconnected');
-});
-socket.on('pong', (data) => {
-  // pong._ball._pos = data.ball.pos;
-  //   console.log(data);
-  pong.render(data);
-});
+function connectToGame() {
+	socket = io('http://localhost:4242');
+	socket.on('connect', () => {
+		console.log('Connected');
 
-document.addEventListener('keydown', (event) => {
-  const keyName = event.key;
-  console.log(keyName);
-  socket.emit('pressed', keyName);
-});
+		socket.emit('events', { test: 'test' });
+		socket.emit('identity', 0, (response) => {
+		console.log('Identity:', response);
+		});
+	});
+	socket.on('events', (data) => {
+		console.log('event', data);
+	});
+	socket.on('exception', (data) => {
+		console.log('event', data);
+	});
+	socket.on('disconnect', () => {
+		console.log('Disconnected');
+	});
+	socket.on('pong', (data) => {
+		// pong._ball._pos = data.ball.pos;
+		//   console.log(data);
+		pong.render(data);
+	});
 
-document.addEventListener('keyup', (event) => {
-  const keyName = event.key;
-  console.log(keyName);
-  socket.emit('released', keyName);
-});
+	document.addEventListener('keydown', (event) => {
+		const keyName = event.key;
+		console.log(keyName);
+		socket.emit('pressed', keyName);
+	});
+
+	document.addEventListener('keyup', (event) => {
+		const keyName = event.key;
+		console.log(keyName);
+		socket.emit('released', keyName);
+	});
+
+	document.getElementById("start-button").hidden = true;
+	document.getElementById("stop-button").hidden = false;
+}
+
+function disconnectFromGame() {
+	socket.disconnect();
+	document.getElementById("stop-button").hidden = true;
+	document.getElementById("start-button").hidden = false;
+}
