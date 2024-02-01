@@ -26,24 +26,23 @@ Print all databases:
 
 Start off by doing `cd containers/nestjs`
 
-## Steps to run locally
+## Regenerate the frontend and backend
 
-1. `cd containers/nestjs/program`
-2. `npm install`
-3. Manually run, with hot reloading: `npm run start:dev`
-4. Open `localhost:4242` in your browser to view the website
-
-## Regenerate program/
+We're using npx to directly execute these commands without installing them, since installing them globally with `npm install -g` gives permission denied errors, due to protected directories on our school's computers.
 
 `npx @nestjs/cli@latest new program`
+
+`npx @vue/cli create client`
+
+See [this tutorial](https://medium.com/js-dojo/how-to-serve-vue-with-nest-f23f10b33e1) on how to use nest.js together with vue.js
 
 Make sure to remove the generated `.git` directory from it!
 
 Also change the port in `src/main.ts` from 3000 to 4242.
 
-## Install additional dependencies
+## Add dependency
 
-`npm install @nestjs/websockets @nestjs/platform-socket.io`
+`npm install @nestjs/websockets`
 
 ## Remove dependency
 
