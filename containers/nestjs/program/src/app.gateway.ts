@@ -27,12 +27,18 @@ export class AppGateway
   player2: Socket | null = null;
 
   handleConnection(client: Socket) {
-    if (this.player1 == null) {
-      this.player1 = client;
-      console.log('Player 1 joined');
+	  if (this.player1 == null) {
+		this.player1 = client;
+		console.log('Player 1 joined');
+		if (this.player2 != null) {
+			this.player2.emit("opponentDisconnected", 0);
+		}
     } else if (this.player2 == null) {
       this.player2 = client;
       console.log('Player 2 joined');
+	  if (this.player1 != null) {
+		  this.player1.emit("opponentDisconnected", 0);
+	  }
     } else {
       console.log('A third player tried to join!');
     }
@@ -53,16 +59,22 @@ export class AppGateway
   handleDisconnect(client: Socket) {
 	if (this.player1 != null && client.id == this.player1.id) {
 		this.player1 = null;
-		console.log(`Player one disconnected`);
-		this.pong.resetGame();
-		console.log(`Game has been reset`);
+		console.log(`Player 1 disconnected`);
+		if (this.player2 != null) {
+			this.player2.emit("opponentDisconnected", 1);
+		}
 	} else if (this.player2 != null && client.id == this.player2.id) {
 		this.player2 = null;
-		console.log(`Player two disconnected`);
-		this.pong.resetGame();
-		console.log(`Game has been reset`);
+		console.log(`Player 2 disconnected`);
+		if (this.player1 != null) {
+			this.player1.emit("opponentDisconnected", 1);
+		}
 	} else {
 		console.log('Another client disconnected');
+	}
+	if (this.player1 == null && this.player2 == null) {
+		this.pong.resetGame();
+		console.log(`Game has been reset`);
 	}
   }
 

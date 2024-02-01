@@ -151,20 +151,29 @@ function connectToGame() {
 		console.log('Identity:', response);
 		});
 	});
+
 	socket.on('events', (data) => {
 		console.log('event', data);
 	});
+
 	socket.on('exception', (data) => {
 		console.log('event', data);
 	});
+
 	socket.on('disconnect', () => {
 		console.log('Disconnected');
 	});
+
 	socket.on('pong', (data) => {
 		// pong._ball._pos = data.ball.pos;
 		//   console.log(data);
 		pong.render(data);
 	});
+
+	socket.on('opponentDisconnected', (data) => {
+		// Make the message box for opponent disconnection visible if applicable
+		document.getElementById("opponent-disconnected-message").hidden = data == 0;
+	})
 
 	document.addEventListener('keydown', (event) => {
 		const keyName = event.key;
@@ -186,4 +195,5 @@ function disconnectFromGame() {
 	socket.disconnect();
 	document.getElementById("stop-button").hidden = true;
 	document.getElementById("start-button").hidden = false;
+	document.getElementById("opponent-disconnected-message").hidden = true;
 }
