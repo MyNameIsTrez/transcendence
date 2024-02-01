@@ -1,6 +1,14 @@
 # Transcendence
 
-## Overview
+## How to run
+
+1. Open a terminal, and start the nest.js backend with `cd containers/server && npm install && npm run start:dev`
+2. Open another terminal next to it, and start the vue.js frontend with `cd containers/server/client && npm install && npm run watch`
+3. Go to `localhost:4242` in your browser to see the website. You can edit backend and frontend files without having to restart the server.
+
+## Requirements
+
+### Overview
 
 - NestJS backend
 - Use [Tailwind](https://tailwindcss.com/) + [daisyUI](https://daisyui.com/components/) to make components
@@ -12,14 +20,14 @@
 - Docker compose
 - Single-page application means only sending the HTML/CSS/JS once, even if you change pages
 
-## Security
+### Security
 
 - Channel and other passwords have to be hashed
 - Protecting against SQL injections
 - Server-side validation
 - .env file
 
-## User Account
+### User Account
 
 - Instead of storing passwords, only allow logging in with Intra's OAuth API using [passport-42](https://www.passportjs.org/packages/passport-42/)
 - Choosing unique name
@@ -30,7 +38,7 @@
 - Profile stats (wins/losses, ranking system, achievements)
 - Match history
 
-## Chat
+### Chat
 
 - Channels that are public (optionally with a password)/private
 - Direct messages
@@ -41,7 +49,7 @@
 - Inviting to Pong game
 - View other player profiles
 
-## Game
+### Game
 
 - Pong
 - Matchmaking system (just a queue, not necessarily ELO)
