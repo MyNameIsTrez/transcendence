@@ -3,7 +3,7 @@
 ## How to run
 
 1. Open a terminal, and start the nest.js backend with `cd containers/server && npm install && npm run start:dev`
-2. Open another terminal next to it, and start the vue.js frontend with `cd containers/server/client && npm install && npm run watch`
+2. Open another terminal next to it, and start the vue.js frontend with `cd containers/server/client && npm install && npm run dev`
 3. Go to `localhost:4242` in your browser to see the website. You can edit backend and frontend files without having to restart the server.
 
 ## Requirements
