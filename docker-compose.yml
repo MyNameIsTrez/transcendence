@@ -1,17 +1,17 @@
 services:
-  # hello:
-  #   build: containers/hello
-  #   image: hello
-  #   container_name: hello
-  #   restart: on-failure
+  nestjs:
+    build: containers/nestjs
+    image: nestjs
+    container_name: nestjs
+    restart: on-failure
 
-  server:
-    build: containers/server
-    image: server
-    container_name: server
+  vuejs:
+    build: containers/vuejs
+    image: vuejs
+    container_name: vuejs
     restart: on-failure
     ports:
-      - "4242:4242"
+      - "2424:2424"
 
   # db:
   #   image: postgres:alpine
