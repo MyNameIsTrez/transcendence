@@ -27,6 +27,7 @@ export class AppGateway
   player2: Socket | null = null;
 
   handleConnection(client: Socket) {
+		console.log('Handle connection called');
 	  if (this.player1 == null) {
 		this.player1 = client;
 		console.log('Player 1 joined');

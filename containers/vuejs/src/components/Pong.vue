@@ -1,51 +1,44 @@
 <template>
   <div>
     <canvas ref="pongCanvas"></canvas>
-	<SocketConnection />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import ScoreBoard from './ScoreBoard.vue';
-import SocketConnection from './SocketConnection.vue';
+import io from 'socket.io-client';
 
-const WINDOW_WIDTH = 160;
-const WINDOW_HEIGHT = 90;
+const WINDOW_WIDTH = 1920;
+const WINDOW_HEIGHT = 1080;
 
 export default defineComponent({
   components: {
     ScoreBoard,
-	SocketConnection
   },
   mounted() {
+	this.socket = io('ws://localhost:4242');
+	this.socket.on('pong', (data) => {
+		this.render(data);
+	});
     this.initCanvas();
   },
   methods: {
     initCanvas() {
       const canvas = this.$refs.pongCanvas as HTMLCanvasElement;
+	  canvas.tabIndex = 1; // make element focusable, so that addEventListener can be used
+	  canvas.addEventListener('keydown', (event) => {
+	  	this.socket.emit('pressed', event.code);
+	  });
+	  canvas.addEventListener('keyup', (event) => {
+	  	this.socket.emit('released', event.code);
+	  });
       canvas.width = WINDOW_WIDTH;
       canvas.height = WINDOW_HEIGHT;
       const context = canvas.getContext('2d');
       if (context) {
         this._context = context;
         this.drawCanvas();
-		this.render({ 
-			ball: { 
-				pos: { x: WINDOW_WIDTH / 2, y: WINDOW_HEIGHT /2 }, 
-				size: { w: WINDOW_HEIGHT * 0.2, h: WINDOW_HEIGHT * 0.2 } 
-			}, 
-			leftPlayer: { 
-				paddle: { pos: { x: 10, y: WINDOW_HEIGHT /2 }, 
-				size: { w: 10, h: 20 } }, 
-				score: 0 
-			}, 
-			rightPlayer: { 
-				paddle: { pos: { x: WINDOW_WIDTH - 10, y: WINDOW_HEIGHT /2 }, 
-				size: { w: 10, h: 20 } }, 
-				score: 0 
-				} 
-			});
       }
     },
     drawObject(color: string, obj: { pos: { x: number; y: number }; size: { w: number; h: number } }) {
@@ -65,10 +58,9 @@ export default defineComponent({
       this.drawObject('white', data.ball);
       this.drawObject('white', data.leftPlayer.paddle);
       this.drawObject('white', data.rightPlayer.paddle);
-      this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
+      // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
     },
     start() {
-      // Implement the start logic if needed
     }
   }
 });
