@@ -326,9 +326,9 @@ export class Pong {
   }
 
   clientMoved(keyName: string, player: Player, pressed: boolean) {
-    if (keyName === 'w' || keyName === 'ArrowUp') {
+    if (keyName === 'ArrowUp' || keyName === 'KeyW' ) {
       player.paddle.dyUp = pressed ? -10 : 0;
-    } else if (keyName === 's' || keyName === 'ArrowDown') {
+    } else if (keyName === 'ArrowDown' || keyName === 'KeyS' ) {
       player.paddle.dyDown = pressed ? 10 : 0;
     }
   }
