@@ -1,19 +1,22 @@
 <template>
   <div>
     <canvas ref="pongCanvas"></canvas>
+	<SocketConnection />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import ScoreBoard from './ScoreBoard.vue';
+import SocketConnection from './SocketConnection.vue';
 
-const WINDOW_WIDTH = 1920;
-const WINDOW_HEIGHT = 1080;
+const WINDOW_WIDTH = 160;
+const WINDOW_HEIGHT = 90;
 
 export default defineComponent({
   components: {
-    ScoreBoard
+    ScoreBoard,
+	SocketConnection
   },
   mounted() {
     this.initCanvas();
@@ -27,7 +30,22 @@ export default defineComponent({
       if (context) {
         this._context = context;
         this.drawCanvas();
-        // Initialize other components or event listeners here if needed
+		this.render({ 
+			ball: { 
+				pos: { x: WINDOW_WIDTH / 2, y: WINDOW_HEIGHT /2 }, 
+				size: { w: WINDOW_HEIGHT * 0.2, h: WINDOW_HEIGHT * 0.2 } 
+			}, 
+			leftPlayer: { 
+				paddle: { pos: { x: 10, y: WINDOW_HEIGHT /2 }, 
+				size: { w: 10, h: 20 } }, 
+				score: 0 
+			}, 
+			rightPlayer: { 
+				paddle: { pos: { x: WINDOW_WIDTH - 10, y: WINDOW_HEIGHT /2 }, 
+				size: { w: 10, h: 20 } }, 
+				score: 0 
+				} 
+			});
       }
     },
     drawObject(color: string, obj: { pos: { x: number; y: number }; size: { w: number; h: number } }) {

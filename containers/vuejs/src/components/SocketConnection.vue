@@ -6,12 +6,10 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-  mounted() {
-    this.connectToGame();
-  },
   methods: {
     connectToGame() {
       const socket = io('http://localhost:4242');
+			console.log(socket);
       if (socket) {
         socket.on('connect', () => {
           console.log('Connected');
@@ -42,14 +40,11 @@ export default defineComponent({
       }
     }
   },
+  mounted() {
+    this.connectToGame();
+  },
   beforeUnmount() {
     this.disconnectFromGame();
   },
-  methods: {
-    disconnectFromGame() {
-      // Disconnect from the game
-      // Cleanup any resources if needed
-    }
-  }
 });
 </script>

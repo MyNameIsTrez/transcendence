@@ -1,18 +1,10 @@
 <template>
-  <div id="app">
     <Pong />
-  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
 import Pong from './components/Pong.vue';
 
-export default defineComponent({
-  components: {
-    Pong
-  }
-});
 </script>
 
 <style scoped>
