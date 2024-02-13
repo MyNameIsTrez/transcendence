@@ -1,3 +1,5 @@
+import { Socket } from 'socket.io'
+
 const WINDOW_WIDTH = 1920;
 const WINDOW_HEIGHT = 1080;
 
@@ -156,9 +158,11 @@ class Paddle extends Rect {
 }
 
 class Player {
+  _socket: Socket | null;
   _score: number;
   paddle: Paddle;
   constructor(x: number) {
+	this._socket = null;
     this._score = 0;
 
     this.paddle = new Paddle(
@@ -229,7 +233,6 @@ class Ball extends Rect {
       this.bottom >= paddle.top &&
       this.top <= paddle.bottom
     ) {
-      // TODO: wtf??
       if (this.left <= paddle.left || this.left <= paddle.right) {
         this._pos.x =
           this.left <= paddle.left ? paddle.left - this._size.w : paddle.right;
