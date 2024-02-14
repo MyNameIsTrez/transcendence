@@ -26,19 +26,34 @@ export default defineComponent({
   methods: {
     initCanvas() {
       const canvas = this.$refs.pongCanvas as HTMLCanvasElement
-      canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
-      canvas.addEventListener('keydown', (event) => {
-        this.socket.emit('pressed', event.code)
-      })
-      canvas.addEventListener('keyup', (event) => {
-        this.socket.emit('released', event.code)
-      })
+
       canvas.width = WINDOW_WIDTH
       canvas.height = WINDOW_HEIGHT
+
+      canvas.tabIndex = 1 // Make canvas focusable, so that addEventListener can be used
+      canvas.addEventListener('keydown', (event) => {
+        this.emitMovePaddle(event.code, true);
+      })
+      canvas.addEventListener('keyup', (event) => {
+        this.emitMovePaddle(event.code, false);
+      })
+
       const context = canvas.getContext('2d')
       if (context) {
         this._context = context
         this.drawCanvas()
+      }
+    },
+    emitMovePaddle(code: string, keydown: boolean) {
+      var north;
+      if (code === 'KeyW' || code === 'ArrowUp') {
+        north = true;
+      } else if (code === 'KeyS' || code === 'ArrowDown') {
+        north = false;
+      }
+
+      if (north !== undefined) {
+        this.socket.emit('movePaddle', { 'keydown': keydown, 'north': north })
       }
     },
     drawObject(
