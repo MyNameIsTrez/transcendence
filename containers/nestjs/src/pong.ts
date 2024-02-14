@@ -290,8 +290,8 @@ export class Pong {
   resetGame() {
     this._ball._hidden = false;
     this._ball.reset();
-	this._leftPlayer._score = 0;
-	this._rightPlayer._score = 0;
+    this._leftPlayer._score = 0;
+    this._rightPlayer._score = 0;
   }
 
   getData() {
@@ -326,9 +326,9 @@ export class Pong {
   }
 
   clientMoved(keyName: string, player: Player, pressed: boolean) {
-    if (keyName === 'ArrowUp' || keyName === 'KeyW' ) {
+    if (keyName === 'ArrowUp' || keyName === 'KeyW') {
       player.paddle.dyUp = pressed ? -10 : 0;
-    } else if (keyName === 'ArrowDown' || keyName === 'KeyS' ) {
+    } else if (keyName === 'ArrowDown' || keyName === 'KeyS') {
       player.paddle.dyDown = pressed ? 10 : 0;
     }
   }

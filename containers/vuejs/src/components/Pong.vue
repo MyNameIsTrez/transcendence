@@ -67,7 +67,7 @@ export default defineComponent({
       this.drawObject('white', data.rightPlayer.paddle)
       // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
     },
-    start() {}
+    start() { }
   }
 })
 </script>

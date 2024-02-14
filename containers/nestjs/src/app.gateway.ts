@@ -27,19 +27,19 @@ export class AppGateway
   player2: Socket | null = null;
 
   handleConnection(client: Socket) {
-		console.log('Handle connection called');
-	  if (this.player1 == null) {
-		this.player1 = client;
-		console.log('Player 1 joined');
-		if (this.player2 != null) {
-			this.player2.emit("opponentDisconnected", 0);
-		}
+    console.log('Handle connection called');
+    if (this.player1 == null) {
+      this.player1 = client;
+      console.log('Player 1 joined');
+      if (this.player2 != null) {
+        this.player2.emit('opponentDisconnected', 0);
+      }
     } else if (this.player2 == null) {
       this.player2 = client;
       console.log('Player 2 joined');
-	  if (this.player1 != null) {
-		  this.player1.emit("opponentDisconnected", 0);
-	  }
+      if (this.player1 != null) {
+        this.player1.emit('opponentDisconnected', 0);
+      }
     } else {
       console.log('A third player tried to join!');
     }
@@ -58,39 +58,39 @@ export class AppGateway
   }
 
   handleDisconnect(client: Socket) {
-	if (this.player1 != null && client.id == this.player1.id) {
-		this.player1 = null;
-		console.log(`Player 1 disconnected`);
-		if (this.player2 != null) {
-			this.player2.emit("opponentDisconnected", 1);
-		}
-	} else if (this.player2 != null && client.id == this.player2.id) {
-		this.player2 = null;
-		console.log(`Player 2 disconnected`);
-		if (this.player1 != null) {
-			this.player1.emit("opponentDisconnected", 1);
-		}
-	} else {
-		console.log('Another client disconnected');
-	}
-	if (this.player1 == null && this.player2 == null) {
-		this.pong.resetGame();
-		console.log(`Game has been reset`);
-	}
+    if (this.player1 != null && client.id == this.player1.id) {
+      this.player1 = null;
+      console.log(`Player 1 disconnected`);
+      if (this.player2 != null) {
+        this.player2.emit('opponentDisconnected', 1);
+      }
+    } else if (this.player2 != null && client.id == this.player2.id) {
+      this.player2 = null;
+      console.log(`Player 2 disconnected`);
+      if (this.player1 != null) {
+        this.player1.emit('opponentDisconnected', 1);
+      }
+    } else {
+      console.log('Another client disconnected');
+    }
+    if (this.player1 == null && this.player2 == null) {
+      this.pong.resetGame();
+      console.log(`Game has been reset`);
+    }
   }
 
   afterInit() {
     const interval_ms = 1000 / 60;
     this.pong.resetGame();
     setInterval(() => {
-		// TODO: I don't think this is a good way to wait for both players to connect, see if there is a better way later. -Victor
-	  if (this.player1 != null && this.player2 != null) {
-		this.pong.update();
-		const data = this.pong.getData();
-		this.player1?.emit('pong', data);
-		this.player2?.emit('pong', data);
-	  }
-	}, interval_ms);
+      // TODO: I don't think this is a good way to wait for both players to connect, see if there is a better way later. -Victor
+      if (this.player1 != null && this.player2 != null) {
+        this.pong.update();
+        const data = this.pong.getData();
+        this.player1?.emit('pong', data);
+        this.player2?.emit('pong', data);
+      }
+    }, interval_ms);
   }
 
   @SubscribeMessage('identity')
