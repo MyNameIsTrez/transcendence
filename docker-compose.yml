@@ -7,6 +7,8 @@ services:
     restart: on-failure
     ports:
       - "4242:4242"
+    volumes:
+      - ./containers/nestjs:/nestjs
 
   vuejs:
     build: containers/vuejs
@@ -16,6 +18,8 @@ services:
     restart: on-failure
     ports:
       - "2424:2424"
+    volumes:
+      - ./containers/vuejs:/vuejs
 
   # db:
   #   image: postgres:alpine

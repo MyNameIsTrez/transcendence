@@ -5,6 +5,4 @@ FROM node
 COPY package.json package-lock.json /nestjs/
 RUN npm ci --prefix=/nestjs
 
-COPY . /nestjs/
-
 CMD npm run start:dev --prefix=nestjs
