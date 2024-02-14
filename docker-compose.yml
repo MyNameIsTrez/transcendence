@@ -3,12 +3,14 @@ services:
     build: containers/nestjs
     image: nestjs
     container_name: nestjs
+    init: true # Prevents waiting on 10s timeout on shutdown
     restart: on-failure
 
   vuejs:
     build: containers/vuejs
     image: vuejs
     container_name: vuejs
+    init: true # Prevents waiting on 10s timeout on shutdown
     restart: on-failure
     ports:
       - "2424:2424"
