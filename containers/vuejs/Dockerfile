@@ -5,4 +5,4 @@ FROM node
 COPY package.json package-lock.json /vuejs/
 RUN npm ci --prefix=/vuejs
 
-CMD npm run dev --prefix=vuejs
+CMD npm run dev --prefix=vuejs/code
