@@ -44,7 +44,7 @@ Start off by doing `cd containers`
 
 We're using npx to directly execute these commands without installing them, since installing them globally with `npm install -g` gives permission denied errors, due to protected directories on our school's computers.
 
-`npx @nestjs/cli@latest new .`
+`npx @nestjs/cli new .`
 
 `npx @vue/cli create client`
 
