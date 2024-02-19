@@ -121,13 +121,13 @@ class Velocity {
 }
 
 class Paddle extends Rect {
-  dyUp: number;
-  dyDown: number;
+  dyNorth: number;
+  dySouth: number;
 
   constructor(w: number, h: number, x: number, y: number) {
     super(w, h, x, y);
-    this.dyUp = 0;
-    this.dyDown = 0;
+    this.dyNorth = 0;
+    this.dySouth = 0;
   }
 
   collideWithBorder() {
@@ -172,9 +172,9 @@ class Player {
   update() {
     this.paddle.updatePos(
       this.paddle._pos.y +
-        this.paddle.dyUp +
-        this.paddle.dyDown +
-        this.paddle._size.h / 2,
+      this.paddle.dyNorth +
+      this.paddle.dySouth +
+      this.paddle._size.h / 2,
     );
   }
 
@@ -317,19 +317,11 @@ export class Pong {
     };
   }
 
-  clientPressedKey(keyName: string, player: Player) {
-    this.clientMoved(keyName, player, true);
-  }
-
-  clientReleasedKey(keyName: string, player: Player) {
-    this.clientMoved(keyName, player, false);
-  }
-
-  clientMoved(keyName: string, player: Player, pressed: boolean) {
-    if (keyName === 'ArrowUp' || keyName === 'KeyW') {
-      player.paddle.dyUp = pressed ? -10 : 0;
-    } else if (keyName === 'ArrowDown' || keyName === 'KeyS') {
-      player.paddle.dyDown = pressed ? 10 : 0;
+  movePaddle(paddle: Paddle, keydown: boolean, north: boolean) {
+    if (north) {
+      paddle.dyNorth = keydown ? -10 : 0;
+    } else {
+      paddle.dySouth = keydown ? 10 : 0;
     }
   }
 }
