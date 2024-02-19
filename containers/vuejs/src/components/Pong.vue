@@ -21,7 +21,7 @@ onMounted(() => {
   })
   initCanvas()
 })
-const initCanvas = () => {
+function initCanvas() {
   const canvas = canvasRef.value
   canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
   canvas.addEventListener('keydown', (event) => {
@@ -38,33 +38,33 @@ const initCanvas = () => {
     drawCanvas()
   }
 }
-const drawObject = (
+function drawObject(
   color: string,
   obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
-) => {
+) {
   if (_context.value) {
     _context.value.fillStyle = color
     _context.value.fillRect(obj.pos.x, obj.pos.y, obj.size.w, obj.size.h)
   }
 }
-const drawCanvas = () => {
+function drawCanvas() {
   if (_context.value) {
     _context.value.fillStyle = 'black'
     _context.value.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
   }
 }
-const render = (data: {
+function render(data: {
   ball: any
   leftPlayer: { paddle: any; score: number }
   rightPlayer: { paddle: any; score: number }
-}) => {
+}) {
   drawCanvas()
   drawObject('white', data.ball)
   drawObject('white', data.leftPlayer.paddle)
   drawObject('white', data.rightPlayer.paddle)
   // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
 }
-// const start = () =>{};
+// function start() {};
 </script>
 
 <style></style>
