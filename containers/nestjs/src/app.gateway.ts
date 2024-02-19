@@ -96,27 +96,25 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     return data
   }
 
-  @SubscribeMessage('pressed')
-  async pressed(@ConnectedSocket() client: Socket, @MessageBody() keyName: string) {
-    const isPlayer1 = client.id === this.player1?.id
-    const isPlayer2 = client.id === this.player2?.id
-
-    if (isPlayer1) {
-      this.pong.clientPressedKey(keyName, this.pong._leftPlayer)
-    } else if (isPlayer2) {
-      this.pong.clientPressedKey(keyName, this.pong._rightPlayer)
+  @SubscribeMessage('movePaddle')
+  async movePaddle(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('keydown') keydown: boolean,
+    @MessageBody('north') north: boolean
+  ) {
+    const player = this.getPlayer(client.id)
+    if (player) {
+      this.pong.movePaddle(player.paddle, keydown, north)
     }
   }
 
-  @SubscribeMessage('released')
-  async released(@ConnectedSocket() client: Socket, @MessageBody() keyName: string) {
-    const isPlayer1 = client.id === this.player1?.id
-    const isPlayer2 = client.id === this.player2?.id
-
-    if (isPlayer1) {
-      this.pong.clientReleasedKey(keyName, this.pong._leftPlayer)
-    } else if (isPlayer2) {
-      this.pong.clientReleasedKey(keyName, this.pong._rightPlayer)
+  getPlayer(id: string) {
+    var player
+    if (id === this.player1?.id) {
+      player = this.pong._leftPlayer
+    } else if (id === this.player2?.id) {
+      player = this.pong._rightPlayer
     }
+    return player
   }
 }

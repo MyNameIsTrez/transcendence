@@ -17,18 +17,19 @@ let _context = ref(null)
 onMounted(() => {
   socket.on('pong', (data) => {
     render(data)
-    console.log('received pong:', data)
+    // console.log('received pong:', data)
   })
   initCanvas()
 })
+
 function initCanvas() {
   const canvas = canvasRef.value
   canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
   canvas.addEventListener('keydown', (event) => {
-    socket.emit('pressed', event.code)
+    emitMovePaddle(event.code, true)
   })
   canvas.addEventListener('keyup', (event) => {
-    socket.emit('released', event.code)
+    emitMovePaddle(event.code, false)
   })
   canvas.width = WINDOW_WIDTH
   canvas.height = WINDOW_HEIGHT
@@ -38,6 +39,20 @@ function initCanvas() {
     drawCanvas()
   }
 }
+
+function emitMovePaddle(code: string, keydown: boolean) {
+  var north
+  if (code === 'KeyW' || code === 'ArrowUp') {
+    north = true
+  } else if (code === 'KeyS' || code === 'ArrowDown') {
+    north = false
+  }
+
+  if (north !== undefined) {
+    socket.emit('movePaddle', { keydown: keydown, north: north })
+  }
+}
+
 function drawObject(
   color: string,
   obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
@@ -47,12 +62,14 @@ function drawObject(
     _context.value.fillRect(obj.pos.x, obj.pos.y, obj.size.w, obj.size.h)
   }
 }
+
 function drawCanvas() {
   if (_context.value) {
     _context.value.fillStyle = 'black'
     _context.value.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
   }
 }
+
 function render(data: {
   ball: any
   leftPlayer: { paddle: any; score: number }
@@ -64,7 +81,4 @@ function render(data: {
   drawObject('white', data.rightPlayer.paddle)
   // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
 }
-// function start() {};
 </script>
-
-<style></style>
