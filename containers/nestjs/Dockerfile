@@ -1,8 +1,8 @@
 FROM node
 
 # Install dependencies to node_modules,
-# referring to package.json and package-lock.json
+# referring to package-lock.json
 COPY package.json package-lock.json /nestjs/
-RUN npm ci --prefix=/nestjs
+RUN npm ci --prefix=/nestjs/
 
-CMD npm run start:dev --prefix=nestjs/code
+CMD cp -r /nestjs/node_modules/ /nestjs/code/node_modules/ && npm run start:dev --prefix=/nestjs/code/

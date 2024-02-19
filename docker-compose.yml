@@ -6,9 +6,9 @@ services:
     init: true # Prevents waiting on 10s timeout on shutdown
     restart: on-failure
     ports:
-      - "4242:4242"
+      - '4242:4242'
     volumes:
-      - ./containers/nestjs:/nestjs/code
+      - ./containers/nestjs/:/nestjs/code/
 
   vuejs:
     build: containers/vuejs
@@ -17,6 +17,6 @@ services:
     init: true # Prevents waiting on 10s timeout on shutdown
     restart: on-failure
     ports:
-      - "2424:2424"
+      - '2424:2424'
     volumes:
-      - ./containers/vuejs:/vuejs/code
+      - ./containers/vuejs/:/vuejs/code/

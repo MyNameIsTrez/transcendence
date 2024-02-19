@@ -6,41 +6,40 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
-} from '@nestjs/websockets';
-import { Socket } from 'socket.io';
-import { Server } from 'http';
-import { Pong } from './pong';
+  ConnectedSocket
+} from '@nestjs/websockets'
+import { Socket } from 'socket.io'
+import { Server } from 'http'
+import { Pong } from './pong'
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' } })
-export class AppGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server!: Server;
+  server!: Server
 
-  pong = new Pong();
+  pong = new Pong()
 
-  player1: Socket | null = null;
-  player2: Socket | null = null;
+  player1: Socket | null = null
+  player2: Socket | null = null
 
   handleConnection(client: Socket) {
-    console.log('Handle connection called');
+    console.log('Handle connection called')
     if (this.player1 == null) {
-      this.player1 = client;
-      console.log('Player 1 joined');
+      this.player1 = client
+      console.log('Player 1 joined')
       if (this.player2 != null) {
-        this.player2.emit('opponentDisconnected', 0);
+        this.player2.emit('opponentDisconnected', 0)
       }
     } else if (this.player2 == null) {
-      this.player2 = client;
-      console.log('Player 2 joined');
+      this.player2 = client
+      console.log('Player 2 joined')
       if (this.player1 != null) {
-        this.player1.emit('opponentDisconnected', 0);
+        this.player1.emit('opponentDisconnected', 0)
       }
     } else {
-      console.log('A third player tried to join!');
+      console.log('A third player tried to join!')
     }
 
     // this.broadcast('events', 'A player connected');
@@ -58,43 +57,43 @@ export class AppGateway
 
   handleDisconnect(client: Socket) {
     if (this.player1 != null && client.id == this.player1.id) {
-      this.player1 = null;
-      console.log(`Player 1 disconnected`);
+      this.player1 = null
+      console.log(`Player 1 disconnected`)
       if (this.player2 != null) {
-        this.player2.emit('opponentDisconnected', 1);
+        this.player2.emit('opponentDisconnected', 1)
       }
     } else if (this.player2 != null && client.id == this.player2.id) {
-      this.player2 = null;
-      console.log(`Player 2 disconnected`);
+      this.player2 = null
+      console.log(`Player 2 disconnected`)
       if (this.player1 != null) {
-        this.player1.emit('opponentDisconnected', 1);
+        this.player1.emit('opponentDisconnected', 1)
       }
     } else {
-      console.log('Another client disconnected');
+      console.log('Another client disconnected')
     }
     if (this.player1 == null && this.player2 == null) {
-      this.pong.resetGame();
-      console.log(`Game has been reset`);
+      this.pong.resetGame()
+      console.log(`Game has been reset`)
     }
   }
 
   afterInit() {
-    const interval_ms = 1000 / 60;
-    this.pong.resetGame();
+    const interval_ms = 1000 / 60
+    this.pong.resetGame()
     setInterval(() => {
       // TODO: I don't think this is a good way to wait for both players to connect, see if there is a better way later. -Victor
       if (this.player1 != null && this.player2 != null) {
-        this.pong.update();
-        const data = this.pong.getData();
-        this.player1?.emit('pong', data);
-        this.player2?.emit('pong', data);
+        this.pong.update()
+        const data = this.pong.getData()
+        this.player1?.emit('pong', data)
+        this.player2?.emit('pong', data)
       }
-    }, interval_ms);
+    }, interval_ms)
   }
 
   @SubscribeMessage('identity')
   async identity(@MessageBody() data: number): Promise<number> {
-    return data;
+    return data
   }
 
   @SubscribeMessage('movePaddle')
@@ -103,19 +102,19 @@ export class AppGateway
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean
   ) {
-    const player = this.getPlayer(client.id);
+    const player = this.getPlayer(client.id)
     if (player) {
-      this.pong.movePaddle(player.paddle, keydown, north);
+      this.pong.movePaddle(player.paddle, keydown, north)
     }
   }
 
   getPlayer(id: string) {
-    var player;
+    var player
     if (id === this.player1?.id) {
-      player = this.pong._leftPlayer;
+      player = this.pong._leftPlayer
     } else if (id === this.player2?.id) {
-      player = this.pong._rightPlayer;
+      player = this.pong._rightPlayer
     }
-    return player;
+    return player
   }
 }

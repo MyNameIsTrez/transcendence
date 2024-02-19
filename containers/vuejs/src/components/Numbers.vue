@@ -1,8 +1,13 @@
 <template>
   <div>
     <!-- You can use $refs to access the canvas elements -->
-    <canvas ref="numberCanvas" v-for="(number, index) in numbers" :key="index" :height="char_pixel * 5"
-      :width="char_pixel * 3"></canvas>
+    <canvas
+      ref="numberCanvas"
+      v-for="(number, index) in numbers"
+      :key="index"
+      :height="char_pixel * 5"
+      :width="char_pixel * 3"
+    ></canvas>
   </div>
 </template>
 
