@@ -4,8 +4,8 @@ import Sidebar from './components/Sidebar.vue'
 </script>
 
 <template>
-	<Sidebar />
-	<Pong />
+  <Pong />
+  <Sidebar />
 </template>
 
 <style scoped>
