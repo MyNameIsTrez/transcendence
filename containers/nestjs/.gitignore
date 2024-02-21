@@ -1,6 +1,4 @@
 # compiled output
-# program/dist
-# program/node_modules
 program
 dist
 node_modules
