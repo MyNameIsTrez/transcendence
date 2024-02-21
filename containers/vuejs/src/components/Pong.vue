@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import io from 'socket.io-client'
 
 const WINDOW_WIDTH = 1920
@@ -20,6 +20,10 @@ onMounted(() => {
     // console.log('received pong:', data)
   })
   initCanvas()
+})
+
+onUnmounted(() => {
+  socket.disconnect();
 })
 
 function initCanvas() {

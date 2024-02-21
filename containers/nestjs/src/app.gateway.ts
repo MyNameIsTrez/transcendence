@@ -39,7 +39,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
         this.player1.emit('opponentDisconnected', 0)
       }
     } else {
-      console.log('A third player tried to join!')
+      console.log('An extra player tried to join!')
     }
 
     // this.broadcast('events', 'A player connected');
@@ -56,6 +56,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   handleDisconnect(client: Socket) {
+    console.log('Something tried to disconnect ')
     if (this.player1 != null && client.id == this.player1.id) {
       this.player1 = null
       console.log(`Player 1 disconnected`)
