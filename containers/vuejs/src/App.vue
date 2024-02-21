@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import Pong from './components/Pong.vue'
-import Sidebar from './components/Sidebar.vue'
 </script>
 
 <template>
   <Pong />
-  <Sidebar />
 </template>
 
 <style scoped>
