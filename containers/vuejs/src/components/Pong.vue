@@ -45,52 +45,50 @@ function initCanvas() {
   })
   canvas.width = WINDOW_WIDTH
   canvas.height = WINDOW_HEIGHT
-  const context = canvas.getContext('2d')
-  if (context) {
-    _context.value = context
-    drawCanvas()
-  }
-}
-
-function emitMovePaddle(code: string, keydown: boolean) {
-  var north
-  if (code === 'KeyW' || code === 'ArrowUp') {
-    north = true
-  } else if (code === 'KeyS' || code === 'ArrowDown') {
-    north = false
-  }
-
-  if (north !== undefined) {
-    socket.emit('movePaddle', { keydown: keydown, north: north })
-  }
+  drawCanvas()
 }
 
 function drawObject(
   color: string,
   obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
 ) {
-  if (_context.value) {
-    _context.value.fillStyle = color
-    _context.value.fillRect(obj.pos.x, obj.pos.y, obj.size.w, obj.size.h)
+  const canvas = canvasRef.value
+  const context = canvas.getContext('2d')
+  if (context) {
+    context.fillStyle = color
+    context.fillRect(obj.pos.x, obj.pos.y, obj.size.w, obj.size.h)
   }
 }
 
 function drawCanvas() {
-  if (_context.value) {
-    _context.value.fillStyle = 'black'
-    _context.value.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
+  const canvas = canvasRef.value
+  const context = canvas.getContext('2d')
+  if (context) {
+    context.fillStyle = 'black'
+    context.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
   }
 }
-
-function render(data: {
-  ball: any
-  leftPlayer: { paddle: any; score: number }
-  rightPlayer: { paddle: any; score: number }
-}) {
-  drawCanvas()
-  drawObject('white', data.ball)
-  drawObject('white', data.leftPlayer.paddle)
-  drawObject('white', data.rightPlayer.paddle)
-  // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
-}
 </script>
+<style>
+.pong-container {
+}
+.start-button-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.start-button {
+  background-color: white;
+  color: black;
+  padding: 40px 80px;
+  border: none;
+  font-size: 32px;
+  font-family: 'Press Start 2P', cursive;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.start-button:hover {
+  background-color: #333; /* Darker shade on hover */
+}
+</style>
