@@ -1,27 +1,39 @@
 <template>
-  <div>
+  <div class="pong-container">
     <canvas ref="canvasRef"></canvas>
+    <div class="start-button-container">
+      <button class="start-button" @click="connect">PLAY</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import io from 'socket.io-client'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { setupGameSocket } from './GameSocket.ts'
 
 const WINDOW_WIDTH = 1920
 const WINDOW_HEIGHT = 1080
-const socket = io('ws://localhost:4242')
 const canvasRef = ref(null)
-let _context = ref(null)
+
+const render = (data: {
+  ball: any
+  leftPlayer: { paddle: any; score: number }
+  rightPlayer: { paddle: any; score: number }
+}) => {
+  drawCanvas()
+  drawObject('white', data.ball)
+  drawObject('white', data.leftPlayer.paddle)
+  drawObject('white', data.rightPlayer.paddle)
+  // this.$refs.scoreBoard.updateScore(data.leftPlayer.score, data.rightPlayer.score);
+}
+const { connect, disconnect, emitMovePaddle } = setupGameSocket(render)
 
 onMounted(() => {
-  socket.on('pong', (data) => {
-    render(data)
-    // console.log('received pong:', data)
-  })
   initCanvas()
 })
-
+onUnmounted(() => {
+  disconnect()
+})
 function initCanvas() {
   const canvas = canvasRef.value
   canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
