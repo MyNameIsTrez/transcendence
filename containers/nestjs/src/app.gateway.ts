@@ -19,75 +19,66 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   @WebSocketServer()
   server!: Server
 
-  pong = new Pong()
-
-  player1: Socket | null = null
-  player2: Socket | null = null
+  games: Array<Pong> = []
+  id_to_game = new Map<string, Pong>()
 
   handleConnection(client: Socket) {
     console.log('Handle connection called')
-    if (this.player1 == null) {
-      this.player1 = client
-      console.log('Player 1 joined')
-      if (this.player2 != null) {
-        this.player2.emit('opponentDisconnected', 0)
-      }
-    } else if (this.player2 == null) {
-      this.player2 = client
-      console.log('Player 2 joined')
-      if (this.player1 != null) {
-        this.player1.emit('opponentDisconnected', 0)
-      }
+    const games_count = this.games.length
+
+    // If a player could join an existing lobby -> join it
+    if (games_count !== 0 && this.games[games_count - 1]._rightPlayer._socket === null) {
+      this.games[games_count - 1]._rightPlayer._socket = client
+      this.id_to_game.set(client.id, this.games[games_count - 1])
+      console.log(`Player 2 has joined lobby ${games_count - 1}`)
     } else {
-      console.log('An extra player tried to join!')
+      // If a player could not join an existing lobby -> create a new lobby
+      this.games.push(new Pong())
+      this.games[games_count]._leftPlayer._socket = client
+      this.id_to_game.set(client.id, this.games[games_count])
+      console.log(`Player 1 has created lobby ${games_count}`)
     }
-
-    // this.broadcast('events', 'A player connected');
-    // console.log('Client connected');
-
-    // TODO: This can be used, but will need a condition to exit,
-    // when the client disconnects
-    // let i = 0;
-    // const interval_ms = 1000;
-    // setInterval(() => {
-    //   client.emit('increment', i);
-    //   i++;
-    // }, interval_ms);
   }
 
   handleDisconnect(client: Socket) {
     console.log('Something tried to disconnect')
-    if (this.player1 != null && client.id == this.player1.id) {
-      this.player1 = null
-      console.log(`Player 1 disconnected`)
-      if (this.player2 != null) {
-        this.player2.emit('opponentDisconnected', 1)
+    const game = this.id_to_game.get(client.id)
+    if (game === undefined) {
+      console.log(`id_to_game.get has gone terribly wrong`)
+    } else if (game._leftPlayer._socket !== null && game._leftPlayer._socket.id === client.id) {
+      game._rightPlayer._socket?.emit(`opponentDisconnect`, 1)
+      game._rightPlayer._socket?.disconnect()
+      for (let i = 0; i < this.games.length; i++) {
+        if (this.games[i] === game) {
+          this.games.splice(i, 1) // Do I need to do anything else to propely delete the game? I understand that TS hsa a garbage collector but I just want to make sure - Victor
+          console.log(`Player 1 has left lobby ${i}, lobby has been disbanded`)
+          break
+        }
       }
-    } else if (this.player2 != null && client.id == this.player2.id) {
-      this.player2 = null
-      console.log(`Player 2 disconnected`)
-      if (this.player1 != null) {
-        this.player1.emit('opponentDisconnected', 1)
+    } else if (game._rightPlayer._socket !== null && game._rightPlayer._socket.id === client.id) {
+      // This can be an `else` but this leaves flexibility for spectators
+      game._leftPlayer._socket?.emit(`opponentDisconnect`, 1)
+      game._leftPlayer._socket?.disconnect()
+      for (let i = 0; i < this.games.length; i++) {
+        if (this.games[i] === game) {
+          this.games.splice(i, 1) // Do I need to do anything else to propely delete the game? I understand that TS hsa a garbage collector but I just want to make sure - Victor
+          console.log(`Player 2 has left lobby ${i}, lobby has been disbanded`)
+          break
+        }
       }
-    } else {
-      console.log('Another client disconnected')
-    }
-    if (this.player1 == null && this.player2 == null) {
-      this.pong.resetGame()
-      console.log(`Game has been reset`)
     }
   }
 
   afterInit() {
+    // Main loop of games
     const interval_ms = 1000 / 60
-    this.pong.resetGame()
     setInterval(() => {
-      // TODO: I don't think this is a good way to wait for both players to connect, see if there is a better way later. -Victor
-      if (this.player1 != null && this.player2 != null) {
-        this.pong.update()
-        const data = this.pong.getData()
-        this.player1?.emit('pong', data)
-        this.player2?.emit('pong', data)
+      for (let i = 0; i < this.games.length && this.games[i]._rightPlayer._socket != null; i++) {
+        const game = this.games[i]
+        game.update()
+        const data = game.getData()
+        game._leftPlayer._socket?.emit(`pong`, data)
+        game._rightPlayer._socket?.emit(`pong`, data)
       }
     }, interval_ms)
   }
@@ -103,19 +94,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean
   ) {
-    const player = this.getPlayer(client.id)
-    if (player) {
-      this.pong.movePaddle(player.paddle, keydown, north)
+    const game = this.id_to_game.get(client.id)
+    if (game === undefined) {
+      console.log(`id_to_game.get has gone terribly wrong`)
+    } else if (game._leftPlayer._socket !== null && game._leftPlayer._socket.id === client.id) {
+      game.movePaddle(game._leftPlayer.paddle, keydown, north)
+    } else if (game._rightPlayer._socket !== null && game._rightPlayer._socket.id === client.id) {
+      // This can be an `else` but this leaves flexibility for spectators
+      game.movePaddle(game._rightPlayer.paddle, keydown, north)
     }
-  }
-
-  getPlayer(id: string) {
-    let player
-    if (id === this.player1?.id) {
-      player = this.pong._leftPlayer
-    } else if (id === this.player2?.id) {
-      player = this.pong._rightPlayer
-    }
-    return player
   }
 }

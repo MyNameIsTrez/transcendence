@@ -1,3 +1,5 @@
+import { Socket } from 'socket.io'
+
 const WINDOW_WIDTH = 1920
 const WINDOW_HEIGHT = 1080
 
@@ -156,9 +158,11 @@ class Paddle extends Rect {
 }
 
 class Player {
+  _socket: Socket | null
   _score: number
   paddle: Paddle
   constructor(x: number) {
+    this._socket = null
     this._score = 0
 
     this.paddle = new Paddle(
@@ -181,14 +185,15 @@ class Player {
 }
 
 class Ball extends Rect {
+  _speed: number
   _vel: Velocity
   _hidden: boolean
-  _speed: number
   constructor(size = 30, x = WINDOW_WIDTH / 2, y = WINDOW_HEIGHT / 2) {
     super(size, size, x - size / 2, y - size / 2)
-    this._vel = new Velocity()
-    this._hidden = true
     this._speed = 10
+    this._vel = new Velocity()
+    this._vel.setRandomVelocity(this._speed)
+    this._hidden = true
   }
   updatePos() {
     this._pos.x += this._vel.dx
@@ -226,7 +231,6 @@ class Ball extends Rect {
       this.bottom >= paddle.top &&
       this.top <= paddle.bottom
     ) {
-      // TODO: wtf??
       if (this.left <= paddle.left || this.left <= paddle.right) {
         this._pos.x = this.left <= paddle.left ? paddle.left - this._size.w : paddle.right
         const paddleCenter = paddle.top + paddle._size.h / 2
