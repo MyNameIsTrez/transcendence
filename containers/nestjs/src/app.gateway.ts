@@ -56,7 +56,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   handleDisconnect(client: Socket) {
-    console.log('Something tried to disconnect ')
+    console.log('Something tried to disconnect')
     if (this.player1 != null && client.id == this.player1.id) {
       this.player1 = null
       console.log(`Player 1 disconnected`)
@@ -110,7 +110,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   getPlayer(id: string) {
-    var player
+    let player
     if (id === this.player1?.id) {
       player = this.pong._leftPlayer
     } else if (id === this.player2?.id) {
