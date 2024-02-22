@@ -9,6 +9,8 @@ services:
       - '4242:4242'
     volumes:
       - ./containers/nestjs/:/nestjs/code/
+    depends_on: # Prevents npm ci timeout
+      - vuejs
 
   vuejs:
     build: containers/vuejs
