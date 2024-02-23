@@ -8,5 +8,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api')
 
   await app.listen(4242)
+
+  console.log(`Application is running on ${await app.getUrl()}`)
 }
 bootstrap()
