@@ -29,7 +29,7 @@ onMounted(() => {
 onUnmounted(() => {
   disconnect()
 })
-function initCanvas() {
+const initCanvas = () => {
   const canvas = canvasRef.value
   window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
   canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
@@ -64,10 +64,10 @@ const resizeCanvas = (canvas) => {
   canvas.height = canvasHeight
 }
 
-function drawObject(
+const drawObject = (
   color: string,
   obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
-) {
+) => {
   const canvas = canvasRef.value
   const context = canvas.getContext('2d')
   if (context) {
@@ -76,7 +76,7 @@ function drawObject(
   }
 }
 
-function drawCanvas() {
+const drawCanvas = () => {
   const canvas = canvasRef.value
   resizeCanvas(canvas)
   const context = canvas.getContext('2d')
