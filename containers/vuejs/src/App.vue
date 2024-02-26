@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Pong from './components/Pong.vue'
+import PongCanvas from './components/PongCanvas.vue'
 </script>
 
 <template>
-  <Pong />
+  <PongCanvas />
 </template>
 
 <style scoped>
