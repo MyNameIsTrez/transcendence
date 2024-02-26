@@ -13,29 +13,10 @@ export const setupGameSocket = (render: (data: any) => void) => {
       })
       socket.on('pong', (data: any) => {
         render(data)
-        console.log(data)
       })
       socket.on('disconnect', () => {
         disconnect()
         console.log('Disconnected')
-      })
-      document.addEventListener('keydown', (event) => {
-        const keyName = event.key
-        console.log(keyName)
-        if (socket) {
-          socket.emit('pressed', keyName)
-        } else {
-          console.log('No socket')
-        }
-      })
-      document.addEventListener('keyup', (event) => {
-        const keyName = event.key
-        console.log(keyName)
-        if (socket) {
-          socket.emit('released', keyName)
-        } else {
-          console.log('No socket')
-        }
       })
     }
   }
@@ -51,7 +32,7 @@ export const setupGameSocket = (render: (data: any) => void) => {
       north = false
     }
     if (north !== undefined) {
-      socket.emit('movePaddle', { code, keydown })
+      socket.emit('movePaddle', { keydown: keydown, north: north })
     } else {
       console.log('No socket')
     }
