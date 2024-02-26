@@ -1,15 +1,34 @@
 <template>
   <canvas ref="canvasRef"></canvas>
   <div class="play-button-container">
-    <button class="play-button" @click="connect">PLAY</button>
+    <button class="play-button" @click="joinMatch">PLAY</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { setupGameSocket } from './GameSocket.ts'
-const canvasRef = ref(null)
+import { setupSocketManager } from './SocketManager'
 
+const server_window_height = 1080
+const server_window_width = 1920
+
+const aspectRatio = server_window_width / server_window_height
+let scale: number
+const canvasRef = ref(null)
+let canvas: HTMLCanvasElement | undefined
+let context: CanvasRenderingContext2D | null
+
+const drawObject = (
+  color: string,
+  obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
+) => {
+  if (context) {
+    context.fillStyle = color
+    context.fillRect(obj.pos.x * scale, obj.pos.y * scale, obj.size.w * scale, obj.size.h * scale)
+  }
+}
+
+// TODO: Replace "any" with Data struct typedef?
 const render = (data: {
   ball: any
   leftPlayer: { paddle: any; score: number }
@@ -21,68 +40,52 @@ const render = (data: {
   drawObject('white', data.rightPlayer.paddle)
 }
 
-const { connect, disconnect, emitMovePaddle } = setupGameSocket(render)
+const { joinMatch, disconnect, emitMovePaddle } = setupSocketManager(render)
 
 onMounted(() => {
-  initCanvas()
+  window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
+
+  if (canvasRef.value) {
+    canvas = canvasRef.value as HTMLCanvasElement
+    context = canvas.getContext('2d')
+
+    canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
+    canvas.addEventListener('keydown', (event) => {
+      emitMovePaddle(event.code, true)
+    })
+    canvas.addEventListener('keyup', (event) => {
+      emitMovePaddle(event.code, false)
+    })
+  }
+
+  drawCanvas()
 })
+
 onUnmounted(() => {
   disconnect()
 })
-const initCanvas = () => {
-  const canvas = canvasRef.value
-  window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
-  canvas.tabIndex = 1 // make element focusable, so that addEventListener can be used
-  canvas.addEventListener('keydown', (event) => {
-    emitMovePaddle(event.code, true)
-  })
-  canvas.addEventListener('keyup', (event) => {
-    emitMovePaddle(event.code, false)
-  })
-  drawCanvas()
+
+const drawCanvas = () => {
+  resizeCanvas()
+  if (context && canvas) {
+    context.fillStyle = 'black'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+  }
 }
-const resizeCanvas = (canvas) => {
-  const server_window_height = 1080
-  const server_window_width = 1920
 
-  const aspectRatio = server_window_width / server_window_height
-
+const resizeCanvas = () => {
   const screenWidth = window.innerWidth
   const screenHeight = window.innerHeight
 
-  let canvasWidth, canvasHeight
-
-  if (screenWidth / screenHeight > aspectRatio) {
-    canvasWidth = screenHeight * aspectRatio
-    canvasHeight = screenHeight
-  } else {
-    canvasWidth = screenWidth
-    canvasHeight = screenWidth / aspectRatio
-  }
-
-  canvas.width = canvasWidth
-  canvas.height = canvasHeight
-}
-
-const drawObject = (
-  color: string,
-  obj: { pos: { x: number; y: number }; size: { w: number; h: number } }
-) => {
-  const canvas = canvasRef.value
-  const context = canvas.getContext('2d')
-  if (context) {
-    context.fillStyle = color
-    context.fillRect(obj.pos.x, obj.pos.y, obj.size.w, obj.size.h)
-  }
-}
-
-const drawCanvas = () => {
-  const canvas = canvasRef.value
-  resizeCanvas(canvas)
-  const context = canvas.getContext('2d')
-  if (context) {
-    context.fillStyle = 'black'
-    context.fillRect(0, 0, canvas.width, canvas.height)
+  if (canvas) {
+    if (screenWidth / screenHeight > aspectRatio) {
+      canvas.width = screenHeight * aspectRatio
+      canvas.height = screenHeight
+    } else {
+      canvas.width = screenWidth
+      canvas.height = screenWidth / aspectRatio
+    }
+    scale = canvas.width / server_window_width
   }
 }
 </script>
