@@ -1,29 +1,42 @@
 <template>
-	<aside :class="`${is_expanded ? 'is-expanded' : ''}`">
-		<div class="logo">
+	<!-- <aside :class="`${is_expanded ? 'is-expanded' : ''}`"> -->
+	<aside class="test">
+		<!-- <div class="logo">
 			<img :src="logoURL" alt="Vue" />
-		</div>
+		</div> -->
 
-		<div class="menu-toggle-wrap">
+		<!-- <div class="menu-toggle-wrap">
 			<button class="menu-toggle" @click="ToggleMenu">
 				<span class="material-icons">keyboard_double_arrow_right</span>
 			</button>
-		</div>
+		</div> -->
 
 		<h3>Menu</h3>
 		<div class="menu">
-			<router-link to="/" class="button">
+			<!-- <button class="button" onclick="console.log('Profile')">
+				<span class="material-icons">person</span>
+				<span class="text">Profile</span>
+			</button> -->
+			<button class="button" onclick="console.log('Friends')">
+				<span class="material-icons">group</span>
+				<span class="text">Friends</span>
+			</button>
+			<button class="button" onclick="console.log('Leaderboard')">
+				<span class="material-icons">list</span>
+				<span class="text">Leaderboard</span>
+			</button>
+			<router-link to="/profile" class="button">
 				<span class="material-icons">person</span>
 				<span class="text">Profile</span>
 			</router-link>
-			<router-link to="/about" class="button">
+			<!-- <router-link to="/about" class="button">
 				<span class="material-icons">group</span>
 				<span class="text">Friends</span>
 			</router-link>
 			<router-link to="/team" class="button">
 				<span class="material-icons">list</span>
 				<span class="text">Leaderboard</span>
-			</router-link>
+			</router-link> -->
 		</div>
 
 		<div class="flex"></div>
@@ -37,16 +50,16 @@
 	</aside>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
 import logoURL from '../assets/icons/user-icon.png'
 
-const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
+// const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
 
-const ToggleMenu = () => {
-	is_expanded.value = !is_expanded.value
-	localStorage.setItem("is_expanded", is_expanded.value)
-}
+// const ToggleMenu = () => {
+// 	is_expanded.value = !is_expanded.value
+// 	localStorage.setItem("is_expanded", is_expanded.value)
+// }
 </script>
 
 <style lang="scss" scoped>
@@ -57,7 +70,7 @@ aside {
 	background-color: var(--dark);
 	color: var(--light);
 
-	width: calc(2rem + 32px);
+	width: calc(2rem + 400px);
 	overflow: hidden;
 	min-height: 100vh;
 	padding: 1rem;
@@ -73,6 +86,19 @@ aside {
 
 		img {
 			width: 2rem;
+		}
+	}
+
+	.material-icons {
+		font-size: 2rem;
+		color: var(--light);
+		transition: 0.2s ease-out;
+	}
+
+	&:hover {
+		.material-icons {
+			color: var(--primary);
+			// transform: translateX(0.5rem);
 		}
 	}
 
@@ -131,9 +157,11 @@ aside {
 				font-size: 2rem;
 				color: var(--light);
 				transition: 0.2s ease-in-out;
+				margin-right: 1rem;
 			}
 
 			.text {
+				opacity: 1;
 				color: var(--light);
 				transition: 0.2s ease-in-out;
 			}
