@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import Pong from './components/Pong.vue'
+import PongCanvas from './components/PongCanvas.vue'
 </script>
 
 <template>
-  <Pong />
+  <PongCanvas />
 </template>
 
-<style scoped>
+<style>
 #app {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  align-content: center;
+  display: flex;
+  margin: 0 auto;
+  font-family: 'Press Start 2P', cursive;
 }
 </style>
