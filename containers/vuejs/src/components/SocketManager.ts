@@ -1,9 +1,9 @@
 import io from 'socket.io-client'
-import * as socketIoClient from 'socket.io-client'
 
 // TODO: Replace "any" with Data struct typedef?
 export const setupSocketManager = (render: (data: any) => void) => {
-  const socket = io('ws://localhost:4242')
+  const socket = io(import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_PORT)
+
   socket.on('connect', () => {
     console.log('Connected')
   })
