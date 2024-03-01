@@ -30,8 +30,6 @@ export const setupSocketManager = (render: (data: any) => void) => {
     }
     if (north !== undefined) {
       socket.emit('movePaddle', { keydown: keydown, north: north })
-    } else {
-      console.log('No socket')
     }
   }
   return { joinMatch, disconnect, emitMovePaddle }
