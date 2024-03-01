@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { UsersModule } from './users/users.module'
@@ -7,13 +8,16 @@ import { AppGateway } from './app.gateway'
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      cache: true // Caches values from the process.env object
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'db',
-      port: 5432,
-      username: 'foo',
-      password: 'hunter2',
-      database: 'bar',
+      port: +(process.env.POSTGRES_PORT || '5432'),
+      username: process.env.POSTGRES_USERNAME,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DATABASE_NAME,
       autoLoadEntities: true,
       synchronize: true, // TODO: Remove?
       logging: true // TODO: Disable?
