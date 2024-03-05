@@ -14,7 +14,12 @@ export const setupSocketManager = (render: (data: any) => void) => {
   })
   socket.on('pong', (data: any) => {
     render(data)
+    emit('render')
   })
+  socket.on('gameOver', (data: IgameResult) => {
+    emit('gameOver', data.won)
+  })
+
   const joinGame = () => {
     console.log('Joining game')
     socket.emit('joinGame')
