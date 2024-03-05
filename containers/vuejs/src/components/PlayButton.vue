@@ -46,4 +46,12 @@ const paddingScale = computed(() => {
 .play-button:hover {
   background-color: #333; /* Darker shade on hover */
 }
+
+.title {
+  background-color: black;
+  color: white;
+  position: absolute;
+  display: relative;
+  align-content: center;
+}
 </style>
