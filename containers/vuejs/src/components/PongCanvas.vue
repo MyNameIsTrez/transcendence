@@ -1,6 +1,6 @@
 <template>
+  <PlayButton :scale="scale" @joinMatch="joinMatch" />
   <div class="pong-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
-    <PlayButton :scale="scale" @joinMatch="joinMatch" />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
