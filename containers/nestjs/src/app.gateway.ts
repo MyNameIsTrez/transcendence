@@ -31,6 +31,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
       this.games[games_count - 1]._rightPlayer._socket = client
       this.id_to_game.set(client.id, this.games[games_count - 1])
       console.log(`Player 2 has joined lobby ${games_count - 1}`)
+      client.emit('start', games_count - 1)
     } else {
       // If a player could not join an existing lobby -> create a new lobby
       this.games.push(new Pong())
