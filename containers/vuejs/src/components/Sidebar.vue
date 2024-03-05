@@ -142,7 +142,7 @@ aside {
 	padding: 1rem;
 
 	transition: 0.2s ease-in-out;
-
+	
 	.testing {
 		p {
 			margin-left: 20px;

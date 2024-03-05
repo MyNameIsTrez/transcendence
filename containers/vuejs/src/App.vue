@@ -31,7 +31,7 @@ import Sidebar from './components/Sidebar.vue'
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	font-family: 'Fira sans', sans-serif;
+	font-family: inherit;
 }
 
 body {
@@ -57,5 +57,11 @@ button {
 			padding-left: 6rem;
 		}
 	}
+}
+body {
+  align-content: center;
+  display: flex;
+  margin: 0 auto;
+  font-family: 'Press Start 2P', cursive;
 }
 </style>
