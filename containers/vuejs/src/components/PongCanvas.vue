@@ -1,6 +1,6 @@
 <template>
   <div class="pong-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
-    <PlayButton :scale="scale" @joinMatch="joinMatch" />
+    <PlayButton :scale="scale" @joinGame="joinGame" />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
@@ -48,7 +48,7 @@ const render = (data: {
   drawObject('white', data.rightPlayer.paddle)
 }
 
-const { joinMatch, disconnect, emitMovePaddle } = setupSocketManager(render)
+const { joinGame, disconnect, emitMovePaddle } = setupSocketManager(render)
 
 onMounted(() => {
   window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size

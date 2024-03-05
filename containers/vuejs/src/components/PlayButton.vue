@@ -1,7 +1,7 @@
 <template>
   <button
     class="play-button"
-    @click="joinMatch"
+    @click="joinGame"
     :style="{
       top: topScale,
       left: leftScale,
@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue'
 const props = defineProps({
-  joinMatch: Function,
+  joinGame: Function,
   scale: Number
 })
 const topScale = computed(() => {

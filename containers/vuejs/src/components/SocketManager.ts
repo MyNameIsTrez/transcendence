@@ -10,8 +10,9 @@ export const setupSocketManager = (render: (data: any) => void) => {
   socket.on('pong', (data: any) => {
     render(data)
   })
-  const joinMatch = () => {
-    socket.emit('joinMatch')
+  const joinGame = () => {
+    console.log('Joining game')
+    socket.emit('joinGame')
   }
   const disconnect = () => {
     socket.disconnect()
@@ -34,5 +35,5 @@ export const setupSocketManager = (render: (data: any) => void) => {
       console.log('No socket')
     }
   }
-  return { joinMatch, disconnect, emitMovePaddle }
+  return { joinGame, disconnect, emitMovePaddle }
 }
