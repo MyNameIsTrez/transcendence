@@ -21,7 +21,7 @@ const props = defineProps({
   scale: Number
 })
 const changeText = () => {
-  displayText.value = 'Seeking adversary ...'
+  displayText.value = 'Seeking match ...'
 }
 
 const fontScale = computed(() => {
