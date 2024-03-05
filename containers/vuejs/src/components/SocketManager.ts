@@ -1,7 +1,12 @@
 import io from 'socket.io-client'
-import * as socketIoClient from 'socket.io-client'
+import { defineEmits } from 'vue'
 
-// TODO: Replace "any" with Data struct typedef?
+const emit = defineEmits(['joinGame', 'gameOver', 'render'])
+
+interface IgameResult {
+  won: boolean
+}
+
 export const setupSocketManager = (render: (data: any) => void) => {
   const socket = io('ws://localhost:4242')
   socket.on('connect', () => {

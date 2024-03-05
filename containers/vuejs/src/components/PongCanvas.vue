@@ -35,7 +35,9 @@ const drawObject = (
     )
   }
 }
-
+const onRender = (data: any) => {
+  render(data)
+}
 // TODO: Replace "any" with Data struct typedef?
 const render = (data: {
   ball: any
@@ -49,7 +51,6 @@ const render = (data: {
 }
 
 const { joinGame, disconnect, emitMovePaddle } = setupSocketManager(render)
-
 onMounted(() => {
   window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
 
