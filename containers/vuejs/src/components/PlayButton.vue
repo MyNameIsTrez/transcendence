@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <h1 class="title">PONG</h1>
+  </div>
   <button
     class="play-button"
     @click="$emit('joinGame'), [changeText()]"
