@@ -1,7 +1,7 @@
 <template>
   <button
     class="play-button"
-    @click="joinmatch, [changeText()]"
+    @click="$emit('joinGame'), [changeText()]"
     :style="{
       'font-size': fontScale,
       padding: paddingScale
@@ -15,10 +15,8 @@ import { ref, defineProps, computed } from 'vue'
 const displayText = ref('PLAY')
 
 const props = defineProps({
-  joinMatch: Function,
   scale: Number
 })
-
 const changeText = () => {
   displayText.value = 'Seeking adversary ...'
 }
