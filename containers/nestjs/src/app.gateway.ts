@@ -29,7 +29,7 @@ export class AppGateway {
     if (game === undefined) {
       console.log(`id_to_game.get has gone terribly wrong in handle disconnect`)
     } else if (game._leftPlayer._socket !== null && game._leftPlayer._socket.id === client.id) {
-      game._rightPlayer._socket?.emit(`opponentDisconnect`)
+      game._rightPlayer._socket?.emit(`gameOver`, 1)
       for (let i = 0; i < this.games.length; i++) {
         if (this.games[i] === game) {
           this.games.splice(i, 1) // Do I need to do anything else to propely delete the game? I understand that TS hsa a garbage collector but I just want to make sure - Victor
@@ -39,7 +39,7 @@ export class AppGateway {
       }
     } else if (game._rightPlayer._socket !== null && game._rightPlayer._socket.id === client.id) {
       // This can be an `else` but this leaves flexibility for spectators
-      game._leftPlayer._socket?.emit(`opponentDisconnect`)
+      game._leftPlayer._socket?.emit(`gameOver`, 1)
       for (let i = 0; i < this.games.length; i++) {
         if (this.games[i] === game) {
           this.games.splice(i, 1) // Do I need to do anything else to propely delete the game? I understand that TS hsa a garbage collector but I just want to make sure - Victor
