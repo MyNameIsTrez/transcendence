@@ -1,22 +1,33 @@
 <template>
-	<!-- <aside :class="`${is_expanded ? 'is-expanded' : ''}`"> -->
-	<aside class="test">
-		<!-- <div class="logo">
-			<img :src="logoURL" alt="Vue" />
-		</div> -->
+	<div role="tablist" class="tabs tabs-bordered">
+  <input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="Profile" />
+  <div role="tabpanel" class="tab-content p-10">
+				<h1>Your profile</h1>
+				<p>mforstho</p>
+				<div style="clear: both">
+					<div class="avatar">
+					<div class="w-24 rounded">
+						<img src="/vuejs/code/src/assets/mforstho.png" />
+					</div>
+					</div>
+				</div>
 
-		<!-- <div class="menu-toggle-wrap">
-			<button class="menu-toggle" @click="ToggleMenu">
-				<span class="material-icons">keyboard_double_arrow_right</span>
-			</button>
-		</div> -->
+
+
+
+
+			</div>
+
+  <input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="Friends" checked />
+  <div role="tabpanel" class="tab-content p-10">Tab content 2</div>
+
+  <input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="Leaderboard" />
+  <div role="tabpanel" class="tab-content p-10">Tab content 3</div>
+</div>
+	<!-- <aside class="test">
 
 		<h3>Menu</h3>
 		<div class="menu">
-			<!-- <button class="button" onclick="console.log('Profile')">
-				<span class="material-icons">person</span>
-				<span class="text">Profile</span>
-			</button> -->
 			<button class="button" onclick="console.log('Friends')">
 				<span class="material-icons">group</span>
 				<span class="text">Friends</span>
@@ -95,14 +106,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- <router-link to="/about" class="button">
-				<span class="material-icons">group</span>
-				<span class="text">Friends</span>
-			</router-link>
-			<router-link to="/team" class="button">
-				<span class="material-icons">list</span>
-				<span class="text">Leaderboard</span>
-			</router-link> -->
 
 
 		<div class="flex"></div>
@@ -113,7 +116,7 @@
 				<span class="text">Settings</span>
 			</router-link>
 		</div>
-	</aside>
+	</aside> -->
 </template>
 
 <script lang="ts" setup>
@@ -128,7 +131,7 @@ import logoURL from '../assets/icons/user-icon.png'
 // }
 </script>
 
-<style lang="scss" scoped>
+<!-- <style lang="scss" scoped>
 aside {
 	display: flex;
 	flex-direction: column;
@@ -142,7 +145,7 @@ aside {
 	padding: 1rem;
 
 	transition: 0.2s ease-in-out;
-	
+
 	.testing {
 		p {
 			margin-left: 20px;
@@ -376,4 +379,4 @@ aside {
 		z-index: 99;
 	}
 }
-</style>
+</style> -->

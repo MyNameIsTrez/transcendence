@@ -5,13 +5,20 @@ import Sidebar from './components/Sidebar.vue'
 </script>
 
 <template>
-		
-  <button class="btn btn-neutral">Neutral</button>
-  <Sidebar />
-  <PongCanvas />
+
+  <!-- <button class="btn btn-neutral">Neutral</button> -->
+	<div class="flex flex-col w-full lg:flex-row">
+	<div class="grid flex-grow h-32 card place-items-center"><Sidebar /></div>
+	<!-- <Sidebar /> -->
+	<!-- <div class="divider lg:divider-horizontal"></div> -->
+	<div class="grid card bg-base-300 place-items-center"><PongCanvas /></div>
+	<!-- <PongCanvas /> -->
+	</div>
+
+
 </template>
 
-<style>
+<!-- <style>
 #app {
   display: flex;
   justify-content: center;
@@ -76,4 +83,4 @@ body {
   margin: 0 auto;
   font-family: 'Press Start 2P', cursive;
 }
-</style>
+</style> -->
