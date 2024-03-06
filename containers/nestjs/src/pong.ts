@@ -287,11 +287,7 @@ export class Pong {
     this._ball.collide(this._leftPlayer, this._rightPlayer)
   }
   checkGameOver(): boolean {
-    if (this._leftPlayer._score >= 10 || this._rightPlayer._score >= 10) {
-      return true
-    } else {
-      return false
-    }
+    return this._leftPlayer._score >= 10 || this._rightPlayer._score >= 10
   }
 
   getLeftResult(): boolean {
