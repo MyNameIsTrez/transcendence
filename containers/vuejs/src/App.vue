@@ -5,8 +5,10 @@ import Sidebar from './components/Sidebar.vue'
 </script>
 
 <template>
-	<Sidebar />
-	<PongCanvas />
+		
+  <button class="btn btn-neutral">Neutral</button>
+  <Sidebar />
+  <PongCanvas />
 </template>
 
 <style>
