@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { onUnmounted, onBeforeMount } from 'vue'
+import { onUnmounted } from 'vue'
 import PongCanvas from './components/PongCanvas.vue'
-import { initializeSocketIO, disconnectSocketIO } from './components/SocketManager'
+import { disconnectSocketIO } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
 
-onBeforeMount(() => {
-  initializeSocketIO('game')
-})
 onUnmounted(() => {
   disconnectSocketIO('game')
 })
