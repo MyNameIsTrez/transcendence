@@ -279,14 +279,24 @@ export class Pong {
     this._rightPlayer = new Player(PADDLE_RIGHT_X)
   }
 
-  update() {
+  updateElements() {
     this._leftPlayer.update()
     this._rightPlayer.update()
 
     this._ball.updatePos()
     this._ball.collide(this._leftPlayer, this._rightPlayer)
   }
+  checkGameOver(): boolean {
+    return this._leftPlayer._score >= 10 || this._rightPlayer._score >= 10
+  }
 
+  getLeftResult(): boolean {
+    return this._leftPlayer._score >= 10
+  }
+
+  getRightResult(): boolean {
+    return this._rightPlayer._score >= 10
+  }
   resetGame() {
     this._ball._hidden = false
     this._ball.reset()
