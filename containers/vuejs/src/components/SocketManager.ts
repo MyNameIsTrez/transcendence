@@ -1,49 +1,30 @@
 import io from 'socket.io-client'
-import { defineEmits } from 'vue'
 
-const emit = defineEmits(['joinGame', 'gameOver', 'render'])
+interface SocketInstance {
+  [namespace: string]: SocketIOClient.Socket | undefined
+}
+const sockets: SocketInstance = {}
+
+const initializeSocketIO = (namespace: string): void => {
+  console.log('initializeSocketIO called')
+  console.log('namespace: ', namespace)
+  if (!sockets[namespace]) {
+    sockets[namespace] = io('ws://localhost:4242')
+  }
+}
+
+const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
+  return sockets[namespace]
+}
+const disconnectSocketIO = (namespace: string): void => {
+  if (sockets[namespace]) {
+    sockets[namespace]?.disconnect()
+    delete sockets[namespace]
+  }
+}
+
+export { initializeSocketIO, getSocketIOInstance, disconnectSocketIO }
 
 interface IgameResult {
   won: boolean
-}
-
-export const setupSocketManager = (render: (data: any) => void) => {
-  const socket = io('ws://localhost:4242')
-  socket.on('connect', () => {
-    console.log('Connected')
-  })
-  socket.on('pong', (data: any) => {
-    render(data)
-    emit('render')
-  })
-  socket.on('gameOver', (data: IgameResult) => {
-    emit('gameOver', data.won)
-  })
-
-  const joinGame = () => {
-    console.log('Joining game')
-    socket.emit('joinGame')
-  }
-  const disconnect = () => {
-    socket.disconnect()
-    console.log('Disconnected')
-  }
-  const emitMovePaddle = (code: string, keydown: boolean) => {
-    let north: boolean | undefined
-    if (!socket) {
-      console.log('No socket')
-      return
-    }
-    if (code === 'KeyW' || code === 'ArrowUp') {
-      north = true
-    } else if (code === 'KeyS' || code === 'ArrowDown') {
-      north = false
-    }
-    if (north !== undefined) {
-      socket.emit('movePaddle', { keydown: keydown, north: north })
-    } else {
-      console.log('No socket')
-    }
-  }
-  return { joinGame, disconnect, emitMovePaddle }
 }
