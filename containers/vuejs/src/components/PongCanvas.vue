@@ -1,20 +1,39 @@
 <template>
-  <PlayButton :scale="scale" @joinGame="joinGame" />
+  <PlayButton :scale="scale" />
   <div class="pong-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { setupSocketManager } from './SocketManager'
+import { ref, onMounted } from 'vue'
+import { getSocketIOInstance } from './SocketManager'
 import PlayButton from './PlayButton.vue'
 
+const socketIOGame = getSocketIOInstance('game')
+
+socketIOGame.on('pong', (data) => {
+  render(data)
+})
+socketIOGame.on('gameOver', (data) => {
+  console.log('Game over', data)
+})
+const emitMovePaddle = (code: string, keydown: boolean) => {
+  let north: boolean | undefined
+  if (code === 'KeyW' || code === 'ArrowUp') {
+    north = true
+  } else if (code === 'KeyS' || code === 'ArrowDown') {
+    north = false
+  }
+  if (north !== undefined) {
+    socketIOGame.emit('movePaddle', { keydown: keydown, north: north })
+  }
+}
 const server_window_height = 1080
 const server_window_width = 1920
 
+const scale = ref(1)
 const aspectRatio = server_window_width / server_window_height
-let scale: number = ref(1)
 const canvasRef = ref(null)
 const canvasWidth = ref(server_window_width)
 const canvasHeight = ref(server_window_height)
@@ -35,9 +54,6 @@ const drawObject = (
     )
   }
 }
-const onRender = (data: any) => {
-  render(data)
-}
 // TODO: Replace "any" with Data struct typedef?
 const render = (data: {
   ball: any
@@ -50,7 +66,6 @@ const render = (data: {
   drawObject('white', data.rightPlayer.paddle)
 }
 
-const { joinGame, disconnect, emitMovePaddle } = setupSocketManager(render)
 onMounted(() => {
   window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
 
@@ -68,10 +83,6 @@ onMounted(() => {
   }
 
   drawCanvas()
-})
-
-onUnmounted(() => {
-  disconnect()
 })
 
 const drawCanvas = () => {

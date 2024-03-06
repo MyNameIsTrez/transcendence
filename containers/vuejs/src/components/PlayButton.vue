@@ -4,7 +4,7 @@
   </div>
   <button
     class="play-button"
-    @click="$emit('joinGame'), [changeText()]"
+    @click="[joinGame(), changeText()]"
     :style="{
       'font-size': fontScale,
       padding: paddingScale
@@ -15,6 +15,12 @@
 </template>
 <script setup lang="ts">
 import { ref, defineProps, computed } from 'vue'
+import { getSocketIOInstance } from './SocketManager'
+const socketIOGame = getSocketIOInstance('game')
+const joinGame = () => {
+  console.log('Joining game')
+  socketIOGame.emit('joinGame')
+}
 const displayText = ref('PLAY')
 
 const props = defineProps({
