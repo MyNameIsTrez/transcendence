@@ -1,5 +1,14 @@
 <script setup lang="ts">
+import { onUnmounted, onBeforeMount } from 'vue'
 import PongCanvas from './components/PongCanvas.vue'
+import { initializeSocketIO, disconnectSocketIO } from './components/SocketManager'
+
+onBeforeMount(() => {
+  initializeSocketIO('game')
+})
+onUnmounted(() => {
+  disconnectSocketIO('game')
+})
 </script>
 
 <template>
