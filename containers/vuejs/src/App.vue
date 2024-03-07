@@ -3,6 +3,7 @@ import { onUnmounted } from 'vue'
 import PongCanvas from './components/PongCanvas.vue'
 import { disconnectSocketIO } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
+import Chat from './components/Chat.vue'
 
 onUnmounted(() => {
   disconnectSocketIO('game')
@@ -13,6 +14,7 @@ onUnmounted(() => {
   <button class="btn btn-neutral">Neutral</button>
   <Sidebar />
   <PongCanvas />
+  <Chat />
 </template>
 
 <style>
