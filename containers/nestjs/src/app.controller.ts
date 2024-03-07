@@ -10,11 +10,4 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello()
   }
-
-  // TODO: Improve
-  @Get('login')
-  test(@Query('code') code: number): string {
-    console.log(code)
-    return this.appService.getHello()
-  }
 }

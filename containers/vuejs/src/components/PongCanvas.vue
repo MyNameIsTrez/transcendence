@@ -6,18 +6,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
 import PlayButton from './PlayButton.vue'
 
-const socketIOGame = getSocketIOInstance('game')
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
-socketIOGame.on('pong', (data) => {
-  render(data)
-})
-socketIOGame.on('gameOver', (data) => {
-  console.log('Game over', data)
-})
+let socketIOGame: SocketIOClient.Socket | undefined
+
+// TODO: Move this to a logical file, and figure out a way to do this without watch()
+watch(
+  () => route.query.code,
+  (code) => {
+    if (code && socketIOGame === undefined) {
+      // TODO: Only call this when we return from a Login button, and if we have a query code
+      // TODO: This is an extremely shitty solution, since there's a race condition caused by
+      // TODO: PlayButton.vue also calling this function, so PLEASE think of something better :((
+      // TODO: Can the socketIOGame not just be a global?
+      socketIOGame = getSocketIOInstance('game')
+      console.log('b')
+
+      socketIOGame.on('pong', (data) => {
+        render(data)
+      })
+      socketIOGame.on('gameOver', (data) => {
+        console.log('Game over', data)
+      })
+
+      console.log(`code: ${code}`)
+      socketIOGame.emit('code', { code })
+    }
+  }
+)
+
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
   if (code === 'KeyW' || code === 'ArrowUp') {
@@ -25,7 +47,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
   } else if (code === 'KeyS' || code === 'ArrowDown') {
     north = false
   }
-  if (north !== undefined) {
+  if (north !== undefined && socketIOGame !== undefined) {
     socketIOGame.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
@@ -67,7 +89,7 @@ const render = (data: {
 }
 
 onMounted(() => {
-  window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
+  window.addEventListener('resize', drawCanvas) // TODO: replace with render to redraw all objects with correct size
 
   if (canvasRef.value) {
     canvas = canvasRef.value as HTMLCanvasElement

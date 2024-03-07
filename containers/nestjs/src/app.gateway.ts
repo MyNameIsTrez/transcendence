@@ -8,11 +8,15 @@ import {
 import { Socket } from 'socket.io'
 import { Server } from 'http'
 import { Pong } from './pong'
+import { AppService } from './app.service'
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' } })
 export class AppGateway {
+  // TODO: The gateway is maybe not supposed to call AppServices?
+  constructor(private readonly appService: AppService) {}
+
   @WebSocketServer()
   server!: Server
 
@@ -70,6 +74,7 @@ export class AppGateway {
     }, interval_ms)
   }
 
+  // TODO: Remove
   @SubscribeMessage('identity')
   async identity(@MessageBody() data: number): Promise<number> {
     return data
@@ -99,6 +104,7 @@ export class AppGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean
   ) {
+    console.log(`client.id: ${client.id}`)
     const game = this.id_to_game.get(client.id)
     if (game === undefined) {
       console.log(`id_to_game.get has gone terribly wrong in movePaddle`)
@@ -108,5 +114,12 @@ export class AppGateway {
       // This can be an `else` but this leaves flexibility for spectators
       game.movePaddle(game._rightPlayer.paddle, keydown, north)
     }
+  }
+
+  @SubscribeMessage('code')
+  async code(@ConnectedSocket() client: Socket, @MessageBody('code') code: string) {
+    console.log('code:', code)
+    this.appService.authenticate(code)
+    // TODO: Return an object containing the minimal amount of information needed for vue to draw the profile picture, etc.
   }
 }
