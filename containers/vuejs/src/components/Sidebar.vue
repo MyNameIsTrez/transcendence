@@ -1,390 +1,379 @@
 <template>
-  <aside :class="`${is_expanded ? 'is-expanded' : ''}`">
-    <div class="logo">
-      <img :src="logoURL" alt="Vue" />
-    </div>
+	<!-- <aside :class="`${is_expanded ? 'is-expanded' : ''}`"> -->
+	<aside class="test">
+		<!-- <div class="logo">
+			<img :src="logoURL" alt="Vue" />
+		</div> -->
 
-    <div class="menu-toggle-wrap">
-      <button class="menu-toggle" @click="ToggleMenu">
-        <span class="material-icons">keyboard_double_arrow_right</span>
-      </button>
-    </div>
+		<!-- <div class="menu-toggle-wrap">
+			<button class="menu-toggle" @click="ToggleMenu">
+				<span class="material-icons">keyboard_double_arrow_right</span>
+			</button>
+		</div> -->
 
-    <h3>Menu</h3>
-    <div class="menu">
-      <router-link to="/" class="button">
-        <span class="material-icons">home</span>
-        <span class="text">Home</span>
-      </router-link>
-      <router-link to="/about" class="button">
-        <span class="material-icons">description</span>
-        <span class="text">About</span>
-      </router-link>
-      <router-link to="/team" class="button">
-        <span class="material-icons">group</span>
-        <span class="text">Team</span>
-      </router-link>
-      <router-link to="/contact" class="button">
-        <span class="material-icons">email</span>
-        <span class="text">Contact</span>
-      </router-link>
-    </div>
+		<h3>Menu</h3>
+		<div class="menu">
+			<!-- <button class="button" onclick="console.log('Profile')">
+				<span class="material-icons">person</span>
+				<span class="text">Profile</span>
+			</button> -->
+			<button class="button" onclick="console.log('Friends')">
+				<span class="material-icons">group</span>
+				<span class="text">Friends</span>
+			</button>
+			<button class="button" onclick="console.log('Leaderboard')">
+				<span class="material-icons">list</span>
+				<span class="text">Leaderboard</span>
+			</button>
+			<router-link to="/profile" class="button">
+				<span class="material-icons">person</span>
+				<span class="text">Profile</span>
+			</router-link>
+			<div class="testing">
+				<h1>Your profile</h1>
+				<p>mforstho</p>
+				<div style="clear: both">
+					<img style="float: left" src="/vuejs/code/src/assets/mforstho.png">
+					<p style="float: right">Win/Loss ratio: 121/0</p>
+				</div>
 
-    <div class="flex"></div>
 
-    <div class="menu">
-      <router-link to="/settings" class="button">
-        <span class="material-icons">settings</span>
-        <span class="text">Settings</span>
-      </router-link>
-    </div>
-  </aside>
+
+
+				<div style="clear: both; padding-top: 50px;">
+					<h1 style="padding-bottom: 10px">Match history</h1>
+				</div>
+				<div style="clear: both">
+					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
+					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
+					<p class="match-date" style="text-align: center">04/03/2024</p>
+				</div>
+				<p>------------------------------------------------------</p>
+				<div style="clear: both; padding-bottom: 10px;">
+					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
+					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
+					<p style="text-align: center">|</p>
+				</div>
+				<div style="clear: both">
+					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
+					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
+					<p class="match-date" style="text-align: center">04/03/2024</p>
+				</div>
+				<p>------------------------------------------------------</p>
+				<div style="clear: both; padding-bottom: 10px;">
+					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
+					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
+					<p style="text-align: center">|</p>
+				</div>
+				<div style="clear: both">
+					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
+					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
+					<p class="match-date" style="text-align: center">04/03/2024</p>
+				</div>
+				<p>------------------------------------------------------</p>
+				<div style="clear: both; padding-bottom: 10px;">
+					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
+					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
+					<p style="text-align: center">|</p>
+				</div>
+
+
+
+				<div class="achievements">
+					<h1>Your achievements</h1>
+					<span class="achievement-status">
+						<p>Unlocked</p>
+					</span>
+					<div class="tooltip">A good start<span class="tooltiptext">Win for the first time</span></div>
+					<div class="tooltip">Unstoppable!<span class="tooltiptext">Win 100 times in a row</span></div>
+
+					<span class="achievement-status">
+						<p>Locked</p>
+					</span>
+					<div class="tooltip">Unfortunate<span class="tooltiptext">Lose for the first time</span></div>
+					<div class="tooltip">How!?<span class="tooltiptext">Lose 100 times in a row</span></div>
+				</div>
+			</div>
+		</div>
+		<!-- <router-link to="/about" class="button">
+				<span class="material-icons">group</span>
+				<span class="text">Friends</span>
+			</router-link>
+			<router-link to="/team" class="button">
+				<span class="material-icons">list</span>
+				<span class="text">Leaderboard</span>
+			</router-link> -->
+
+
+		<div class="flex"></div>
+
+		<div class="menu">
+			<router-link to="/settings" class="button">
+				<span class="material-icons">settings</span>
+				<span class="text">Settings</span>
+			</router-link>
+		</div>
+	</aside>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
 import logoURL from '../assets/icons/user-icon.png'
-import 'vue-sidebar-menu/dist/vue-sidebar-menu.css'
-// import VueSidebarMenu from 'vue-sidebar-menu'
-// import logoURL from '../assets/logo.png'
 
-const is_expanded = ref(localStorage.getItem('is_expanded') === 'true')
+// const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
 
-const ToggleMenu = () => {
-  is_expanded.value = !is_expanded.value
-  localStorage.setItem('is_expanded', is_expanded.value)
-}
+// const ToggleMenu = () => {
+// 	is_expanded.value = !is_expanded.value
+// 	localStorage.setItem("is_expanded", is_expanded.value)
+// }
 </script>
 
 <style lang="scss" scoped>
 aside {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 
-  background-color: var(--dark);
-  color: var(--light);
+	background-color: var(--dark);
+	color: var(--light);
 
-  width: calc(2rem + 32px);
-  overflow: hidden;
-  min-height: 100vh;
-  padding: 1rem;
+	width: calc(2rem + 400px);
+	overflow: hidden;
+	min-height: 100vh;
+	padding: 1rem;
 
-  transition: 0.2s ease-in-out;
+	transition: 0.2s ease-in-out;
+	
+	.testing {
+		p {
+			margin-left: 20px;
+			margin-right: 20px;
+			text-align: start;
+			font-size: large;
+		}
 
-  .flex {
-    flex: 1 1 0%;
-  }
+		img {
+			width: 8rem;
+			margin-left: 20px;
+			display: block;
+			border: 5px solid #ffffff;
+		}
+	}
 
-  .logo {
-    margin-bottom: 1rem;
+	.match-report {
+		p {
+			clear: both;
+			margin-left: 20px;
+			margin-right: 20px;
+		}
 
-    img {
-      width: 2rem;
-    }
-  }
+		.player1 {
+			p {
+				float: left;
+				// text-align: left;
+			}
+		}
 
-  .menu-toggle-wrap {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1rem;
+		.player2 {
+			p {
+				float: right;
+				// text-align: right;
+			}
+		}
 
-    position: relative;
-    top: 0;
-    transition: 0.2s ease-in-out;
+		.match-date {
+			p {
+				float: center;
+			}
+		}
+	}
 
-    .menu-toggle {
-      transition: 0.2s ease-in-out;
-      .material-icons {
-        font-size: 2rem;
-        color: var(--light);
-        transition: 0.2s ease-out;
-      }
+	.achievements {
+		padding-top: 30px;
 
-      &:hover {
-        .material-icons {
-          color: var(--primary);
-          transform: translateX(0.5rem);
-        }
-      }
-    }
-  }
+		p {
+			padding-left: 10px;
+		}
 
-  h3,
-  .button .text {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-  }
+		.achievement-status {
+			font-weight: bold;
+		}
+	}
 
-  h3 {
-    color: var(--grey);
-    font-size: 0.875rem;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
+	.tooltip {
+		text-align: left;
+		padding-left: 30px;
+		padding-top: 2px;
+		position: relative;
+		// border-bottom: 1px dotted black;
+	}
 
-  .menu {
-    margin: 0 -1rem;
+	.tooltip .tooltiptext {
+		visibility: hidden;
+		width: 120px;
+		background-color: white;
+		color: black;
+		text-align: center;
+		border-radius: 6px;
+		padding: 5px 0;
 
-    .button {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
+		position: absolute;
+		z-index: 1;
+	}
 
-      transition: 0.2s ease-in-out;
-      padding: 0.5rem 1rem;
+	.tooltip:hover .tooltiptext {
+		visibility: visible;
+	}
 
-      .material-icons {
-        font-size: 2rem;
-        color: var(--light);
-        transition: 0.2s ease-in-out;
-      }
-      .text {
-        color: var(--light);
-        transition: 0.2s ease-in-out;
-      }
+	.flex {
+		flex: 1 1 0%;
+	}
 
-      &:hover {
-        background-color: var(--dark-alt);
+	.logo {
+		margin-bottom: 1rem;
 
-        .material-icons,
-        .text {
-          color: var(--primary);
-        }
-      }
+		img {
+			width: 2rem;
+		}
+	}
 
-      &.router-link-exact-active {
-        background-color: var(--dark-alt);
-        border-right: 5px solid var(--primary);
+	.material-icons {
+		font-size: 2rem;
+		color: var(--light);
+		transition: 0.2s ease-out;
+	}
 
-        .material-icons,
-        .text {
-          color: var(--primary);
-        }
-      }
-    }
-  }
+	&:hover {
+		.material-icons {
+			color: var(--primary);
+			// transform: translateX(0.5rem);
+		}
+	}
 
-  .footer {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+	.menu-toggle-wrap {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 1rem;
 
-    p {
-      font-size: 0.875rem;
-      color: var(--grey);
-    }
-  }
+		position: relative;
+		top: 0;
+		transition: 0.2s ease-in-out;
 
-  &.is-expanded {
-    width: var(--sidebar-width);
+		.menu-toggle {
+			transition: 0.2s ease-in-out;
 
-    .menu-toggle-wrap {
-      top: -3rem;
+			.material-icons {
+				font-size: 2rem;
+				color: var(--light);
+				transition: 0.2s ease-out;
+			}
 
-      .menu-toggle {
-        transform: rotate(-180deg);
-      }
-    }
+			&:hover {
+				.material-icons {
+					color: var(--primary);
+					transform: translateX(0.5rem);
+				}
+			}
+		}
+	}
 
-    h3,
-    .button .text {
-      opacity: 1;
-    }
+	h3,
+	.button .text {
+		opacity: 0;
+		transition: opacity 0.3s ease-in-out;
+	}
 
-    .button {
-      .material-icons {
-        margin-right: 1rem;
-      }
-    }
+	h3 {
+		color: var(--grey);
+		font-size: 0.875rem;
+		margin-bottom: 0.5rem;
+		text-transform: uppercase;
+	}
 
-    .footer {
-      opacity: 0;
-    }
-  }
+	.menu {
+		margin: 0 -1rem;
 
-  @media (max-width: 1024px) {
-    position: absolute;
-    z-index: 99;
-  }
+		.button {
+			display: inline-block; // TODO: 'flex' om buttons onder elkaar te zetten, 'inline-block' om buttons naast elkaar te zetten
+			align-items: center;
+			text-decoration: none;
+
+			transition: 0.2s ease-in-out;
+			padding: 0.5rem 1rem;
+
+			.material-icons {
+				font-size: 2rem;
+				color: var(--light);
+				transition: 0.2s ease-in-out;
+				margin-right: 1rem;
+			}
+
+			.text {
+				opacity: 1;
+				color: var(--light);
+				transition: 0.2s ease-in-out;
+			}
+
+			&:hover {
+				background-color: var(--dark-alt);
+
+				.material-icons,
+				.text {
+					color: var(--primary);
+				}
+			}
+
+			&.router-link-exact-active {
+				background-color: var(--dark-alt);
+				border-right: 5px solid var(--primary);
+
+				.material-icons,
+				.text {
+					color: var(--primary);
+				}
+			}
+		}
+	}
+
+	.footer {
+		opacity: 0;
+		transition: opacity 0.3s ease-in-out;
+
+		p {
+			font-size: 0.875rem;
+			color: var(--grey);
+		}
+	}
+
+	&.is-expanded {
+		width: var(--sidebar-width);
+
+		.menu-toggle-wrap {
+			top: -3rem;
+
+			.menu-toggle {
+				transform: rotate(-180deg);
+			}
+		}
+
+		h3,
+		.button .text {
+			opacity: 1;
+		}
+
+		.button {
+			.material-icons {
+				margin-right: 1rem;
+			}
+		}
+
+		.footer {
+			opacity: 0;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		position: absolute;
+		z-index: 99;
+	}
 }
 </style>
-
-<!-- <template>
-	<sidebar-menu class="v-sidebar-menu" :menu="menu"/>
-</template>
-
-<script lang="ts">
-	export default {
-	  data() {
-		return {
-		  menu: [
-			{
-			  header: 'Menu',
-			  hiddenOnCollapse: true,
-			},
-			{
-			  href: '/',
-			  title: 'Profile',
-			//   icon: {
-          	// 	//adjust element
-            // 	element: 'font-awesome-icon',
-            // 	attributes: { ifcon: 'user' },
-          	// },
-			    icon: {
-          		//adjust element
-            	element: 'user-icon.png',
-            	attributes: {
-					src: '/vuejs/icons/'
-				},
-
-          	},
-			},
-			{
-			//   href: '/charts',
-			  title: 'Charts',
-			  icon: 'fa fa-chart-area',
-			  child: [
-				{
-				  href: '/charts/sublink',
-				  title: 'Sub Link',
-				},
-			  ],
-			},
-		  ],
-		  props: {
-			// Sidebar menu (required)
-			menu: {
-				type: Array,
-				required: true
-			},
-
-			// Sidebar Collapse state (v-model:collapsed to enable two-way data binding)
-			collapsed: {
-				type: Boolean,
-				default: false
-			},
-
-			// Sidebar width (expanded)
-			width: {
-				type: String,
-				default: '290px'
-			},
-
-			// Sidebar width (collapsed)
-			widthCollapsed: {
-				type: String,
-				default: '65px'
-			},
-
-			// Keep only one child opened at a time (first level only)
-			showOneChild: {
-				type: Boolean,
-				default: false
-			},
-
-			// Keep all child open
-			showChild: {
-				type: Boolean,
-				default: false
-			},
-
-			// Sidebar right to left
-			rtl: {
-				type: Boolean,
-				default: false
-			},
-
-			// Make sidebar relative to the parent (by default the sidebar is relative to the viewport)
-			relative: {
-				type: Boolean,
-				default: false
-			},
-
-			// Hide toggle collapse btn
-			hideToggle: {
-				type: Boolean,
-				default: false
-			},
-
-			// Sidebar theme (available themes: 'white-theme')
-			theme: {
-				type: String,
-				default: ''
-			},
-
-			// Disable hover on collapse mode
-			disableHover: {
-				type: Boolean,
-				default: false
-			},
-
-			// The name of the custom link component (must be registered globally and define item as a prop)
-			linkComponentName: {
-				type: String,
-				default: undefined
-			}
-			},
-		}
-	  },
-	}
-</script>
-
-<style>
-.v-sidebar-menu {
-  --vsm-primary-color: #4285f4;
-  /* --vsm-base-bg: #2a2a2e; */
-  --vsm-base-bg: green;
-  --vsm-item-color: #fff;
-  /* --vsm-item-active-color:; */
-  /* --vsm-item-active-bg:; */
-  --vsm-item-active-line-color: var(--vsm-primary-color);
-  --vsm-item-open-color: #fff;
-  /* --vsm-item-hover-color: #4285f4; */
-  --vsm-item-open-bg: var(--vsm-primary-color);
-  --vsm-item-hover-bg: rgba(30, 30, 33, 0.5);
-  --vsm-icon-color: var(--vsm-item-color);
-  /* --vsm-icon-bg: #1e1e21; */
-  --vsm-icon-bg: green;
-  /* --vsm-icon-active-color: green; */
-  /* --vsm-icon-active-bg: green; */
-  --vsm-icon-open-color: green;
-  /* --vsm-icon-open-bg:; */
-  --vsm-mobile-item-color: #fff;
-  --vsm-mobile-item-bg: var(--vsm-primary-color);
-  --vsm-mobile-icon-color: var(--vsm-mobile-item-color);
-  --vsm-mobile-icon-bg: transparent;
-  --vsm-dropdown-bg: #36363b;
-  --vsm-header-item-color: rgba(255, 255, 255, 0.7);
-  --vsm-toggle-btn-color: #fff;
-  --vsm-toggle-btn-bg: #1e1e21;
-  --vsm-item-font-size: 16px;
-  --vsm-item-line-height: 35px;
-  --vsm-item-padding: 10px 15px;
-  --vsm-icon-height: 35px;
-  --vsm-icon-width: 3px;
-}
-.v-sidebar-menu .vsm--icon {
-	--vsm-base-bg: green;
-	--vsm-item-hover-color: green;
-	--vsm-icon-bg: transparent;
-}
-/* .v-sidebar-menu.vsm_expanded {}
-.v-sidebar-menu.vsm_collapsed {}
-.v-sidebar-menu.vsm_rtl {}
-.v-sidebar-menu .vsm--item {}
-.v-sidebar-menu .vsm--link {}
-.v-sidebar-menu .vsm--link_active {}
-.v-sidebar-menu .vsm--link_hover {}
-.v-sidebar-menu .vsm--link_open {}
-.v-sidebar-menu .vsm--link_mobile {}
-.v-sidebar-menu .vsm--link_level-[n] {}
-.v-sidebar-menu .vsm--link_disabled {}
-/* .v-sidebar-menu .vsm--title {} */
-/* .v-sidebar-menu .vsm--arrow {}
-.v-sidebar-menu .vsm--arrow_open {}
-.v-sidebar-menu .vsm--badge {}
-.v-sidebar-menu .vsm--badge_default {}
-.v-sidebar-menu .vsm--header {}
-.v-sidebar-menu .vsm--dropdown {}
-.v-sidebar-menu .vsm--mobile-bg {}
-.v-sidebar-menu .vsm--toggle-btn {} */
-</style> -->
