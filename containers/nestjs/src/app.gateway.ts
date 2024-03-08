@@ -58,8 +58,10 @@ export class AppGateway {
         const game = this.games[i]
         game.updateElements()
         if (game.checkGameOver()) {
-          game._leftPlayer._socket?.emit(`gameOver`, game.getLeftResult())
-          game._rightPlayer._socket?.emit(`gameOver`, game.getRightResult())
+          const leftResult = game.getLeftResult()
+          const rightResult = game.getRightResult()
+          game._leftPlayer._socket?.emit(`gameOver`, leftResult)
+          game._rightPlayer._socket?.emit(`gameOver`, rightResult)
           this.games.splice(i, 1) //TODO: Does this not fuck with memory? - Saladin?
         } else {
           const data = game.getData()
