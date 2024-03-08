@@ -111,16 +111,15 @@
 				<span class="text">Leaderboard</span>
 			</router-link> -->
 
+    <div class="flex"></div>
 
-		<div class="flex"></div>
-
-		<div class="menu">
-			<router-link to="/settings" class="button">
-				<span class="material-icons">settings</span>
-				<span class="text">Settings</span>
-			</router-link>
-		</div>
-	</aside>
+    <div class="menu">
+      <router-link to="/settings" class="button">
+        <span class="material-icons">settings</span>
+        <span class="text">Settings</span>
+      </router-link>
+    </div>
+  </aside>
 </template>
 
 <script lang="ts" setup>
@@ -137,250 +136,249 @@ import logoURL from '../assets/icons/user-icon.png'
 
 <style lang="scss" scoped>
 aside {
-	display: flex;
-	flex-direction: column;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
 
-	background-color: var(--dark);
-	color: var(--light);
+  background-color: var(--dark);
+  color: var(--light);
 
-	width: calc(2rem + 400px);
-	overflow: hidden;
-	min-height: 100vh;
-	padding: 1rem;
+  overflow: hidden;
+  padding: 1rem;
 
-	transition: 0.2s ease-in-out;
-	
-	.testing {
-		p {
-			margin-left: 20px;
-			margin-right: 20px;
-			text-align: start;
-			font-size: large;
-		}
+  transition: 0.2s ease-in-out;
 
-		img {
-			width: 8rem;
-			margin-left: 20px;
-			display: block;
-			border: 5px solid #ffffff;
-		}
-	}
+  .testing {
+    p {
+      margin-left: 20px;
+      margin-right: 20px;
+      text-align: start;
+      font-size: large;
+    }
 
-	.match-report {
-		p {
-			clear: both;
-			margin-left: 20px;
-			margin-right: 20px;
-		}
+    img {
+      width: 8rem;
+      margin-left: 20px;
+      display: block;
+      border: 5px solid #ffffff;
+    }
+  }
 
-		.player1 {
-			p {
-				float: left;
-				// text-align: left;
-			}
-		}
+  .match-report {
+    p {
+      clear: both;
+      margin-left: 20px;
+      margin-right: 20px;
+    }
 
-		.player2 {
-			p {
-				float: right;
-				// text-align: right;
-			}
-		}
+    .player1 {
+      p {
+        float: left;
+        // text-align: left;
+      }
+    }
 
-		.match-date {
-			p {
-				float: center;
-			}
-		}
-	}
+    .player2 {
+      p {
+        float: right;
+        // text-align: right;
+      }
+    }
 
-	.achievements {
-		padding-top: 30px;
+    .match-date {
+      p {
+        float: center;
+      }
+    }
+  }
 
-		p {
-			padding-left: 10px;
-		}
+  .achievements {
+    padding-top: 30px;
 
-		.achievement-status {
-			font-weight: bold;
-		}
-	}
+    p {
+      padding-left: 10px;
+    }
 
-	.tooltip {
-		text-align: left;
-		padding-left: 30px;
-		padding-top: 2px;
-		position: relative;
-		// border-bottom: 1px dotted black;
-	}
+    .achievement-status {
+      font-weight: bold;
+    }
+  }
 
-	.tooltip .tooltiptext {
-		visibility: hidden;
-		width: 120px;
-		background-color: white;
-		color: black;
-		text-align: center;
-		border-radius: 6px;
-		padding: 5px 0;
+  .tooltip {
+    text-align: left;
+    padding-left: 30px;
+    padding-top: 2px;
+    position: relative;
+    // border-bottom: 1px dotted black;
+  }
 
-		position: absolute;
-		z-index: 1;
-	}
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: white;
+    color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
 
-	.tooltip:hover .tooltiptext {
-		visibility: visible;
-	}
+    position: absolute;
+    z-index: 1;
+  }
 
-	.flex {
-		flex: 1 1 0%;
-	}
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
 
-	.logo {
-		margin-bottom: 1rem;
+  .flex {
+    flex: 1 1 0%;
+  }
 
-		img {
-			width: 2rem;
-		}
-	}
+  .logo {
+    margin-bottom: 1rem;
 
-	.material-icons {
-		font-size: 2rem;
-		color: var(--light);
-		transition: 0.2s ease-out;
-	}
+    img {
+      width: 2rem;
+    }
+  }
 
-	&:hover {
-		.material-icons {
-			color: var(--primary);
-			// transform: translateX(0.5rem);
-		}
-	}
+  .material-icons {
+    font-size: 2rem;
+    color: var(--light);
+    transition: 0.2s ease-out;
+  }
 
-	.menu-toggle-wrap {
-		display: flex;
-		justify-content: flex-end;
-		margin-bottom: 1rem;
+  &:hover {
+    .material-icons {
+      color: var(--primary);
+      // transform: translateX(0.5rem);
+    }
+  }
 
-		position: relative;
-		top: 0;
-		transition: 0.2s ease-in-out;
+  .menu-toggle-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
 
-		.menu-toggle {
-			transition: 0.2s ease-in-out;
+    position: relative;
+    top: 0;
+    transition: 0.2s ease-in-out;
 
-			.material-icons {
-				font-size: 2rem;
-				color: var(--light);
-				transition: 0.2s ease-out;
-			}
+    .menu-toggle {
+      transition: 0.2s ease-in-out;
 
-			&:hover {
-				.material-icons {
-					color: var(--primary);
-					transform: translateX(0.5rem);
-				}
-			}
-		}
-	}
+      .material-icons {
+        font-size: 2rem;
+        color: var(--light);
+        transition: 0.2s ease-out;
+      }
 
-	h3,
-	.button .text {
-		opacity: 0;
-		transition: opacity 0.3s ease-in-out;
-	}
+      &:hover {
+        .material-icons {
+          color: var(--primary);
+          transform: translateX(0.5rem);
+        }
+      }
+    }
+  }
 
-	h3 {
-		color: var(--grey);
-		font-size: 0.875rem;
-		margin-bottom: 0.5rem;
-		text-transform: uppercase;
-	}
+  h3,
+  .button .text {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
 
-	.menu {
-		margin: 0 -1rem;
+  h3 {
+    color: var(--grey);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
 
-		.button {
-			display: inline-block; // TODO: 'flex' om buttons onder elkaar te zetten, 'inline-block' om buttons naast elkaar te zetten
-			align-items: center;
-			text-decoration: none;
+  .menu {
+    margin: 0 -1rem;
 
-			transition: 0.2s ease-in-out;
-			padding: 0.5rem 1rem;
+    .button {
+      display: inline-block; // TODO: 'flex' om buttons onder elkaar te zetten, 'inline-block' om buttons naast elkaar te zetten
+      align-items: center;
+      text-decoration: none;
 
-			.material-icons {
-				font-size: 2rem;
-				color: var(--light);
-				transition: 0.2s ease-in-out;
-				margin-right: 1rem;
-			}
+      transition: 0.2s ease-in-out;
+      padding: 0.5rem 1rem;
 
-			.text {
-				opacity: 1;
-				color: var(--light);
-				transition: 0.2s ease-in-out;
-			}
+      .material-icons {
+        font-size: 2rem;
+        color: var(--light);
+        transition: 0.2s ease-in-out;
+        margin-right: 1rem;
+      }
 
-			&:hover {
-				background-color: var(--dark-alt);
+      .text {
+        opacity: 1;
+        color: var(--light);
+        transition: 0.2s ease-in-out;
+      }
 
-				.material-icons,
-				.text {
-					color: var(--primary);
-				}
-			}
+      &:hover {
+        background-color: var(--dark-alt);
 
-			&.router-link-exact-active {
-				background-color: var(--dark-alt);
-				border-right: 5px solid var(--primary);
+        .material-icons,
+        .text {
+          color: var(--primary);
+        }
+      }
 
-				.material-icons,
-				.text {
-					color: var(--primary);
-				}
-			}
-		}
-	}
+      &.router-link-exact-active {
+        background-color: var(--dark-alt);
+        border-right: 5px solid var(--primary);
 
-	.footer {
-		opacity: 0;
-		transition: opacity 0.3s ease-in-out;
+        .material-icons,
+        .text {
+          color: var(--primary);
+        }
+      }
+    }
+  }
 
-		p {
-			font-size: 0.875rem;
-			color: var(--grey);
-		}
-	}
+  .footer {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 
-	&.is-expanded {
-		width: var(--sidebar-width);
+    p {
+      font-size: 0.875rem;
+      color: var(--grey);
+    }
+  }
 
-		.menu-toggle-wrap {
-			top: -3rem;
+  &.is-expanded {
+    width: var(--sidebar-width);
 
-			.menu-toggle {
-				transform: rotate(-180deg);
-			}
-		}
+    .menu-toggle-wrap {
+      top: -3rem;
 
-		h3,
-		.button .text {
-			opacity: 1;
-		}
+      .menu-toggle {
+        transform: rotate(-180deg);
+      }
+    }
 
-		.button {
-			.material-icons {
-				margin-right: 1rem;
-			}
-		}
+    h3,
+    .button .text {
+      opacity: 1;
+    }
 
-		.footer {
-			opacity: 0;
-		}
-	}
+    .button {
+      .material-icons {
+        margin-right: 1rem;
+      }
+    }
 
-	@media (max-width: 1024px) {
-		position: absolute;
-		z-index: 99;
-	}
+    .footer {
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    position: absolute;
+    z-index: 99;
+  }
 }
 </style>
