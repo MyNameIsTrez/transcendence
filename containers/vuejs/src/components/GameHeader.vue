@@ -41,13 +41,11 @@ socketIOGame.on('gameOver', (data) => {
   }
 })
 socketIOGame.on('gameStart', () => {
-  console.log('Game start')
   startOfGame.value = true
 })
 </script>
 <style>
 .game-header {
-  background-color: black;
   color: white;
   position: absolute;
   left: 50%;
