@@ -57,7 +57,7 @@ socketIOGame.on('gameStart', () => {
   justify-content: center;
 }
 .game-title {
-  font-size: 6vw;
+  font-size: 4vw;
   margin: 1vw;
   padding: 1vw;
 }
