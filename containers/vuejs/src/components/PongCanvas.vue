@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
-import PlayButton from './PlayButton.vue'
+import GameHeader from './GameHeader.vue'
 
 const socketIOGame = getSocketIOInstance('game')
 
