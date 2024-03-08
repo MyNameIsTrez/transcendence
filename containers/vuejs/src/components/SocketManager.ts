@@ -21,7 +21,3 @@ const disconnectSocketIO = (namespace: string): void => {
 }
 
 export { getSocketIOInstance, disconnectSocketIO }
-
-interface IgameResult {
-  won: boolean
-}
