@@ -1,101 +1,108 @@
 <template>
-	<!-- <aside :class="`${is_expanded ? 'is-expanded' : ''}`"> -->
-	<aside class="test">
-		<!-- <div class="logo">
+  <!-- <aside :class="`${is_expanded ? 'is-expanded' : ''}`"> -->
+  <aside class="test">
+    <!-- <div class="logo">
 			<img :src="logoURL" alt="Vue" />
 		</div> -->
 
-		<!-- <div class="menu-toggle-wrap">
+    <!-- <div class="menu-toggle-wrap">
 			<button class="menu-toggle" @click="ToggleMenu">
 				<span class="material-icons">keyboard_double_arrow_right</span>
 			</button>
 		</div> -->
 
-		<h3>Menu</h3>
-		<div class="menu">
-			<!-- <button class="button" onclick="console.log('Profile')">
+    <h3>Menu</h3>
+    <div class="menu">
+      <!-- <button class="button" onclick="console.log('Profile')">
 				<span class="material-icons">person</span>
 				<span class="text">Profile</span>
 			</button> -->
-			<button class="button" onclick="console.log('Friends')">
-				<span class="material-icons">group</span>
-				<span class="text">Friends</span>
-			</button>
-			<button class="button" onclick="console.log('Leaderboard')">
-				<span class="material-icons">list</span>
-				<span class="text">Leaderboard</span>
-			</button>
-			<router-link to="/profile" class="button">
-				<span class="material-icons">person</span>
-				<span class="text">Profile</span>
-			</router-link>
-			<div class="testing">
-				<h1>Your profile</h1>
-				<p>mforstho</p>
-				<div style="clear: both">
-					<img style="float: left" src="/vuejs/code/src/assets/mforstho.png">
-					<p style="float: right">Win/Loss ratio: 121/0</p>
-				</div>
+      <button class="button" onclick="console.log('Friends')">
+        <span class="material-icons">group</span>
+        <span class="text">Friends</span>
+      </button>
+      <button class="button" onclick="console.log('Leaderboard')">
+        <span class="material-icons">list</span>
+        <span class="text">Leaderboard</span>
+      </button>
+      <router-link to="/profile" class="button">
+        <span class="material-icons">person</span>
+        <span class="text">Profile</span>
+      </router-link>
+      <div class="testing">
+        <h1>Your profile</h1>
+        <p>mforstho</p>
+        <div style="clear: both">
+          <img style="float: left" src="/vuejs/code/src/assets/mforstho.png" />
+          <p style="float: right">Win/Loss ratio: 121/0</p>
+        </div>
 
+        <div style="clear: both; padding-top: 50px">
+          <h1 style="padding-bottom: 10px">Match history</h1>
+        </div>
+        <div style="clear: both">
+          <p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255)">
+            mforstho
+          </p>
+          <p class="player2" style="float: right; padding-right: 5px">safoh</p>
+          <p class="match-date" style="text-align: center">04/03/2024</p>
+        </div>
+        <p>------------------------------------------------------</p>
+        <div style="clear: both; padding-bottom: 10px">
+          <p style="float: left; padding-left: 10px; color: var(--primary)">WIN</p>
+          <p style="float: right; padding-right: 10px; color: red">LOSS</p>
+          <p style="text-align: center">|</p>
+        </div>
+        <div style="clear: both">
+          <p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255)">
+            mforstho
+          </p>
+          <p class="player2" style="float: right; padding-right: 5px">safoh</p>
+          <p class="match-date" style="text-align: center">04/03/2024</p>
+        </div>
+        <p>------------------------------------------------------</p>
+        <div style="clear: both; padding-bottom: 10px">
+          <p style="float: left; padding-left: 10px; color: var(--primary)">WIN</p>
+          <p style="float: right; padding-right: 10px; color: red">LOSS</p>
+          <p style="text-align: center">|</p>
+        </div>
+        <div style="clear: both">
+          <p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255)">
+            mforstho
+          </p>
+          <p class="player2" style="float: right; padding-right: 5px">safoh</p>
+          <p class="match-date" style="text-align: center">04/03/2024</p>
+        </div>
+        <p>------------------------------------------------------</p>
+        <div style="clear: both; padding-bottom: 10px">
+          <p style="float: left; padding-left: 10px; color: var(--primary)">WIN</p>
+          <p style="float: right; padding-right: 10px; color: red">LOSS</p>
+          <p style="text-align: center">|</p>
+        </div>
 
+        <div class="achievements">
+          <h1>Your achievements</h1>
+          <span class="achievement-status">
+            <p>Unlocked</p>
+          </span>
+          <div class="tooltip">
+            A good start<span class="tooltiptext">Win for the first time</span>
+          </div>
+          <div class="tooltip">
+            Unstoppable!<span class="tooltiptext">Win 100 times in a row</span>
+          </div>
 
-
-				<div style="clear: both; padding-top: 50px;">
-					<h1 style="padding-bottom: 10px">Match history</h1>
-				</div>
-				<div style="clear: both">
-					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
-					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
-					<p class="match-date" style="text-align: center">04/03/2024</p>
-				</div>
-				<p>------------------------------------------------------</p>
-				<div style="clear: both; padding-bottom: 10px;">
-					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
-					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-					<p style="text-align: center">|</p>
-				</div>
-				<div style="clear: both">
-					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
-					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
-					<p class="match-date" style="text-align: center">04/03/2024</p>
-				</div>
-				<p>------------------------------------------------------</p>
-				<div style="clear: both; padding-bottom: 10px;">
-					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
-					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-					<p style="text-align: center">|</p>
-				</div>
-				<div style="clear: both">
-					<p class="player1" style="float: left; padding-left: 5px; color: rgb(98, 98, 255);">mforstho</p>
-					<p class="player2" style="float: right; padding-right: 5px;">safoh</p>
-					<p class="match-date" style="text-align: center">04/03/2024</p>
-				</div>
-				<p>------------------------------------------------------</p>
-				<div style="clear: both; padding-bottom: 10px;">
-					<p style="float: left; padding-left: 10px; color: var(--primary);">WIN</p>
-					<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-					<p style="text-align: center">|</p>
-				</div>
-
-
-
-				<div class="achievements">
-					<h1>Your achievements</h1>
-					<span class="achievement-status">
-						<p>Unlocked</p>
-					</span>
-					<div class="tooltip">A good start<span class="tooltiptext">Win for the first time</span></div>
-					<div class="tooltip">Unstoppable!<span class="tooltiptext">Win 100 times in a row</span></div>
-
-					<span class="achievement-status">
-						<p>Locked</p>
-					</span>
-					<div class="tooltip">Unfortunate<span class="tooltiptext">Lose for the first time</span></div>
-					<div class="tooltip">How!?<span class="tooltiptext">Lose 100 times in a row</span></div>
-				</div>
-			</div>
-		</div>
-		<!-- <router-link to="/about" class="button">
+          <span class="achievement-status">
+            <p>Locked</p>
+          </span>
+          <div class="tooltip">
+            Unfortunate<span class="tooltiptext">Lose for the first time</span>
+          </div>
+          <div class="tooltip">How!?<span class="tooltiptext">Lose 100 times in a row</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- <router-link to="/about" class="button">
 				<span class="material-icons">group</span>
 				<span class="text">Friends</span>
 			</router-link>
