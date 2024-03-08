@@ -6,8 +6,6 @@ interface SocketInstance {
 const sockets: SocketInstance = {}
 
 const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
-  console.log('getSocketIOInstance called')
-  console.log('namespace: ', namespace)
   if (!sockets[namespace]) {
     sockets[namespace] = io('ws://localhost:4242')
   }
