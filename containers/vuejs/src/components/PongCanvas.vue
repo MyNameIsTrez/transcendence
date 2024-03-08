@@ -1,6 +1,6 @@
 <template>
-  <PlayButton :scale="scale" />
-  <div class="pong-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
+  <div class="pong-container" ref="pongContainer">
+    <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
