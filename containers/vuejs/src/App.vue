@@ -12,14 +12,21 @@ onUnmounted(() => {
 <template>
   <Sidebar />
   <PongCanvas />
+  <Sidebar />
 </template>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 #app {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  flex-direction: row;
   font-family: 'Press Start 2P', cursive;
 }
 </style>
