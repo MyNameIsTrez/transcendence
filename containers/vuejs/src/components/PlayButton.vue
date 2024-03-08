@@ -43,7 +43,7 @@ const paddingScale = computed(() => {
   color: black;
   border: none;
   position: absolute;
-  font-family: inherit;
+  /*  font-family: inherit;*/
   text-align: center;
   margin: auto;
   display: flex;
