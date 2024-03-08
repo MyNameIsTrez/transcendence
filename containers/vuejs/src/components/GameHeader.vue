@@ -1,22 +1,39 @@
 <template>
-  <div class="game-header" v-if="!startOfGame.value">
+  <div class="game-header" v-if="!startOfGame">
     <h1 class="game-title">{{ gameTitle }}</h1>
-    <PlayButton />
+    <PlayButton v-if="!endOfGame" @clicked="joinGame" :buttonText="buttonText" />
+    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="buttonText" />
   </div>
 </template>
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
 import { getSocketIOInstance } from './SocketManager'
 import { ref } from 'vue'
+const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
+const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
 const socketIOGame = getSocketIOInstance('game')
+
+const joinGame = () => {
+  buttonText.value = 'Seeking game...'
+  console.log('Joining game')
+  socketIOGame.emit('joinGame')
+}
+const reset = () => {
+  buttonText.value = 'PLAY'
+  gameTitle.value = 'PONG'
+  endOfGame.value = false
+  startOfGame.value = false
+  emit('resetCanvas')
+}
 
 socketIOGame.on('gameOver', (data) => {
   console.log('Game over', data)
   endOfGame.value = true
   startOfGame.value = false
+  buttonText.value = 'Continue'
   if (data.won) {
     gameTitle.value = 'YOU WON'
   } else {
