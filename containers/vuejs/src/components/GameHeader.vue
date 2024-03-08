@@ -18,7 +18,6 @@ const socketIOGame = getSocketIOInstance('game')
 
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  console.log('Joining game')
   socketIOGame.emit('joinGame')
 }
 const reset = () => {
