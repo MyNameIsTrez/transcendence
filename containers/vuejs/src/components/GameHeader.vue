@@ -28,12 +28,11 @@ const reset = () => {
   emit('resetCanvas')
 }
 
-socketIOGame.on('gameOver', (data) => {
-  console.log('Game over', data)
+socketIOGame.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
   buttonText.value = 'Continue'
-  if (data.won) {
+  if (won) {
     gameTitle.value = 'YOU WON'
   } else {
     gameTitle.value = 'YOU LOST'
