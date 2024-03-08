@@ -16,7 +16,7 @@ socketIOGame.on('pong', (data) => {
   render(data)
 })
 socketIOGame.on('gameOver', (data) => {
-  console.log('Game over', data)
+  drawCanvas()
 })
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
