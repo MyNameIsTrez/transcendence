@@ -93,7 +93,6 @@ const drawCanvas = () => {
 
 const resizeCanvas = () => {
   const screenWidth = (window.innerWidth * 6) / 8
-  console.log('screenWidth', screenWidth)
   const screenHeight = (window.innerHeight * 6) / 8
 
   if (canvas) {
