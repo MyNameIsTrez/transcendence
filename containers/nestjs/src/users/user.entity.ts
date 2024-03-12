@@ -10,8 +10,4 @@ export class User {
 
   @Column()
   lastName!: string
-
-  // TODO: Try removing this
-  @Column({ default: true })
-  isActive!: boolean
 }
