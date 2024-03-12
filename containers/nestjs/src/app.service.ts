@@ -22,7 +22,10 @@ export class AppService {
     formData.set('client_id', process.env.INTRA_CLIENT_ID || '') // TODO: Don't push this
     formData.set('client_secret', process.env.INTRA_CLIENT_SECRET || '') // TODO: Don't push this
     formData.set('code', code)
-    formData.set('redirect_uri', process.env.HOST_URI || '')
+    formData.set(
+      'redirect_uri',
+      (process.env.VITE_ADDRESS || '') + ':' + (process.env.FRONTEND_PORT || '')
+    )
 
     return fetch('https://api.intra.42.fr/oauth/token', {
       method: 'POST',
