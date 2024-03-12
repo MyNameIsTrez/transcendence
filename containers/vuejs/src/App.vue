@@ -10,9 +10,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Sidebar />
-  <PongCanvas />
-  <Sidebar />
+	<div class="flex flex-col w-full lg:flex-row">
+		<div class="grid flex-grow h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
+		<!-- <div class="divider lg:divider-horizontal"></div> -->
+		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas /></div>
+		<!-- <div class="divider lg:divider-horizontal"></div> -->
+		<div class="grid flex-grow h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
+	</div>
 </template>
 
 <style>
