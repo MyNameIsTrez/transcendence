@@ -58,8 +58,10 @@ export class AppGateway {
         const game = this.games[i]
         game.updateElements()
         if (game.checkGameOver()) {
-          game._leftPlayer._socket?.emit(`gameOver`, game.getLeftResult())
-          game._rightPlayer._socket?.emit(`gameOver`, game.getRightResult())
+          const leftResult = game.getLeftResult()
+          const rightResult = game.getRightResult()
+          game._leftPlayer._socket?.emit(`gameOver`, leftResult)
+          game._rightPlayer._socket?.emit(`gameOver`, rightResult)
           this.games.splice(i, 1) //TODO: Does this not fuck with memory? - Saladin?
         } else {
           const data = game.getData()
@@ -83,6 +85,9 @@ export class AppGateway {
     if (games_count !== 0 && this.games[games_count - 1]._rightPlayer._socket === null) {
       this.games[games_count - 1]._rightPlayer._socket = client
       this.id_to_game.set(client.id, this.games[games_count - 1])
+      this.games[games_count - 1]._leftPlayer._socket?.emit(`gameStart`)
+      this.games[games_count - 1]._rightPlayer._socket?.emit(`gameStart`)
+
       console.log(`Player 2 has joined lobby ${games_count - 1}`)
     } else {
       // If a player could not join an existing lobby -> create a new lobby
