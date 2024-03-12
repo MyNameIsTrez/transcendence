@@ -10,36 +10,36 @@ import { onMounted, ref, watch } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
 import PlayButton from './PlayButton.vue'
 
-// import { useRoute } from 'vue-router'
-// const route = useRoute()
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 let socketIOGame: SocketIOClient.Socket | undefined
 
 // TODO: Move this to a logical file, and figure out a way to do this without watch()
 // TODO: Comment this back in!
-// watch(
-//   () => route.query.code,
-//   (code) => {
-//     if (code && socketIOGame === undefined) {
-// TODO: Only call this when we return from a Login button, and if we have a query code
-// TODO: This is an extremely shitty solution, since there's a race condition caused by
-// TODO: PlayButton.vue also calling this function, so PLEASE think of something better :((
-// TODO: Can the socketIOGame not just be a global?
-socketIOGame = getSocketIOInstance('game')
-console.log('b')
+watch(
+  () => route.query.code,
+  (code) => {
+    if (code && socketIOGame === undefined) {
+      // TODO: Only call this when we return from a Login button, and if we have a query code
+      // TODO: This is an extremely shitty solution, since there's a race condition caused by
+      // TODO: PlayButton.vue also calling this function, so PLEASE think of something better :((
+      // TODO: Can the socketIOGame not just be a global?
+      socketIOGame = getSocketIOInstance('game')
+      console.log('b')
 
-socketIOGame.on('pong', (data) => {
-  render(data)
-})
-socketIOGame.on('gameOver', (data) => {
-  console.log('Game over', data)
-})
+      socketIOGame.on('pong', (data) => {
+        render(data)
+      })
+      socketIOGame.on('gameOver', (data) => {
+        console.log('Game over', data)
+      })
 
-// console.log(`code: ${code}`)
-// socketIOGame.emit('code', { code })
-//     }
-//   }
-// )
+      console.log(`code: ${code}`)
+      socketIOGame.emit('code', { code })
+    }
+  }
+)
 
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
