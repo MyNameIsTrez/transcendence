@@ -10,13 +10,14 @@
 import { ref, onMounted } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
 import GameHeader from './GameHeader.vue'
+import ScoreBoard from './ScoreBoard.vue'
 
 const socketIOGame = getSocketIOInstance('game')
 
-socketIOGame.on('pong', (data) => {
+socketIOGame.on('pong', (data: any) => {
   render(data)
 })
-socketIOGame.on('gameOver', (data) => {
+socketIOGame.on('gameOver', (data: any) => {
   drawCanvas()
 })
 const emitMovePaddle = (code: string, keydown: boolean) => {
