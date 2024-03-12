@@ -1,43 +1,23 @@
 <template>
-  <button
-    class="play-button"
-    @click="joinMatch"
-    :style="{
-      top: topScale,
-      left: leftScale,
-      'font-size': fontScale,
-      padding: paddingScale
-    }"
-  >
-    PLAY
+  <button class="play-button" @click="emit('clicked')">
+    {{ props.buttonText }}
   </button>
 </template>
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+const emit = defineEmits(['clicked'])
 const props = defineProps({
-  joinMatch: Function,
-  scale: Number
+  buttonText: String
 })
-const topScale = computed(() => {
-  return `${props.scale * 45}%`
-})
-const leftScale = computed(() => {
-  return `${props.scale * 70}%`
-})
-const fontScale = computed(() => {
-  return `${props.scale * 2}vw`
-})
-const paddingScale = computed(() => {
-  return `${props.scale * 2}vw ${props.scale * 4}vw`
-})
+console.log(props)
 </script>
 <style>
 .play-button {
   background-color: white;
   color: black;
-  border: none;
-  position: absolute;
-  font-family: inherit;
+  text-align: center;
+  font-size: 1vw;
+  padding: 1.5vw 3vw;
+  margin: 6vw;
 }
 .play-button:hover {
   background-color: #333; /* Darker shade on hover */
