@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common'
+import { UsersService } from './users/users.service'
 
 @Injectable()
 export class AppService {
+  constructor(private readonly usersService: UsersService) {}
+
   getHello(): string {
     return 'Hello World!'
   }
@@ -35,14 +38,14 @@ export class AppService {
         response
           .json()
           .then((j) => {
-            console.log('j:', j)
+            // console.log('j:', j)
 
             const access_token: string = j.access_token
             if (access_token === undefined) {
               console.log('Could not retrieve your 42 access token')
               return this.getLoginError('Could not retrieve your 42 access token')
             }
-            console.log(`access_token: ${access_token}`)
+            // console.log(`access_token: ${access_token}`)
             // return access_token
 
             // TODO: Free this?
@@ -55,31 +58,39 @@ export class AppService {
                 response
                   .json()
                   .then((j2) => {
-                    console.log('H')
+                    // console.log('H')
                     // console.log(j2)
-                    console.log(`Unique ID is ${j2.id}`)
+                    // console.log(`Unique ID is ${j2.id}`)
+                    // console.log(`typeof(j2.id) is ${typeof j2.id}`)
+                    // console.log(`displayname is ${j2.displayname}`)
+                    // console.log(`image.versions.medium is ${j2.image.versions.medium}`)
+                    this.usersService.create({
+                      intra_id: j2.id,
+                      displayname: j2.displayname,
+                      image_url: j2.image.versions.medium
+                    })
                   })
                   .catch((err) => {
-                    console.log('X')
+                    // console.log('X')
                     console.log(err)
                     return err
                   })
                 return response
               })
               .catch((err) => {
-                console.log('F')
+                // console.log('F')
                 console.log(err)
                 return err
               })
           })
           .catch((err) => {
-            console.log('B')
+            // console.log('B')
             console.error(err)
             return err
           })
       })
       .catch((err) => {
-        console.log('A')
+        // console.log('A')
         console.error(err)
         return err
       })

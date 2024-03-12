@@ -118,7 +118,7 @@ export class AppGateway {
 
   @SubscribeMessage('code')
   async code(@ConnectedSocket() client: Socket, @MessageBody('code') code: string) {
-    console.log('code:', code)
+    // console.log('code:', code)
     this.appService.authenticate(code)
     // TODO: Return an object containing the minimal amount of information needed for vue to draw the profile picture, etc.
   }

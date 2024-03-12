@@ -30,9 +30,9 @@ Connect to the `postgres` database:
 
 `\c postgres`
 
-Testing the database:
+Getting all users from the database:
 
-`curl localhost:4242/api/users -H 'Content-Type: application/json' -d '{"firstName":"Foo","lastName":"Bar"}'`
+`curl localhost:4242/api/users`
 
 ## Without entering psql
 

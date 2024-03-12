@@ -11,8 +11,9 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto): Promise<User> {
     const user = new User()
-    user.firstName = createUserDto.firstName
-    user.lastName = createUserDto.lastName
+    user.intra_id = createUserDto.intra_id
+    user.displayname = createUserDto.displayname
+    user.image_url = createUserDto.image_url
 
     return this.usersRepository.save(user)
   }
@@ -22,8 +23,8 @@ export class UsersService {
   }
 
   // TODO: Why isn't this async, unlike findAll()? Try removing "async" from findAll()
-  findOne(id: number): Promise<User | null> {
-    return this.usersRepository.findOneBy({ id: id })
+  findOne(key: number): Promise<User | null> {
+    return this.usersRepository.findOneBy({ key: key })
   }
 
   async remove(id: string): Promise<void> {

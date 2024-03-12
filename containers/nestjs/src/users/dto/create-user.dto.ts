@@ -1,4 +1,5 @@
 export class CreateUserDto {
-  firstName!: string
-  lastName!: string
+  intra_id!: number
+  displayname!: string
+  image_url!: string
 }
