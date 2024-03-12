@@ -1,5 +1,6 @@
 <template>
   <div class="pong-container" ref="pongContainer">
+    <ScoreBoard />
     <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
