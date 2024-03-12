@@ -104,7 +104,7 @@ export class AppGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean
   ) {
-    console.log(`client.id: ${client.id}`)
+    // console.log(`client.id: ${client.id}`)
     const game = this.id_to_game.get(client.id)
     if (game === undefined) {
       console.log(`id_to_game.get has gone terribly wrong in movePaddle`)

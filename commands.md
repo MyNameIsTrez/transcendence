@@ -34,6 +34,10 @@ Getting all users from the database:
 
 `curl localhost:4242/api/users`
 
+Authorize with intra.
+Change the `redirect_uri` parameter of this URL so it points to your computer:
+`https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-687341ddad62ca71f252d1088176c46c196e91ce842a42462761637728776f8a&redirect_uri=http%3A%2F%2Ff1r4s8.codam.nl%3A2424&response_type=code`
+
 ## Without entering psql
 
 Print all databases:
