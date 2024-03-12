@@ -39,10 +39,6 @@ watch(
   }
 )
 
-// const urlParams = new URLSearchParams(window.location.search);
-// const code = urlParams.get('code');
-// console.log(`code: ${code}`)
-
 const joinGame = () => {
   console.log('Joining game')
   socketIOGame.emit('joinGame')
