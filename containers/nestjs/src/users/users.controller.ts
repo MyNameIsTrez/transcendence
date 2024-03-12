@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, ParseIntPipe } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common'
 import { CreateUserDto } from './dto/create-user.dto'
 import { User } from './user.entity'
 import { UsersService } from './users.service'
@@ -17,14 +17,10 @@ export class UsersController {
     return this.usersService.findAll()
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
-    return this.usersService.findOne(id)
-  }
-
-  // TODO: Try also using ParseIntPipe here?
-  @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.remove(id)
-  }
+  // TODO: Idk if we need this, but it poses a mild security risk,
+  // as this allows anyone to get the email address of any intra id
+  // @Get(':intra_id')
+  // findOne(@Param('intra_id') intra_id: number): Promise<User | null> {
+  //   return this.usersService.findOne(intra_id)
+  // }
 }

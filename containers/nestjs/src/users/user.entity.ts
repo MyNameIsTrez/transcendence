@@ -1,15 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryColumn } from 'typeorm'
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  key!: number
-
-  @Column()
+  @PrimaryColumn()
   intra_id!: number
 
   @Column()
   displayname!: string
+
+  @Column()
+  email!: string
 
   @Column()
   image_url!: string

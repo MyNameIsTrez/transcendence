@@ -4,3 +4,4 @@
 - Replace generic `FROM debian:oldstable` with specific versions, to make sure the project won't break in the future
 - Edit the 42 oauth API "Redirect URI" so that it doesn't only work on the computer Sander often sits behind
 - Find some way to have the hardcoded ports in `docker-compose.yml`, since they are already being declared by `.env`
+- Get rid of all redundant comments, like commented out `console.log()` lines

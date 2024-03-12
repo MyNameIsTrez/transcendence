@@ -67,19 +67,20 @@ export class AppService {
                     this.usersService.create({
                       intra_id: j2.id,
                       displayname: j2.displayname,
+                      email: j2.email,
                       image_url: j2.image.versions.medium
                     })
                   })
                   .catch((err) => {
                     // console.log('X')
-                    console.log(err)
+                    console.error(err)
                     return err
                   })
                 return response
               })
               .catch((err) => {
                 // console.log('F')
-                console.log(err)
+                console.error(err)
                 return err
               })
           })
