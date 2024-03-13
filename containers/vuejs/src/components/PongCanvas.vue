@@ -7,15 +7,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getSocketIOInstance } from './SocketManager'
+import { gameSocket } from './SocketManager'
 import ScoreBoard from './ScoreBoard.vue'
 
-const socketIOGame = getSocketIOInstance('game')
-
-socketIOGame.on('pong', (data: any) => {
+gameSocket.on('pong', (data: any) => {
   render(data)
 })
-socketIOGame.on('gameOver', (data: any) => {
+gameSocket.on('gameOver', (data: any) => {
   drawCanvas()
 })
 const emitMovePaddle = (code: string, keydown: boolean) => {
@@ -26,7 +24,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
     north = false
   }
   if (north !== undefined) {
-    socketIOGame.emit('movePaddle', { keydown: keydown, north: north })
+    gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
 const server_window_height = 1080

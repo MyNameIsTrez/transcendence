@@ -8,7 +8,7 @@
 </template>
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { getSocketIOInstance } from './SocketManager'
+import { rootSocket, gameSocket } from './SocketManager'
 import { ref } from 'vue'
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
@@ -16,8 +16,10 @@ const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
 const loggedIn = ref(false)
-const gameSocket = getSocketIOInstance('game')
 
+rootSocket.on('attemptLogin', (loggedIn: boolean) => {
+  loggedIn.value = loggedIn
+})
 const attemptLogin = () => {
   window.location.href = 'http://siwei.me'
 }

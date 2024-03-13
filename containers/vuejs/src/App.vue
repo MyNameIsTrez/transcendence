@@ -9,23 +9,20 @@
 import { ref, onBeforeMount, onUnmounted } from 'vue'
 import GameHeader from './components/GameHeader.vue'
 import PongCanvas from './components/PongCanvas.vue'
-import { getSocketIOInstance, disconnectSocketIO } from './components/SocketManager'
+import { rootSocket, disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
 import Chat from './components/Chat.vue'
 const loggedIn = ref(false)
 onBeforeMount(() => {
-  const root = getSocketIOInstance('/')
   const code = new URLSearchParams(window.location.search).get('code') || ''
-  root.on('attemptLogin', (loggedIn: boolean) => {
+  rootSocket.on('attemptLogin', (loggedIn: boolean) => {
     loggedIn.value = loggedIn
   })
-  root.emit('code', code)
+  rootSocket.emit('code', code)
 })
 
 onUnmounted(() => {
-  disconnectSocketIO('/')
-  disconnectSocketIO('game')
-  disconnectSocketIO('chat')
+  disconnectSockets()
 })
 </script>
 

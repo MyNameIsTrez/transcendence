@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Numbers from './Numbers.vue'
-import { getSocketIOInstance } from './SocketManager'
+import { gameSocket } from './SocketManager'
 
 const canvasRef = ref(null)
 
@@ -30,7 +30,7 @@ const drawScore = (context, score: number, i: number) => {
   })
 }
 
-getSocketIOInstance('game').on('pong', (data: any) => {
+gameSocket.on('pong', (data: any) => {
   updateScore(data.leftPlayer.score, data.rightPlayer.score)
 })
 </script>
