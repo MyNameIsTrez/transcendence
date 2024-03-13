@@ -1,8 +1,9 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
     <h1 class="game-title">{{ gameTitle }}</h1>
-    <PlayButton v-if="!endOfGame" @clicked="joinGame" :buttonText="buttonText" />
-    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="buttonText" />
+    <PlayButton v-if="!loggedIn" @clicked="attemptLogin" :buttonText="`LOGIN`" />
+    <PlayButton v-if="!endOfGame && loggedIn" @clicked="joinGame" :buttonText="buttonText" />
+    <PlayButton v-if="endOfGame && loggedIn" @clicked="reset" :buttonText="`Continue`" />
   </div>
 </template>
 <script setup lang="ts">
@@ -14,8 +15,15 @@ const gameTitle = ref('PONG')
 const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
+const loggedIn = ref(false)
 const socketIOGame = getSocketIOInstance('game')
 
+const attemptLogin = () => {
+  window.location.href = 'http://siwei.me'
+}
+socketIOGame.on('attemptLogin', (loggedIn: boolean) => {
+  loggedIn.value = loggedIn
+})
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
   socketIOGame.emit('joinGame')
@@ -31,7 +39,6 @@ const reset = () => {
 socketIOGame.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
-  buttonText.value = 'Continue'
   if (won) {
     gameTitle.value = 'YOU WON'
   } else {
