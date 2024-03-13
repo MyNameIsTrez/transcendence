@@ -17,11 +17,13 @@ const endOfGame = ref(false)
 const startOfGame = ref(false)
 const loggedIn = ref(false)
 
-rootSocket.on('attemptLogin', (loggedIn: boolean) => {
-  loggedIn.value = loggedIn
+rootSocket.on('attemptLogin', (state: boolean) => {
+  console.log('attemptLogin', state)
+  loggedIn.value = state
 })
 const attemptLogin = () => {
-  window.location.href = 'http://siwei.me'
+  console.log(import.meta.env.VITE_INTRA_REDIRECT_URL)
+  window.location.href = import.meta.env.VITE_INTRA_REDIRECT_URL
 }
 const joinGame = () => {
   buttonText.value = 'Seeking game...'

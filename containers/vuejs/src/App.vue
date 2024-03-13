@@ -15,8 +15,13 @@ import Chat from './components/Chat.vue'
 const loggedIn = ref(false)
 onBeforeMount(() => {
   const code = new URLSearchParams(window.location.search).get('code') || ''
-  rootSocket.on('attemptLogin', (loggedIn: boolean) => {
-    loggedIn.value = loggedIn
+  console.log('code', code)
+  rootSocket.on('attemptLogin', (sate: boolean) => {
+    if (sate) {
+      loggedIn.value = true
+    } else {
+      loggedIn.value = false
+    }
   })
   rootSocket.emit('code', code)
 })

@@ -1,17 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryColumn } from 'typeorm'
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id!: number
+  @PrimaryColumn()
+  intra_id!: number
 
   @Column()
-  firstName!: string
+  displayname!: string
 
   @Column()
-  lastName!: string
+  email!: string
 
-  // TODO: Try removing this
-  @Column({ default: true })
-  isActive!: boolean
+  @Column()
+  image_url!: string
 }
