@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AppGateway } from './app.gateway'
+import { ChatModule } from './chat/chat.module'
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { AppGateway } from './app.gateway'
       logging: true // TODO: Disable?
     }),
     GameModule,
-    UsersModule
+    UsersModule,
+    ChatModule
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway]

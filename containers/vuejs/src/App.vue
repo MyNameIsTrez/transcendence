@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import PongCanvas from './components/PongCanvas.vue'
 import { disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
+import Chat from './components/Chat.vue'
 
 onUnmounted(() => {
   disconnectSockets()
@@ -12,7 +13,7 @@ onUnmounted(() => {
 <template>
   <Sidebar />
   <PongCanvas />
-  <Sidebar />
+  <Chat />
 </template>
 
 <style>

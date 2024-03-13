@@ -11,7 +11,7 @@ import { AppService } from './app.service'
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, namespace: 'game' })
 export class AppGateway {
   // TODO: The gateway is maybe not supposed to call AppServices?
   constructor(private readonly appService: AppService) {}
