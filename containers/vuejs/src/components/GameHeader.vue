@@ -7,18 +7,17 @@
 </template>
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { getSocketIOInstance } from './SocketManager'
+import { gameSocket } from './SocketManager'
 import { ref } from 'vue'
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
 const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
-const socketIOGame = getSocketIOInstance('game')
 
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  socketIOGame.emit('joinGame')
+  gameSocket.emit('joinGame')
 }
 const reset = () => {
   buttonText.value = 'PLAY'
@@ -28,7 +27,7 @@ const reset = () => {
   emit('resetCanvas')
 }
 
-socketIOGame.on('gameOver', (won: boolean) => {
+gameSocket.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
   buttonText.value = 'Continue'
@@ -38,7 +37,7 @@ socketIOGame.on('gameOver', (won: boolean) => {
     gameTitle.value = 'YOU LOST'
   }
 })
-socketIOGame.on('gameStart', () => {
+gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
 </script>
