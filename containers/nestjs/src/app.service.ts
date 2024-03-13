@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { UsersService } from './users/users.service'
-import { response } from 'express'
 
 @Injectable()
 export class AppService {
