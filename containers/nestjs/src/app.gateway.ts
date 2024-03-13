@@ -11,7 +11,7 @@ import { Pong } from './pong'
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, namespace: 'game' })
 export class AppGateway {
   @WebSocketServer()
   server!: Server
