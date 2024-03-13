@@ -20,7 +20,8 @@ export class AppGateway {
   server!: Server
 
   @SubscribeMessage('code')
-  async code(@ConnectedSocket() client: Socket, @MessageBody('code') code: string) {
+  async code(@ConnectedSocket() client: Socket, @MessageBody() code: string) {
+    console.log('app gateway: code', code)
     const success = await this.appService.authenticate(code)
     client.emit('attemptLogin', success)
   }
