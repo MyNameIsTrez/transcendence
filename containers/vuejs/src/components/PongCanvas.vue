@@ -1,7 +1,6 @@
 <template>
   <div class="pong-container" ref="pongContainer">
     <ScoreBoard />
-    <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
@@ -9,7 +8,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
-import GameHeader from './GameHeader.vue'
 import ScoreBoard from './ScoreBoard.vue'
 
 const socketIOGame = getSocketIOInstance('game')

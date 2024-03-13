@@ -16,17 +16,14 @@ const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
 const loggedIn = ref(false)
-const socketIOGame = getSocketIOInstance('game')
+const gameSocket = getSocketIOInstance('game')
 
 const attemptLogin = () => {
   window.location.href = 'http://siwei.me'
 }
-socketIOGame.on('attemptLogin', (loggedIn: boolean) => {
-  loggedIn.value = loggedIn
-})
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  socketIOGame.emit('joinGame')
+  gameSocket.emit('joinGame')
 }
 const reset = () => {
   buttonText.value = 'PLAY'
@@ -36,7 +33,7 @@ const reset = () => {
   emit('resetCanvas')
 }
 
-socketIOGame.on('gameOver', (won: boolean) => {
+gameSocket.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
   if (won) {
@@ -45,7 +42,7 @@ socketIOGame.on('gameOver', (won: boolean) => {
     gameTitle.value = 'YOU LOST'
   }
 })
-socketIOGame.on('gameStart', () => {
+gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
 </script>

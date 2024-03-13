@@ -6,9 +6,9 @@ interface SocketInstance {
 const sockets: SocketInstance = {}
 
 const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
-  if (!sockets['ws://localhost:4242']) {
+  if (!sockets['ws://localhost:4242/']) {
     console.log(`created root`)
-    sockets['ws://localhost:4242'] = io('ws://localhost:4242')
+    sockets['ws://localhost:4242/'] = io('ws://localhost:4242/')
   }
   if (!sockets[namespace]) {
     console.log(`created ${namespace}`)
