@@ -1,6 +1,7 @@
 import { ConfigModule } from '@nestjs/config'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { GameModule } from './game/game.module'
 import { UsersModule } from './users/users.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -22,6 +23,7 @@ import { AppGateway } from './app.gateway'
       synchronize: true, // TODO: Remove?
       logging: true // TODO: Disable?
     }),
+    GameModule,
     UsersModule
   ],
   controllers: [AppController],
