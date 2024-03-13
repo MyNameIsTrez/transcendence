@@ -109,6 +109,7 @@ export class AppGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean
   ) {
+    console.log('movePaddle called')
     // console.log(`client.id: ${client.id}`)
     const game = this.id_to_game.get(client.id)
     if (game === undefined) {
@@ -123,8 +124,17 @@ export class AppGateway {
 
   @SubscribeMessage('code')
   async code(@ConnectedSocket() client: Socket, @MessageBody('code') code: string) {
-    // console.log('code:', code)
-    this.appService.authenticate(code)
-    // TODO: Return an object containing the minimal amount of information needed for vue to draw the profile picture, etc.
+    const success = await this.appService.authenticate(code)
+    client.emit('attemptLogin', success)
   }
+
+  //   @SubscribeMessage('game/game')
+  //   async game(@ConnectedSocket() client: Socket) {
+  //     console.log(`game socket id: ${client.id}`)
+  //   }
+
+  //   @SubscribeMessage('chat/chat')
+  //   async chat(@ConnectedSocket() client: Socket) {
+  //     console.log(`chat socket id: ${client.id}`)
+  //   }
 }

@@ -6,40 +6,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
-import { getSocketIOInstance } from './SocketManager'
+import { onMounted, ref } from 'vue'
+import { gameSocket } from './SocketManager'
 import GameHeader from './GameHeader.vue'
 
-import { useRoute } from 'vue-router'
-const route = useRoute()
+gameSocket.on('pong', (data) => {
+  render(data)
+})
 
-let socketIOGame: SocketIOClient.Socket | undefined
-
-// TODO: Move this to a logical file, and figure out a way to do this without watch()
-// TODO: Comment this back in!
-watch(
-  () => route.query.code,
-  (code) => {
-    if (code && socketIOGame === undefined) {
-      // TODO: Only call this when we return from a Login button, and if we have a query code
-      // TODO: This is an extremely shitty solution, since there's a race condition caused by
-      // TODO: PlayButton.vue also calling this function, so PLEASE think of something better :((
-      // TODO: Can the socketIOGame not just be a global?
-      socketIOGame = getSocketIOInstance('game')
-      console.log('b')
-
-      socketIOGame.on('pong', (data) => {
-        render(data)
-      })
-      socketIOGame.on('gameOver', (data) => {
-        console.log('Game over', data)
-      })
-
-      console.log(`code: ${code}`)
-      socketIOGame.emit('code', { code })
-    }
-  }
-)
+gameSocket.on('gameOver', (data) => {
+  console.log('Game over', data)
+})
 
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
@@ -48,8 +25,9 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
   } else if (code === 'KeyS' || code === 'ArrowDown') {
     north = false
   }
-  if (north !== undefined && socketIOGame !== undefined) {
-    socketIOGame.emit('movePaddle', { keydown: keydown, north: north })
+  if (north !== undefined && gameSocket !== undefined) {
+    console.log('Emitted movePaddle')
+    gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
 const server_window_height = 1080

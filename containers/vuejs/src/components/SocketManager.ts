@@ -1,23 +1,35 @@
 import io from 'socket.io-client'
 
-interface SocketInstance {
-  [namespace: string]: SocketIOClient.Socket | undefined
+const disconnectSockets = (): void => {
+  chatSocket.disconnect()
+  gameSocket.disconnect()
+  rootSocket.disconnect()
 }
 
-const sockets: SocketInstance = {}
-
-const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
-  if (!sockets[namespace]) {
-    sockets[namespace] = io(import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_PORT)
-  }
-  return sockets[namespace]
+const createSocketNamespace = (namespace: string) => {
+  return io(import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_PORT + '/' + namespace)
 }
 
-const disconnectSocketIO = (namespace: string): void => {
-  if (sockets[namespace]) {
-    sockets[namespace]?.disconnect()
-    delete sockets[namespace]
-  }
+const rootSocket = createSocketNamespace('')
+const gameSocket = createSocketNamespace('game')
+// gameSocket.emit('game')
+const chatSocket = createSocketNamespace('chat')
+// chatSocket.emit('chat')
+// chatSocket.emit('')
+
+// TODO: Move this to a logical file
+const authenticate = (code: string) => {
+  rootSocket.on('attemptLogin', (resp) => {
+    // TODO: Check if response is 'True' or 'False', and show either 'Pong'-page or 'Login'-page
+    console.log('response:')
+    console.log(resp)
+  })
+
+  rootSocket.emit('code', { code })
 }
 
-export { getSocketIOInstance, disconnectSocketIO }
+const code = new URLSearchParams(window.location.search).get('code') || ''
+console.log(`code: ${code}`)
+authenticate(code)
+
+export { disconnectSockets, gameSocket, chatSocket }
