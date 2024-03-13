@@ -1,6 +1,6 @@
 <template>
-  <PlayButton :scale="scale" />
-  <div class="pong-container" :style="{ width: canvasWidth + 'px', height: canvasHeight + 'px' }">
+  <div class="pong-container" ref="pongContainer">
+    <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getSocketIOInstance } from './SocketManager'
-import PlayButton from './PlayButton.vue'
+import GameHeader from './GameHeader.vue'
 
 const socketIOGame = getSocketIOInstance('game')
 
@@ -16,7 +16,7 @@ socketIOGame.on('pong', (data) => {
   render(data)
 })
 socketIOGame.on('gameOver', (data) => {
-  console.log('Game over', data)
+  drawCanvas()
 })
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
@@ -31,12 +31,10 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
 }
 const server_window_height = 1080
 const server_window_width = 1920
-
+const pongContainer = ref(null)
 const scale = ref(1)
 const aspectRatio = server_window_width / server_window_height
 const canvasRef = ref(null)
-const canvasWidth = ref(server_window_width)
-const canvasHeight = ref(server_window_height)
 let canvas: HTMLCanvasElement | undefined
 let context: CanvasRenderingContext2D | null
 
@@ -94,8 +92,8 @@ const drawCanvas = () => {
 }
 
 const resizeCanvas = () => {
-  const screenWidth = window.innerWidth
-  const screenHeight = window.innerHeight
+  const screenWidth = (window.innerWidth * 6) / 8
+  const screenHeight = (window.innerHeight * 6) / 8
 
   if (canvas) {
     if (screenWidth / screenHeight > aspectRatio) {
@@ -106,14 +104,12 @@ const resizeCanvas = () => {
       canvas.height = screenWidth / aspectRatio
     }
     scale.value = canvas.width / server_window_width
-    canvasWidth.value = canvas.width
-    canvasHeight.value = canvas.height
   }
 }
 </script>
 <style>
 .pong-container {
-  display: relative;
-  align-content: center;
+  flex-grow: 6;
+  position: relative;
 }
 </style>

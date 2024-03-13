@@ -1,6 +1,6 @@
-import { 
-	SubscribeMessage, 
-	WebSocketGateway, 
+import {
+	SubscribeMessage,
+	WebSocketGateway,
 	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect
@@ -11,61 +11,64 @@ import * as fs from 'fs';
 
 // port 8001 is the port the back end is serving on
 // {cors: '*'} makes sure it's accepts every front end connection
-@WebSocketGateway(8001, { cors: '*' })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+// @WebSocketGateway(8001, { cors: '*' })
+@WebSocketGateway({ cors: { origin: '*' }, namespace: 'chat' })
+export class ChatGateway {
 	@WebSocketServer()
-	server: Server;
+	server!: Server
 
-	public	connectedClients = new Set<string>();
+	public connectedClients = new Set<string>();
 
-	handleConnection(client: Socket) {
-		console.log(`Client connected: ${client.id}`);
-		this.connectedClients.add(client.id);
-		this.sendConnectedClients();
+constructor() { }
 
-	}
+handleConnection(client: Socket) {
+	console.log(`Client connected: ${client.id}`);
+	this.connectedClients.add(client.id);
+	this.sendConnectedClients();
 
-	handleDisconnect(client: Socket) {
-		console.log(`Client disconnected: ${client.id}`);
-		this.connectedClients.delete(client.id);
-    	this.sendConnectedClients();
-	}
+}
 
-	sendConnectedClients() {
-		this.server.emit('connectedClients', Array.from(this.connectedClients));
-	}
+handleDisconnect(client: Socket) {
+	console.log(`Client disconnected: ${client.id}`);
+	this.connectedClients.delete(client.id);
+	this.sendConnectedClients();
+}
 
-	@SubscribeMessage('sendMessage')
-	handleMessage(client: Socket, message: { content: string, recipient: string }): void {
+sendConnectedClients() {
+	this.server.emit('connectedClients', Array.from(this.connectedClients));
+}
 
-		fs.appendFileSync('./data/chat_history.txt', '\n' + client.id + ': ' + message.content);
+@SubscribeMessage('sendMessage')
+handleMessage(client: Socket, message: { content: string, recipient: string }): void {
 
-		const chatHistory = fs.readFileSync('./data/chat_history.txt', 'utf-8');
+	fs.appendFileSync('./data/chat_history.txt', '\n' + client.id + ': ' + message.content);
 
-		let iterator = 0;
+	const chatHistory = fs.readFileSync('./data/chat_history.txt', 'utf-8');
 
-		while (iterator < chatHistory.length) {
-			let currentCharacter = chatHistory[iterator];
-			let accumulatedString = '';
+	let iterator = 0;
 
-			while (currentCharacter !== '\n' && iterator < chatHistory.length) {
-			accumulatedString += currentCharacter;
-			iterator++;
+	while(iterator <chatHistory.length) {
+	let currentCharacter = chatHistory[iterator];
+	let accumulatedString = '';
 
-			if (iterator < chatHistory.length) {
-				currentCharacter = chatHistory[iterator];
-			}
-			}
+	while (currentCharacter !== '\n' && iterator < chatHistory.length) {
+		accumulatedString += currentCharacter;
+		iterator++;
 
-			if (accumulatedString.length > 0) {
-				const messageToVue = {content: accumulatedString, recipient: message.recipient};
-				this.server.to(client.id).to(message.recipient).emit('newMessage', messageToVue);	
-			}
-
-			if (currentCharacter === '\n') {
-			iterator++;
-			}
+		if (iterator < chatHistory.length) {
+			currentCharacter = chatHistory[iterator];
 		}
+	}
+
+	if (accumulatedString.length > 0) {
+		const messageToVue = { content: accumulatedString, recipient: message.recipient };
+		this.server.to(client.id).to(message.recipient).emit('newMessage', messageToVue);
+	}
+
+	if (currentCharacter === '\n') {
+		iterator++;
+	}
+}
 		
 	}
 }

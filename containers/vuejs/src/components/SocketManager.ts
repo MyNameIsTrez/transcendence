@@ -6,10 +6,13 @@ interface SocketInstance {
 const sockets: SocketInstance = {}
 
 const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
-  console.log('getSocketIOInstance called')
-  console.log('namespace: ', namespace)
+  if (!sockets['ws://localhost:4242']) {
+    console.log(`created root`)
+    sockets['ws://localhost:4242'] = io('ws://localhost:4242')
+  }
   if (!sockets[namespace]) {
-    sockets[namespace] = io('ws://localhost:4242')
+    console.log(`created ${namespace}`)
+    sockets[namespace] = io(`ws://localhost:4242/${namespace}`)
   }
   return sockets[namespace]
 }
@@ -21,7 +24,3 @@ const disconnectSocketIO = (namespace: string): void => {
 }
 
 export { getSocketIOInstance, disconnectSocketIO }
-
-interface IgameResult {
-  won: boolean
-}

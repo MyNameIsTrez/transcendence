@@ -10,6 +10,7 @@
 
 <script>
 import io from 'socket.io-client';
+import { getSocketIOInstance } from './SocketManager';
   
   export default {
     data() {
@@ -21,7 +22,7 @@ import io from 'socket.io-client';
       };
     },
     mounted() {
-      this.socket = io('http://localhost:8001');
+      this.socket = getSocketIOInstance('chat');
   
       this.socket.on('connect', () => {
         console.log(`Connected with id: ${this.socket.id}`);
@@ -49,6 +50,9 @@ import io from 'socket.io-client';
   </script>
   
   <style scoped>
-  /* Add your styles here if needed */
+  .chat-container {
+    flex-grow: 1;
+    position: relative;
+  }
   </style>
   
