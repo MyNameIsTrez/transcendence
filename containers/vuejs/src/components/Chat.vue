@@ -3,7 +3,7 @@
     <div v-for="msg in messages" :key="msg.id">
       <strong>{{ msg.sender }}:</strong> {{ msg.content }}
     </div>
-    <input v-model="typedMessage" placeholder="Type your message..." />
+    <input v-model="typedMessage" placeholder="Type your message..." @keyup.enter="sendMessage" />
     <button @click="sendMessage">Send</button>
   </div>
 </template>
@@ -29,17 +29,21 @@ import { getSocketIOInstance } from './SocketManager';
       });
   
       this.socket.on('newMessage', (message) => {
-        this.messages.push(message);
+      	this.messages.push(message);
       });
+
     },
     methods: {
       sendMessage() {
-        const message = {
-          content: this.typedMessage,
-          sender: this.socket.id,
-          recipient: this.recipient,
-        };
-        
+		  
+		  const message = {
+			  content: this.typedMessage,
+			  sender: this.socket.id,
+			  recipient: this.recipient,
+			};
+			
+		if (message.content.length < 1)
+			return ;
         this.messages = [];
 
         this.socket.emit('sendMessage', message);

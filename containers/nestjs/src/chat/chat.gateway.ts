@@ -19,57 +19,44 @@ export class ChatGateway {
 
 	public connectedClients = new Set<string>();
 
-constructor() { }
+	constructor() { }
 
-handleConnection(client: Socket) {
-	console.log(`Client connected: ${client.id}`);
-	this.connectedClients.add(client.id);
-	this.sendConnectedClients();
+	handleConnection(client: Socket) {
+		console.log(`Client connected: ${client.id}`);
+		this.connectedClients.add(client.id);
+		this.sendConnectedClients();
+		this.sendChatHistory(client);
 
-}
+	}
 
-handleDisconnect(client: Socket) {
-	console.log(`Client disconnected: ${client.id}`);
-	this.connectedClients.delete(client.id);
-	this.sendConnectedClients();
-}
+	handleDisconnect(client: Socket) {
+		console.log(`Client disconnected: ${client.id}`);
+		this.connectedClients.delete(client.id);
+		this.sendConnectedClients();
+	}
 
-sendConnectedClients() {
-	this.server.emit('connectedClients', Array.from(this.connectedClients));
-}
+	sendConnectedClients() {
+		this.server.emit('connectedClients', Array.from(this.connectedClients));
+	}
 
-@SubscribeMessage('sendMessage')
-handleMessage(client: Socket, message: { content: string, recipient: string }): void {
 
-	fs.appendFileSync('./data/chat_history.txt', '\n' + client.id + ': ' + message.content);
+	@SubscribeMessage('sendMessage')
+	handleMessage(client: Socket, message: { content: string, recipient: string }): void {
+		fs.appendFileSync('./data/chat_history.txt', '\n' + client.id + ': ' + message.content);
 
-	const chatHistory = fs.readFileSync('./data/chat_history.txt', 'utf-8');
+		const messageToVue = { content: `${client.id}: ${message.content}`, recipient: message.recipient };
+		this.sendChatHistory(client);
+	}
 
-	let iterator = 0;
-
-	while(iterator <chatHistory.length) {
-	let currentCharacter = chatHistory[iterator];
-	let accumulatedString = '';
-
-	while (currentCharacter !== '\n' && iterator < chatHistory.length) {
-		accumulatedString += currentCharacter;
-		iterator++;
-
-		if (iterator < chatHistory.length) {
-			currentCharacter = chatHistory[iterator];
+	sendChatHistory(client: Socket) {
+		try {
+			const chatHistory = fs.readFileSync('./data/chat_history.txt', 'utf-8');
+			const messageToVue = { content: chatHistory, recipient: client.id };
+			client.emit('newMessage', messageToVue);
+		} catch (error) {
+			console.error('Error sending chat history:', error);
 		}
 	}
 
-	if (accumulatedString.length > 0) {
-		const messageToVue = { content: accumulatedString, recipient: message.recipient };
-		this.server.to(client.id).to(message.recipient).emit('newMessage', messageToVue);
-	}
-
-	if (currentCharacter === '\n') {
-		iterator++;
-	}
-}
-		
-	}
 }
 
