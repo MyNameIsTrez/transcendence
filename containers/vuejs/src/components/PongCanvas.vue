@@ -26,7 +26,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
   } else if (code === 'KeyS' || code === 'ArrowDown') {
     north = false
   }
-  if (north !== undefined && gameSocket !== undefined) {
+  if (north !== undefined) {
     gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
