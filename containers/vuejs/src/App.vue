@@ -3,6 +3,7 @@ import { onUnmounted } from 'vue'
 import PongCanvas from './components/PongCanvas.vue'
 import { disconnectSocketIO } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
+import Filler from './components/Filler.vue'
 
 onUnmounted(() => {
   disconnectSocketIO('game')
@@ -11,11 +12,11 @@ onUnmounted(() => {
 
 <template>
 	<div class="flex flex-col w-full lg:flex-row">
-		<div class="grid flex-grow h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
+		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
 		<!-- <div class="divider lg:divider-horizontal"></div> -->
 		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas /></div>
 		<!-- <div class="divider lg:divider-horizontal"></div> -->
-		<div class="grid flex-grow h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
+		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Filler /></div>
 	</div>
 </template>
 

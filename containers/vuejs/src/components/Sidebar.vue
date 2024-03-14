@@ -2,81 +2,9 @@
 	<aside >
 		<div role="tablist" class="tabs tabs-lifted">
  			<input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Profile" checked />
-				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">
-
-					<h1 style="text-align: start;">Your profile</h1>
-					<p style="text-align: left;">mforstho</p>
-					<div style="clear: both">
-						<div class="avatar" style="float: left">
-							<div class="w-24 rounded">
-								<img src="/vuejs/code/src/assets/mforstho.png" />
-							</div>
-						</div>
-					</div>
-					<div class="testing">
-					<p style="float: right">W/L ratio: 121/0</p>
-
-
-
-
-					<div style="clear: both; padding-top: 50px;">
-						<h1 style="padding-bottom: 10px">Match history</h1>
-					</div>
-					<div style="clear: both">
-						<p class="player1" style="float: left; padding-left: 1px; color: rgb(98, 98, 255);">mforstho</p>
-						<p class="player2" style="float: right; padding-right: 1px;">safoh</p>
-						<p class="match-date" style="text-align: center">04/03/2024</p>
-					</div>
-					<p>-------------------</p>
-					<div style="clear: both; padding-bottom: 10px;">
-						<p style="float: left; padding-left: 10px; color: green;">WIN</p>
-						<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-						<p style="text-align: center">|</p>
-					</div>
-					<div style="clear: both">
-						<p class="player1" style="float: left; padding-left: 1px; color: rgb(98, 98, 255);">mforstho</p>
-						<p class="player2" style="float: right; padding-right: 1px;">safoh</p>
-						<p class="match-date" style="text-align: center">04/03/2024</p>
-					</div>
-					<p>-------------------</p>
-					<div style="clear: both; padding-bottom: 10px;">
-						<p style="float: left; padding-left: 10px; color: green;">WIN</p>
-						<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-						<p style="text-align: center">|</p>
-					</div>
-					<div style="clear: both">
-						<p class="player1" style="float: left; padding-left: 1px; color: rgb(98, 98, 255);">mforstho</p>
-						<p class="player2" style="float: right; padding-right: 1px;">safoh</p>
-						<p class="match-date" style="text-align: center">04/03/2024</p>
-					</div>
-					<p>-------------------</p>
-					<div style="clear: both; padding-bottom: 10px;">
-						<p style="float: left; padding-left: 10px; color: green;">WIN</p>
-						<p style="float: right; padding-right: 10px; color: red;">LOSS</p>
-						<p style="text-align: center">|</p>
-					</div>
-
-
-
-					<!-- <div class="achievements">
-						<h1>Your achievements</h1>
-						<span class="achievement-status">
-							<p>Unlocked</p>
-						</span>
-						<div class="tooltip">A good start<span class="tooltiptext">Win for the first time</span></div>
-						<div class="tooltip">Unstoppable!<span class="tooltiptext">Win 100 times in a row</span></div>
-
-						<span class="achievement-status">
-							<p>Locked</p>
-						</span>
-						<div class="tooltip">Unfortunate<span class="tooltiptext">Lose for the first time</span></div>
-						<div class="tooltip">How!?<span class="tooltiptext">Lose 100 times in a row</span></div>
-					</div> -->
-
-				</div>
-			</div>
+			 <div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6"><Profile /></div>
 			<input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Friends" />
-				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">Tab content 2</div>
+				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6"><Friends /></div>
 
 			<input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Leaderboard" />
 				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">Tab content 3</div>
@@ -86,6 +14,9 @@
 </template>
 
 <script lang="ts" setup>
+
+import Profile from './Sidebar/Profile.vue'
+import Friends from './Sidebar/Friends.vue'
 
 </script>
 
