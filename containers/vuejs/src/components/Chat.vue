@@ -1,7 +1,7 @@
 <template>
   <div>
     <div v-for="msg in messages" :key="msg.id">
-      <strong>{{ msg.sender }}:</strong> {{ msg.content }}
+      <strong>{{ msg.sender }}</strong> {{ msg.content }}
     </div>
     <input v-model="typedMessage" placeholder="Type your message..." @keyup.enter="sendMessage" />
     <button @click="sendMessage">Send</button>

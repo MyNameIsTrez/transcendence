@@ -9,9 +9,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import * as fs from 'fs';
 
-// port 8001 is the port the back end is serving on
-// {cors: '*'} makes sure it's accepts every front end connection
-// @WebSocketGateway(8001, { cors: '*' })
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'chat' })
 export class ChatGateway {
 	@WebSocketServer()
@@ -26,7 +23,6 @@ export class ChatGateway {
 		this.connectedClients.add(client.id);
 		this.sendConnectedClients();
 		this.sendChatHistory(client);
-
 	}
 
 	handleDisconnect(client: Socket) {
