@@ -1,21 +1,17 @@
 <template>
   <div class="pong-container" ref="pongContainer">
-    <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { gameSocket } from './SocketManager'
-import GameHeader from './GameHeader.vue'
 
-gameSocket.on('pong', (data) => {
+gameSocket.on('pong', (data: any) => {
   render(data)
 })
-
-gameSocket.on('gameOver', (data) => {
-  console.log('Game over', data)
+gameSocket.on('gameOver', (data: any) => {
   drawCanvas()
 })
 

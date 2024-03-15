@@ -9,50 +9,46 @@
 </template>
 
 <script>
-import io from 'socket.io-client';
-import { getSocketIOInstance } from './SocketManager';
-  
-  export default {
-    data() {
-      return {
-        typedMessage: '',
-        messages: [],
-        socket: null,
-        recipient: 'other-client-id', // Replace with the recipient's client id
-      };
-    },
-    mounted() {
-      this.socket = getSocketIOInstance('chat');
-  
-      this.socket.on('connect', () => {
-        console.log(`Connected with id: ${this.socket.id}`);
-      });
-  
-      this.socket.on('newMessage', (message) => {
-        this.messages.push(message);
-      });
-    },
-    methods: {
-      sendMessage() {
-        const message = {
-          content: this.typedMessage,
-          sender: this.socket.id,
-          recipient: this.recipient,
-        };
-        
-        this.messages = [];
+import { chatSocket } from './SocketManager'
 
-        this.socket.emit('sendMessage', message);
-        this.typedMessage = '';
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .chat-container {
-    flex-grow: 1;
-    position: relative;
+export default {
+  data() {
+    return {
+      typedMessage: '',
+      messages: [],
+      recipient: 'other-client-id' // Replace with the recipient's client id
+    }
+  },
+  mounted() {
+    chatSocket.on('connect', () => {
+      console.log(`Connected with id: ${chatSocket.id}`)
+    })
+
+    chatSocket.on('newMessage', (message) => {
+      this.messages.push(message)
+    })
+  },
+  methods: {
+    sendMessage() {
+      const message = {
+        content: this.typedMessage,
+        sender: chatSocket.id,
+        recipient: this.recipient
+      }
+
+      this.messages = []
+
+      chatSocket.emit('sendMessage', message)
+      this.typedMessage = ''
+    }
   }
-  </style>
-  
+}
+</script>
+
+<style scoped>
+.chat-container {
+  flex-grow: 1;
+  position: relative;
+}
+</style>
+

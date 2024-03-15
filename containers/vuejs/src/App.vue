@@ -1,20 +1,35 @@
+<template>
+  <GameHeader />
+  <Sidebar v-if="loggedIn" />
+  <PongCanvas v-if="loggedIn" />
+  <Chat v-if="loggedIn" />
+</template>
+
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { ref, onBeforeMount, onUnmounted } from 'vue'
+import GameHeader from './components/GameHeader.vue'
 import PongCanvas from './components/PongCanvas.vue'
-import { disconnectSockets } from './components/SocketManager'
+import { rootSocket, disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
 import Chat from './components/Chat.vue'
+const loggedIn = ref(false)
+onBeforeMount(() => {
+  const code = new URLSearchParams(window.location.search).get('code') || ''
+  console.log('code', code)
+  rootSocket.on('attemptLogin', (sate: boolean) => {
+    if (sate) {
+      loggedIn.value = true
+    } else {
+      loggedIn.value = false
+    }
+  })
+  rootSocket.emit('code', code)
+})
 
 onUnmounted(() => {
   disconnectSockets()
 })
 </script>
-
-<template>
-  <Sidebar />
-  <PongCanvas />
-  <Chat />
-</template>
 
 <style>
 * {
