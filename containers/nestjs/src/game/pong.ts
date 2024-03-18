@@ -234,12 +234,11 @@ class Ball extends Rect {
       if (this.left <= paddle.left || this.left <= paddle.right) {
         this._pos.x = this.left <= paddle.left ? paddle.left - this._size.w : paddle.right
         const paddleCenter = paddle.top + paddle._size.h / 2
-        const ballCenter = this.top + this._size.h / 2 // TODO: This seems off, as it doesn't add half the width -Sander
+        const ballCenter = this.top + this._size.h / 2
         const distance = paddleCenter - ballCenter
         const distanceMultiplier = distance / (paddle._size.h / 2)
 
-        // TODO: Can't this just be `this.bottom > paddle.top && this.top < paddle.bottom`?
-        if (!(this.bottom <= paddle.top) && !(this.top >= paddle.bottom)) {
+        if (this.bottom > paddle.top && this.top < paddle.bottom) {
           this._vel.adjustAngle(distanceMultiplier)
         }
 
