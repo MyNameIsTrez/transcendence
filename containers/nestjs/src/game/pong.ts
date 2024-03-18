@@ -286,17 +286,19 @@ export class Pong {
     this._ball.updatePos()
     this._ball.collide(this._leftPlayer, this._rightPlayer)
   }
-  checkGameOver(): boolean {
-    return this._leftPlayer._score >= 10 || this._rightPlayer._score >= 10
+
+  didSomeoneWin(): boolean {
+    return this.didLeftWin() || this.didRightWin()
   }
 
-  getLeftResult(): boolean {
+  didLeftWin(): boolean {
     return this._leftPlayer._score >= 10
   }
 
-  getRightResult(): boolean {
+  didRightWin(): boolean {
     return this._rightPlayer._score >= 10
   }
+
   resetGame() {
     this._ball._hidden = false
     this._ball.reset()
