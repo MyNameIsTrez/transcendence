@@ -11,6 +11,8 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto): Promise<User> {
     const user = new User()
+
+    // TODO: Try to find a way to not need to do this copying manually
     user.intra_id = createUserDto.intra_id
     user.displayname = createUserDto.displayname
     user.email = createUserDto.email
