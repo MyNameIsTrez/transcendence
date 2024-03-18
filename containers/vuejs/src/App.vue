@@ -16,12 +16,8 @@ const loggedIn = ref(false)
 onBeforeMount(() => {
   const code = new URLSearchParams(window.location.search).get('code') || ''
   console.log('code', code)
-  rootSocket.on('attemptLogin', (sate: boolean) => {
-    if (sate) {
-      loggedIn.value = true
-    } else {
-      loggedIn.value = false
-    }
+  rootSocket.on('attemptLogin', (success: boolean) => {
+    loggedIn.value = success
   })
   rootSocket.emit('code', code)
 })

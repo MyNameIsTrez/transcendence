@@ -5,6 +5,7 @@ import { UsersService } from './users/users.service'
 export class AppService {
   constructor(private readonly usersService: UsersService) {}
 
+  // TODO: Remove
   getHello(): string {
     return 'Hello World!'
   }

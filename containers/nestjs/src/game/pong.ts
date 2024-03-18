@@ -238,7 +238,7 @@ class Ball extends Rect {
         const distance = paddleCenter - ballCenter
         const distanceMultiplier = distance / (paddle._size.h / 2)
 
-        if (!(this.bottom <= paddle.top) && !(this.top >= paddle.bottom)) {
+        if (this.bottom > paddle.top && this.top < paddle.bottom) {
           this._vel.adjustAngle(distanceMultiplier)
         }
 
@@ -286,17 +286,19 @@ export class Pong {
     this._ball.updatePos()
     this._ball.collide(this._leftPlayer, this._rightPlayer)
   }
-  checkGameOver(): boolean {
-    return this._leftPlayer._score >= 10 || this._rightPlayer._score >= 10
+
+  didSomeoneWin(): boolean {
+    return this.didLeftWin() || this.didRightWin()
   }
 
-  getLeftResult(): boolean {
-    return this._leftPlayer._score >= 10
+  didLeftWin(): boolean {
+    return this._leftPlayer._score >= 1
   }
 
-  getRightResult(): boolean {
-    return this._rightPlayer._score >= 10
+  didRightWin(): boolean {
+    return this._rightPlayer._score >= 1
   }
+
   resetGame() {
     this._ball._hidden = false
     this._ball.reset()

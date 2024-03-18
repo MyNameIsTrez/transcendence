@@ -17,9 +17,9 @@ const endOfGame = ref(false)
 const startOfGame = ref(false)
 const loggedIn = ref(false)
 
-rootSocket.on('attemptLogin', (state: boolean) => {
-  console.log('attemptLogin', state)
-  loggedIn.value = state
+rootSocket.on('attemptLogin', (success: boolean) => {
+  console.log('attemptLogin', success)
+  loggedIn.value = success
 })
 const attemptLogin = () => {
   console.log(import.meta.env.VITE_INTRA_REDIRECT_URL)
