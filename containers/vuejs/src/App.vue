@@ -1,7 +1,7 @@
 <template>
+  <PongCanvas v-if="loggedIn" />
   <GameHeader />
   <Sidebar v-if="loggedIn" />
-  <PongCanvas v-if="loggedIn" />
   <Chat v-if="loggedIn" />
 </template>
 
