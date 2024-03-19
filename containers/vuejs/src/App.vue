@@ -1,13 +1,10 @@
 <template>
-  <PongCanvas v-if="loggedIn" />
-  <GameHeader />
-  <Sidebar v-if="loggedIn" />
-  <Chat v-if="loggedIn" />
-  <!-- <div class="flex flex-col w-full lg:flex-row">
-		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Sidebar /></div>
-		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas /></div>
-		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Filler /></div>
-	</div> -->
+	<div class="flex flex-col w-full lg:flex-row">
+		<div class="grid flex-grow w-96 h-screen overflow-y-auto overflow-x-hidden card bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
+		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas v-if="loggedIn" /></div>
+		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Chat v-if="loggedIn" /></div>
+	</div>
+	<GameHeader />
 </template>
 
 <script setup lang="ts">
@@ -16,11 +13,22 @@ import GameHeader from './components/GameHeader.vue'
 import PongCanvas from './components/PongCanvas.vue'
 import { rootSocket, disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
-import Filler from './components/Filler.vue'
+
+import Chat from './components/Chat.vue'
+const loggedIn = ref(false)
+onBeforeMount(() => {
+  const code = new URLSearchParams(window.location.search).get('code') || ''
+  console.log('code', code)
+  rootSocket.on('attemptLogin', (success: boolean) => {
+    loggedIn.value = success
+  })
+  rootSocket.emit('code', code)
+})
 
 onUnmounted(() => {
   disconnectSockets()
 })
+
 </script>
 
 <style>
