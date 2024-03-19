@@ -1,23 +1,20 @@
 <template>
   <div class="pong-container" ref="pongContainer">
-    <GameHeader />
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getSocketIOInstance } from './SocketManager'
-import GameHeader from './GameHeader.vue'
+import { gameSocket } from './SocketManager'
 
-const socketIOGame = getSocketIOInstance('game')
-
-socketIOGame.on('pong', (data) => {
+gameSocket.on('pong', (data: any) => {
   render(data)
 })
-socketIOGame.on('gameOver', (data) => {
+gameSocket.on('gameOver', (data: any) => {
   drawCanvas()
 })
+
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
   if (code === 'KeyW' || code === 'ArrowUp') {
@@ -26,7 +23,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
     north = false
   }
   if (north !== undefined) {
-    socketIOGame.emit('movePaddle', { keydown: keydown, north: north })
+    gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
 const server_window_height = 1080
@@ -65,7 +62,7 @@ const render = (data: {
 }
 
 onMounted(() => {
-  window.addEventListener('resize', drawCanvas) //TODO: replace with render to redraw all objects with correct size
+  window.addEventListener('resize', drawCanvas) // TODO: replace with render to redraw all objects with correct size
 
   if (canvasRef.value) {
     canvas = canvasRef.value as HTMLCanvasElement

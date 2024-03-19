@@ -1,21 +1,17 @@
 import io from 'socket.io-client'
 
-interface SocketInstance {
-  [namespace: string]: SocketIOClient.Socket | undefined
-}
-const sockets: SocketInstance = {}
-
-const getSocketIOInstance = (namespace: string): SocketIOClient.Socket | undefined => {
-  if (!sockets[namespace]) {
-    sockets[namespace] = io('ws://localhost:4242')
-  }
-  return sockets[namespace]
-}
-const disconnectSocketIO = (namespace: string): void => {
-  if (sockets[namespace]) {
-    sockets[namespace]?.disconnect()
-    delete sockets[namespace]
-  }
+const disconnectSockets = (): void => {
+  chatSocket.disconnect()
+  gameSocket.disconnect()
+  rootSocket.disconnect()
 }
 
-export { getSocketIOInstance, disconnectSocketIO }
+const createSocketNamespace = (namespace: string) => {
+  return io(import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_PORT + '/' + namespace)
+}
+
+const rootSocket = createSocketNamespace('')
+const gameSocket = createSocketNamespace('game')
+const chatSocket = createSocketNamespace('chat')
+
+export { disconnectSockets, gameSocket, chatSocket, rootSocket }

@@ -1,60 +1,36 @@
 <template>
-  <div>
-    <canvas ref="scoreCanvas"></canvas>
-  </div>
+  <canvas ref="canvasRef"></canvas>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted, watch } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import Numbers from './Numbers.vue'
+import { gameSocket } from './SocketManager'
 
-export default defineComponent({
-  props: {
-    leftScore: Number,
-    rightScore: Number
-  },
-  setup(props) {
-    const canvas = ref<HTMLCanvasElement | null>(null)
-    const context = ref<CanvasRenderingContext2D | null>(null)
-    const numbers = new Numbers()
-    let align = 0
-    let CHAR_W = 0
+const canvasRef = ref(null)
 
-    onMounted(() => {
-      if (canvas.value) {
-        context.value = canvas.value.getContext('2d')
-        if (context.value) {
-          align = canvas.value.width / 3
-          CHAR_W = numbers.char_pixel * 4
-        }
-      }
-    })
+let numbersInstance = null
+onMounted(() => {
+  numbersInstance = new Numbers(canvasRef.value.width / 2, 50)
+})
 
-    watch([() => props.leftScore, () => props.rightScore], () => {
-      if (context.value) {
-        drawScore(props.leftScore, 0)
-        drawScore(props.rightScore, 1)
-      }
-    })
+const updateScore = (leftScore: number, rightScore: number) => {
+  const context = canvasRef.value.getContext('2d')
+  drawScore(context, leftScore, 0)
+  drawScore(context, rightScore, 1)
+}
 
-    function drawScore(score: number, i: number) {
-      const chars = score.toString().split('')
-      const offset = align * (i + 1) - CHAR_W * (chars.length / 2) + numbers.char_pixel / 2
-      chars.forEach((char, pos) => {
-        if (context.value) {
-          context.value.drawImage(numbers.numbers[parseInt(char)], offset + pos * CHAR_W, 20)
-        }
-      })
-    }
+const drawScore = (context, score: number, i: number) => {
+  const CHAR_W = Numbers.charPixel * 4
+  const align = canvasRef.value.width / 3
+  const chars = score.toString().split('')
+  const offset = align * (i + 1) - CHAR_W * (chars.length / 2) + Numbers.charPixel / 2
+  chars.forEach((char, pos) => {
+    context.drawImage(numbersInstance._numbers[char | 0], offset + pos * CHAR_W, 20)
+  })
+}
 
-    return {
-      canvas,
-      context,
-      numbers,
-      align,
-      CHAR_W,
-      drawScore
-    }
-  }
+gameSocket.on('pong', (data: any) => {
+  updateScore(data.leftPlayer.score, data.rightPlayer.score)
 })
 </script>

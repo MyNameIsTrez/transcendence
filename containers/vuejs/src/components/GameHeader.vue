@@ -1,24 +1,33 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
     <h1 class="game-title">{{ gameTitle }}</h1>
-    <PlayButton v-if="!endOfGame" @clicked="joinGame" :buttonText="buttonText" />
-    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="buttonText" />
+    <PlayButton v-if="!loggedIn" @clicked="attemptLogin" :buttonText="`LOGIN`" />
+    <PlayButton v-if="!endOfGame && loggedIn" @clicked="joinGame" :buttonText="buttonText" />
+    <PlayButton v-if="endOfGame && loggedIn" @clicked="reset" :buttonText="`Continue`" />
   </div>
 </template>
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { getSocketIOInstance } from './SocketManager'
+import { rootSocket, gameSocket } from './SocketManager'
 import { ref } from 'vue'
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
 const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
-const socketIOGame = getSocketIOInstance('game')
+const loggedIn = ref(false)
 
+rootSocket.on('attemptLogin', (success: boolean) => {
+  console.log('attemptLogin', success)
+  loggedIn.value = success
+})
+const attemptLogin = () => {
+  console.log(import.meta.env.VITE_INTRA_REDIRECT_URL)
+  window.location.href = import.meta.env.VITE_INTRA_REDIRECT_URL
+}
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  socketIOGame.emit('joinGame')
+  gameSocket.emit('joinGame')
 }
 const reset = () => {
   buttonText.value = 'PLAY'
@@ -28,17 +37,16 @@ const reset = () => {
   emit('resetCanvas')
 }
 
-socketIOGame.on('gameOver', (won: boolean) => {
+gameSocket.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
-  buttonText.value = 'Continue'
   if (won) {
     gameTitle.value = 'YOU WON'
   } else {
     gameTitle.value = 'YOU LOST'
   }
 })
-socketIOGame.on('gameStart', () => {
+gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
 </script>
