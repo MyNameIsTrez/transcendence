@@ -1,12 +1,14 @@
 <template>
   <div class="pong-container" ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
+    <ScoreBoard />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { gameSocket } from './SocketManager'
+import ScoreBoard from './ScoreBoard.vue'
 
 gameSocket.on('pong', (data: any) => {
   render(data)
