@@ -60,12 +60,16 @@ export class GameGateway {
       for (let i = 0; i < this.games.length && this.games[i]._rightPlayer._socket != null; i++) {
         const game = this.games[i]
         game.updateElements()
+        const data = game.getData()
         if (game.didSomeoneWin()) {
+          // this need to be here to send finale score to both players
+          game._leftPlayer._socket?.emit(`pong`, data)
+          game._rightPlayer._socket?.emit(`pong`, data)
+
           game._leftPlayer._socket?.emit(`gameOver`, game.didLeftWin())
           game._rightPlayer._socket?.emit(`gameOver`, game.didRightWin())
           this.games.splice(i, 1) //TODO: Does this not fuck with memory? - Saladin?
         } else {
-          const data = game.getData()
           game._leftPlayer._socket?.emit(`pong`, data)
           game._rightPlayer._socket?.emit(`pong`, data)
         }
