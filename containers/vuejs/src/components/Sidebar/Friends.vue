@@ -21,7 +21,7 @@
 	<h1>---- Online ----</h1>
 	<div class="card lg:card-side bg-base-200">
 		<figure><div class="w-28 avatar online"><img class="rounded" src="https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg" alt="Album"/></div></figure>
-  		<div class="card-body h-28 h-28">
+  		<div class="card-body h-28">
 			<div style="clear: both">
     			<h2 style="float: left; padding-top: 10px;" class="card-title">sbos</h2>
 				<div style="float: right" class="dropdown dropdown-right">
