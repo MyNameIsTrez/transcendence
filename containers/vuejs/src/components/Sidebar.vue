@@ -15,8 +15,8 @@
 
 <script lang="ts" setup>
 
-import Profile from './Sidebar/Profile.vue'
-import Friends from './Sidebar/Friends.vue'
+import Profile from './sidebar/Profile.vue'
+import Friends from './sidebar/Friends.vue'
 
 </script>
 
@@ -49,17 +49,6 @@ import Friends from './Sidebar/Friends.vue'
     }
   }
 
-  .achievements {
-    padding-top: 30px;
-
-    p {
-      padding-left: 5px;
-    }
-
-    .achievement-status {
-      font-weight: bold;
-    }
-  }
 
   .tooltip {
     text-align: left;

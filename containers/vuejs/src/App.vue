@@ -1,6 +1,6 @@
 <template>
-	<div class="flex flex-col w-full lg:flex-row">
-		<div class="grid flex-grow w-96 h-screen overflow-y-auto overflow-x-hidden card bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
+	<div class="flex flex-col overflow-hidden w-full lg:flex-row">
+		<div class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
 		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas v-if="loggedIn" /></div>
 		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Chat v-if="loggedIn" /></div>
 	</div>

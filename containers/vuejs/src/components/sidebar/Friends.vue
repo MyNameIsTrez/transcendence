@@ -1,6 +1,6 @@
 <template>
 	<div class="flex justify-end">
-		<div class="tooltip tooltip-right" data-tip="Add friend">
+		<div class="tooltip tooltip-left" data-tip="Add friend">
 			<button class="btn btn-primary btn-square self-auto" onclick="my_modal_2.showModal()">
 				<span class="material-symbols-outlined">person_add</span>
 			</button>
@@ -24,7 +24,7 @@
   		<div class="card-body h-28">
 			<div style="clear: both">
     			<h2 style="float: left; padding-top: 10px;" class="card-title">sbos</h2>
-				<div style="float: right" class="dropdown dropdown-right">
+				<div style="float: right" class="dropdown dropdown-bottom dropdown-end">
     				<div tabindex="0" role="button" class="m-1 btn btn-primary btn-square"><span class="material-symbols-outlined" style="font-size: 30px;">settings</span></div>
 					<ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max">
    						<li><a>View profile</a></li>
@@ -42,7 +42,7 @@
   		<div class="card-body h-28">
 			<div style="clear: both">
     			<h2 style="float: left; padding-top: 10px;" class="card-title">safoh</h2>
-    			<div style="float: right" class="dropdown dropdown-right">
+    			<div style="float: right" class="dropdown dropdown-bottom dropdown-end">
     				<div tabindex="0" role="button" class="m-1 btn btn-primary btn-square"><span class="material-symbols-outlined" style="font-size: 30px;">settings</span></div>
 					<ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max">
    						<li><a>View profile</a></li>
@@ -61,7 +61,7 @@
   		<div class="card-body h-28">
 			<div style="clear: both">
     			<h2 style="float: left; padding-top: 10px;" class="card-title">vbenn</h2>
-    			<div style="float: right" class="dropdown dropdown-right">
+    			<div style="float: right" class="dropdown dropdown-bottom dropdown-end">
     				<div tabindex="0" role="button" class="m-1 btn btn-primary btn-square"><span class="material-symbols-outlined" style="font-size: 30px;">settings</span></div>
 					<ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max">
    						<li><a>View profile</a></li>
@@ -79,7 +79,7 @@
   		<div class="card-body h-28">
 			<div style="clear: both">
     			<h2 style="float: left; padding-top: 10px;" class="card-title">lvan</h2>
-    			<div style="float: right" class="dropdown dropdown-right">
+    			<div style="float: right" class="dropdown dropdown-bottom dropdown-end">
     				<div tabindex="0" role="button" class="m-1 btn btn-primary btn-square"><span class="material-symbols-outlined" style="font-size: 30px;">settings</span></div>
 					<ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max">
    						<li><a>View profile</a></li>
