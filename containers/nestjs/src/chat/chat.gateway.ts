@@ -2,12 +2,12 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
-	OnGatewayConnection,
-	OnGatewayDisconnect
 } from '@nestjs/websockets';
 
+import { Controller, Post, Body , Get, Query} from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import * as fs from 'fs';
+import { ChatModule } from './chat.module';
 
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'chat' })
 export class ChatGateway {
@@ -16,7 +16,17 @@ export class ChatGateway {
 
 	public connectedClients = new Set<string>();
 
-	constructor() { }
+	// new 
+	private chatChannels: Map<string, string[]> = new Map();
+
+	constructor() {
+		this.chatChannels.set('general', ['lvan-bus', 'sbos', 'first_channel']);
+	}
+
+	getChatMessages(channelName: string): string[] | undefined {
+		return this.chatChannels.get(channelName);
+	}
+	// till here
 
 	handleConnection(client: Socket) {
 		console.log(`Client connected: ${client.id}`);
@@ -53,6 +63,22 @@ export class ChatGateway {
 			console.error('Error sending chat history:', error);
 		}
 	}
+}
 
+// also new
+// chat.controller.ts
+@Controller('chat')
+export class ChatController {
+  constructor(private readonly chatService: ChatGateway) {}
+
+  @Get('messages')
+  getChatMessages(@Query('channelName') channelName: string): string[] | { error: string } {
+    const messages = this.chatService.getChatMessages(channelName);
+    if (messages) {
+      return messages;
+    } else {
+      return { error: 'Chat channel not found' };
+    }
+  }
 }
 

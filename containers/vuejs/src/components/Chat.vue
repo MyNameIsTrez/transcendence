@@ -1,62 +1,71 @@
 <template>
   <div>
+    <button @click="newChat">Create chat&nbsp</button><input v-model="typedNewChat" placeholder="New chat name..."
+      @keyup.enter="newChat" />
+    <br /><br />
+    <button @click="searchChat">Search for chat&nbsp</button><input v-model="typedSearch" placeholder="Chat name..."
+      @keyup.enter="searchChat" />
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
     <div v-for="msg in messages" :key="msg.id">
       <strong>{{ msg.sender }}</strong> {{ msg.content }}
     </div>
+    <br />
     <input v-model="typedMessage" placeholder="Type your message..." @keyup.enter="sendMessage" />
     <button @click="sendMessage">Send</button>
   </div>
 </template>
 
 <script>
-import io from 'socket.io-client';
-import { getSocketIOInstance } from './SocketManager';
-  
-  export default {
-    data() {
-      return {
-        typedMessage: '',
-        messages: [],
-        socket: null,
-        recipient: 'other-client-id', // Replace with the recipient's client id
-      };
-    },
-    mounted() {
-      this.socket = getSocketIOInstance('chat');
-  
-      this.socket.on('connect', () => {
-        console.log(`Connected with id: ${this.socket.id}`);
-      });
-  
-      this.socket.on('newMessage', (message) => {
-      	this.messages.push(message);
-      });
 
-    },
-    methods: {
-      sendMessage() {
-		  
-		  const message = {
-			  content: this.typedMessage,
-			  sender: this.socket.id,
-			  recipient: this.recipient,
-			};
-			
-		if (message.content.length < 1)
-			return ;
-        this.messages = [];
+import { chatSocket } from './SocketManager'
+import axios from 'axios';
 
-        this.socket.emit('sendMessage', message);
-        this.typedMessage = '';
-      },
+export default {
+  data() {
+    return {
+      typedMessage: '',
+      messages: [],
+      recipient: 'other-client-id' // Replace with the recipient's client id
+    }
+  },
+  mounted() {
+    chatSocket.on('connect', () => {
+      console.log(`Connected with id: ${chatSocket.id}`)
+    })
+
+    chatSocket.on('newMessage', (message) => {
+      this.messages.push(message)
+    })
+  },
+  methods: {
+    sendMessage() {
+      const message = {
+        content: this.typedMessage,
+        sender: chatSocket.id,
+        recipient: this.recipient
+      }
+
+      this.messages = []
+
+      chatSocket.emit('sendMessage', message)
+      this.typedMessage = ''
     },
-  };
-  </script>
-  
-  <style scoped>
-  .chat-container {
-    flex-grow: 1;
-    position: relative;
+    // new
+    async searchChat() {
+      try {
+        const response = await axios.get(`http://localhost:3000/chat/messages?channelName=${typedSearch}`);
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching chat messages:', error);
+        return { error: 'Error fetching chat messages' };
+      }
   }
-  </style>
-  
+}
+</script>
+
+<style scoped>
+.chat-container {
+  flex-grow: 1;
+  position: relative;
+}
+</style>
