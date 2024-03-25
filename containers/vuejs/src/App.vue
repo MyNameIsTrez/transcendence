@@ -1,8 +1,10 @@
 <template>
-  <Sidebar v-if="loggedIn" />
-  <PongCanvas v-if="loggedIn" />
-  <GameHeader />
-  <Chat v-if="loggedIn" />
+	<div class="flex flex-col overflow-hidden w-full lg:flex-row">
+		<div class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
+		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas v-if="loggedIn" /></div>
+		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Chat v-if="loggedIn" /></div>
+	</div>
+	<GameHeader />
 </template>
 
 <script setup lang="ts">
@@ -11,6 +13,7 @@ import GameHeader from './components/GameHeader.vue'
 import PongCanvas from './components/PongCanvas.vue'
 import { rootSocket, disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
+
 import Chat from './components/Chat.vue'
 const loggedIn = ref(false)
 onBeforeMount(() => {
@@ -25,6 +28,7 @@ onBeforeMount(() => {
 onUnmounted(() => {
   disconnectSockets()
 })
+
 </script>
 
 <style>
