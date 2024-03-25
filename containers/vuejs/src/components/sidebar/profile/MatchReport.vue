@@ -34,7 +34,6 @@
 <script>
 export default {
 	props: {
-		username: String,
 		player: String,
 		opponent: String,
 		p1Score: Number,

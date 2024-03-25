@@ -7,7 +7,7 @@
 				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6"><Friends /></div>
 
 			<input type="radio" name="my_tabs_2" role="tab" class="tab" aria-label="Leaderboard" />
-				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6">Tab content 3</div>
+				<div role="tabpanel" class="tab-content bg-base-100 border-base-300 rounded-box p-6"><Leaderboard /></div>
 		</div>
 
 </aside>
@@ -17,6 +17,7 @@
 
 import Profile from './sidebar/Profile.vue'
 import Friends from './sidebar/Friends.vue'
+import Leaderboard from './sidebar/Leaderboard.vue'
 
 </script>
 
