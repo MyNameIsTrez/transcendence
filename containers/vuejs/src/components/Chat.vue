@@ -1,10 +1,10 @@
 <template>
   <div>
-    <button @click="newChat">Create chat&nbsp</button><input v-model="typedNewChat" placeholder="New chat name..."
-      @keyup.enter="newChat" />
+    <button @click="newChat">Create chat&nbsp</button>
+    <input v-model="typedNewChat" placeholder="New chat name..." @keyup.enter="newChat" />
     <br /><br />
-    <button @click="searchChat">Search for chat&nbsp</button><input v-model="typedSearch" placeholder="Chat name..."
-      @keyup.enter="searchChat" />
+    <button @click="searchChat">Search for chat&nbsp</button>
+    <input v-model="typedSearch" placeholder="Chat name..." @keyup.enter="searchChat" />
     <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
     <div v-for="msg in messages" :key="msg.id">
       <strong>{{ msg.sender }}</strong> {{ msg.content }}
@@ -41,7 +41,7 @@ export default {
     sendMessage() {
       const message = {
         content: this.typedMessage,
-        sender: chatSocket.id,
+        sender: chatSocket.id, // is maybe redundant
         recipient: this.recipient
       }
 
@@ -52,14 +52,30 @@ export default {
     },
     // new
     async searchChat() {
+      const search = {
+        content: this.typedSearch,
+        sender: chatSocket.id, // is maybe redundant
+        recipient: this.recipient
+      }
+      console.log(`typedSearch: ${this.typedSearch}`)
       try {
-        const response = await axios.get(`http://localhost:3000/chat/messages?channelName=${typedSearch}`);
+        const response = await axios.get(`http://localhost:3000/chat/messages?channelName=${this.typedSearch}`);
         return response.data;
       } catch (error) {
         console.error('Error fetching chat messages:', error);
         return { error: 'Error fetching chat messages' };
       }
-  }
+    }
+  //   async searchChat() {
+  //     try {
+  //       const response = await axios.get(`http://localhost:3000/chat/messages?channelName=${typedSearch}`);
+  //       return response.data;
+  //     } catch (error) {
+  //       console.error('Error fetching chat messages:', error);
+  //       return { error: 'Error fetching chat messages' };
+  //     }
+  // }
+}
 }
 </script>
 
