@@ -15,10 +15,12 @@
 				</div>
 			</div>
 		</td>
-			<th class="grid grid-cols-3 place-items-center">
-				<div>{{ wins }}</div>
-				<div>/</div>
-				<div>{{ losses }}</div>
+			<th class="align-middle">
+				<!-- <div class="grid grid-cols-3 place-items-center"> -->
+					<div>{{ wins }}/{{ losses }}</div>
+					<!-- <div>/</div> -->
+					<!-- <div>{{ losses }}</div> -->
+				<!-- </div> -->
 			</th>
 	</tr>
 </template>
