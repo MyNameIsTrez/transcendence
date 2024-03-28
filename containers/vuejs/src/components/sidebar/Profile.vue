@@ -54,7 +54,7 @@
 			<br>
 
 			<!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
-			<div class="collapse w-96 bg-base-200">
+			<!-- <div class="collapse w-96 bg-base-200">
 				<input type="checkbox" />
 				<div class="collapse-title text-xl font-medium">Achievements</div>
 				<div class="collapse-content">
@@ -80,9 +80,11 @@
 								<p>How?!</p>
 							</div>
 						</div>
-					</div>
-				</div>
-			</div>
+					</div> -->
+
+				<!-- </div>
+			</div> -->
+			<Achievements />
 		</div>
 	</div>
 </template>
@@ -90,6 +92,7 @@
 <script setup lang="ts">
 import MatchReport from './profile/MatchReport.vue'
 // import Achievements from './profile/Achievements.vue'
+import Achievements from './achievements/Achievements.vue';
 </script>
 
 <style lang="scss" scoped></style>

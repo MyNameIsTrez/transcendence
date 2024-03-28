@@ -7,7 +7,7 @@
 			<div class="flex items-center gap-3">
 				<div class="avatar">
 					<div class="mask mask-squircle w-12 h-12">
-						<img src="/vuejs/code/src/assets/mforstho.png" alt="Avatar Tailwind CSS Component" />
+						<img :src="`${this.image}`" alt="Avatar Tailwind CSS Component" />
 					</div>
 				</div>
 				<div>
@@ -15,13 +15,13 @@
 				</div>
 			</div>
 		</td>
-			<th class="align-middle">
-				<!-- <div class="grid grid-cols-3 place-items-center"> -->
-					<div>{{ wins }}/{{ losses }}</div>
-					<!-- <div>/</div> -->
-					<!-- <div>{{ losses }}</div> -->
-				<!-- </div> -->
-			</th>
+		<th class="align-middle">
+			<!-- <div class="grid grid-cols-3 place-items-center"> -->
+			<div>{{ wins }}/{{ losses }}</div>
+			<!-- <div>/</div> -->
+			<!-- <div>{{ losses }}</div> -->
+			<!-- </div> -->
+		</th>
 	</tr>
 </template>
 
@@ -31,7 +31,8 @@ export default {
 		username: String,
 		rank: String,
 		wins: Number,
-		losses: Number
+		losses: Number,
+		image: String
 	}
 }
 </script>
