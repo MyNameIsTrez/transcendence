@@ -12,7 +12,8 @@
 					<div tabindex="0" role="button" class="m-1 btn btn-primary btn-square"><span
 							class="material-symbols-outlined" style="font-size: 30px;">settings</span></div>
 					<ul tabindex="0" class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max">
-						<li><a>View profile</a></li>
+						<li><router-link to="Profile">View profile</router-link></li>
+						<!-- <li><a>View profile</a></li> -->
 						<li><a>Invite to game</a></li>
 						<li><a>Open chat</a></li>
 						<li><a>Remove friend</a></li>

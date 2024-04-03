@@ -37,7 +37,7 @@
 				<!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
 				<div class="collapse w-96 bg-base-200">
 					<input type="checkbox" />
-					<div class="collapse-title text-xl font-medium">Match history</div>
+					<div class="collapse-title text-xl text-left">Match history</div>
 					<div class="collapse-content">
 						<MatchReport player="mforstho" opponent="safoh" :p1Score='10' :p2Score='7'
 							v-bind:playerWon="true" />
@@ -50,40 +50,7 @@
 					</div>
 				</div>
 			</div>
-
 			<br>
-
-			<!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
-			<!-- <div class="collapse w-96 bg-base-200">
-				<input type="checkbox" />
-				<div class="collapse-title text-xl font-medium">Achievements</div>
-				<div class="collapse-content">
-					<div class="card w-[352px] bg-base-100 shadow-xl">
-						<div class="card-body">
-							<h2 class="text-2xl font-bold">Unlocked</h2>
-							<div class="tooltip tooltip-top" data-tip="Win for the first time">
-								<p>A good start</p>
-							</div>
-							<div class="tooltip tooltip-top" data-tip="Win 100 times in a row">
-								<p>Unstoppable!</p>
-							</div>
-						</div>
-					</div>
-					<br>
-					<div class="card w-[352px] bg-base-100 shadow-xl">
-						<div class="card-body">
-							<h2 class="text-2xl font-bold">Locked</h2>
-							<div class="tooltip tooltip-top" data-tip="Lose for the first time">
-								<p>Unfortunate</p>
-							</div>
-							<div class="tooltip tooltip-top" data-tip="Lose 100 times in a row">
-								<p>How?!</p>
-							</div>
-						</div>
-					</div> -->
-
-				<!-- </div>
-			</div> -->
 			<Achievements />
 		</div>
 	</div>

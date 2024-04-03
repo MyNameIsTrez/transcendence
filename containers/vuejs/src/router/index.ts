@@ -8,15 +8,15 @@ const router = createRouter({
   routes: [
     {
     	path: '/profile',
-    	component: Profile
+    	component: Profile,
     },
 	{
 		path: '/friends',
-		component: Friends
+		component: Friends,
 	},
 	{
 		path: '/leaderboard',
-		component: Leaderboard
+		component: Leaderboard,
 	}
     // {
     //   path: '/about',
