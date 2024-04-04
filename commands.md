@@ -54,7 +54,7 @@ We're using npx to directly execute these commands without installing them, sinc
 
 `npx @nestjs/cli new .`
 
-`npx @vue/cli create client`
+`npm create vue@latest`
 
 See [this tutorial](https://medium.com/js-dojo/how-to-serve-vue-with-nest-f23f10b33e1) on how to use nest.js together with vue.js
 
