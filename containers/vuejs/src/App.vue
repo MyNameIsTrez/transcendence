@@ -1,34 +1,39 @@
 <template>
-	<div class="flex flex-col overflow-hidden w-full lg:flex-row">
-		<div class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
-		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas v-if="loggedIn" /></div>
-		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Chat v-if="loggedIn" /></div>
-	</div>
-	<GameHeader />
+  <!-- <div class="flex flex-col overflow-hidden w-full lg:flex-row">
+    <div
+      class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"
+    >
+      <Sidebar />
+    </div>
+    <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
+      <PongCanvas />
+    </div>
+    <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
+      <Chat />
+    </div>
+  </div>
+  <GameHeader /> -->
+
+  <!-- RouterView is required to have route components like LoginView be rendered -->
+  <RouterView />
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, onUnmounted } from 'vue'
 import GameHeader from './components/GameHeader.vue'
 import PongCanvas from './components/PongCanvas.vue'
-import { rootSocket, disconnectSockets } from './components/SocketManager'
 import Sidebar from './components/Sidebar.vue'
-
 import Chat from './components/Chat.vue'
-const loggedIn = ref(false)
-onBeforeMount(() => {
-  const code = new URLSearchParams(window.location.search).get('code') || ''
-  console.log('code', code)
-  rootSocket.on('attemptLogin', (success: boolean) => {
-    loggedIn.value = success
-  })
-  rootSocket.emit('code', code)
-})
+import { useRouter } from 'vue-router'
 
-onUnmounted(() => {
-  disconnectSockets()
-})
+const router = useRouter()
 
+const urlParams = new URLSearchParams(window.location.search)
+const jwt = urlParams.get('jwt')
+if (jwt) {
+  localStorage.setItem('jwt', jwt)
+}
+
+router.replace({ path: '/' }) // Trims the jwt parameter from the URL
 </script>
 
 <style>

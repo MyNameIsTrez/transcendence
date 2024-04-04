@@ -5,7 +5,7 @@
 </template>
 <script setup lang="ts">
 import { ref, defineProps } from 'vue'
-import { gameSocket } from './SocketManager'
+import gameSocket from './SocketManager.vue'
 
 const joinGame = () => {
   console.log('Joining game')

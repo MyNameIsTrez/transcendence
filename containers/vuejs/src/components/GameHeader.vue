@@ -1,30 +1,23 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
     <h1 class="game-title">{{ gameTitle }}</h1>
-    <PlayButton v-if="!loggedIn" @clicked="attemptLogin" :buttonText="`LOGIN`" />
-    <PlayButton v-if="!endOfGame && loggedIn" @clicked="joinGame" :buttonText="buttonText" />
-    <PlayButton v-if="endOfGame && loggedIn" @clicked="reset" :buttonText="`Continue`" />
+    <!-- <PlayButton v-if="!loggedIn" @clicked="attemptLogin" :buttonText="`LOGIN`" /> -->
+    <PlayButton v-if="!endOfGame" @clicked="joinGame" :buttonText="buttonText" />
+    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="`Continue`" />
   </div>
 </template>
+
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { rootSocket, gameSocket } from './SocketManager'
+import gameSocket from './SocketManager.vue'
 import { ref } from 'vue'
+
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
 const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
-const loggedIn = ref(false)
 
-rootSocket.on('attemptLogin', (success: boolean) => {
-  console.log('attemptLogin', success)
-  loggedIn.value = success
-})
-const attemptLogin = () => {
-  console.log(import.meta.env.VITE_INTRA_REDIRECT_URL)
-  window.location.href = import.meta.env.VITE_INTRA_REDIRECT_URL
-}
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
   gameSocket.emit('joinGame')
@@ -50,6 +43,7 @@ gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
 </script>
+
 <style>
 .game-header {
   color: white;

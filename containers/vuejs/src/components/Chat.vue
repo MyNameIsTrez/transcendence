@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { chatSocket } from './SocketManager'
+import chatSocket from './SocketManager.vue'
 
 export default {
   data() {
@@ -51,4 +51,3 @@ export default {
   position: relative;
 }
 </style>
-
