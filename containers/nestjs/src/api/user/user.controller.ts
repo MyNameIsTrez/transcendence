@@ -7,7 +7,6 @@ export class UserController {
 
   @Get('username')
   username(@Request() req) {
-    const intra_id = req.user.intra_id;
-    return this.usersService.getUsername(intra_id);
+    return this.usersService.getUsername(req.user.intra_id);
   }
 }

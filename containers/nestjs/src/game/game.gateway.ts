@@ -3,10 +3,10 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
+import LobbyManager from './LobbyManager';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -17,23 +17,25 @@ export class GameGateway {
   @WebSocketServer()
   server: Server;
 
+  lobbyManager: LobbyManager;
+
   handleConnection(client: Socket) {
     console.log(`Client ${client.id} connected to game socket`);
 
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
-      console.error('Someone tried to connect without an authorization header');
+      console.error('Disconnecting client, they had no authorization header');
       client.disconnect();
       return;
     }
-    console.log('authorization', authorization);
+
     const jwt = authorization.split(' ')[1];
 
     try {
       const decoded = this.jwtService.verify(jwt);
       client.data.intra_id = decoded.sub;
     } catch (e) {
-      console.error('Disconnecting client because verifying their jwt failed');
+      console.error('Disconnecting client, because verifying their jwt failed');
       client.disconnect();
     }
   }
@@ -43,15 +45,12 @@ export class GameGateway {
   }
 
   afterInit() {
-    const interval_ms = 1000;
-    setInterval(() => {
-      this.server.emit('game', 'lmao');
-    }, interval_ms);
+    this.lobbyManager = new LobbyManager(this.server);
+    this.lobbyManager.updateLoop();
   }
 
   @SubscribeMessage('joinGame')
   async joinGame(@ConnectedSocket() client: Socket) {
-    console.log('client.id in game/joinGame():', client.id);
-    console.log('Joining game');
+    this.lobbyManager.queue(client);
   }
 }
