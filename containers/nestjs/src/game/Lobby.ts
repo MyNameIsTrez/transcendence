@@ -6,7 +6,7 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  private readonly clients = new Array<Socket>();
+  public readonly clients = new Map<Socket['id'], Socket>();
 
   constructor(private readonly server: Server) {}
 
@@ -14,16 +14,22 @@ export default class Lobby {
     console.log(
       `In Lobby ${this.id} its addClient(), client ${client.id} got added`,
     );
-    this.clients.push(client);
+    this.clients.set(client.id, client);
     client.join(this.id);
   }
 
   public isFull() {
-    return this.clients.length >= this.maxClients;
+    return this.clients.size >= this.maxClients;
   }
 
-  public emit(event: string, payload: any) {
-    console.log(`In Lobby ${this.id} its emit()`);
+  public update() {
+    this.emit('game', 'foo');
+  }
+
+  private emit(event: string, payload: any) {
+    console.log(
+      `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
+    );
     this.server.to(this.id).emit(event, payload);
   }
 }

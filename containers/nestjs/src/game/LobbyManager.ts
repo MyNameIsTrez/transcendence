@@ -1,21 +1,30 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
+import { WsException } from '@nestjs/websockets';
 
 export default class LobbyManager {
-  private readonly lobbies: Map<Lobby['id'], Lobby> = new Map<
-    Lobby['id'],
-    Lobby
-  >();
+  private readonly lobbies = new Map<Lobby['id'], Lobby>();
 
   private readonly updateIntervalMs = 1000;
 
   constructor(private readonly server: Server) {}
 
   public queue(client: Socket) {
-    // TODO: Throw an error if the client is already in a different lobby
+    if (this.isClientAlreadyInLobby(client)) {
+      console.error(`Client ${client.id} is already in a lobby`);
+      throw new WsException('Already in a lobby');
+    }
+
     const lobby = this.getLobby();
     lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
+  }
+
+  // TODO: Also throw if the same intra account is in different lobbies?
+  private isClientAlreadyInLobby(client: Socket): boolean {
+    return Array.from(this.lobbies.values()).some((lobby) =>
+      lobby.clients.has(client.id),
+    );
   }
 
   // Looping through all lobbies is theoretically inefficient,
@@ -45,7 +54,7 @@ export default class LobbyManager {
     setInterval(() => {
       console.log('In LobbyManager its updateLoop()');
       this.lobbies.forEach((lobby) => {
-        lobby.emit('game', 'foo');
+        lobby.update();
       });
     }, this.updateIntervalMs);
   }
