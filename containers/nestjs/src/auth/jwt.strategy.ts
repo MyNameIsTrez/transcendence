@@ -12,7 +12,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate() {
-    return {};
+  validate(payload: any) {
+    // What this function returns is what req.user will be set to everywhere
+    return { intra_id: payload.sub };
   }
 }

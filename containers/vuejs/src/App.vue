@@ -19,10 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import GameHeader from './components/GameHeader.vue'
-import PongCanvas from './components/PongCanvas.vue'
-import Sidebar from './components/Sidebar.vue'
-import Chat from './components/Chat.vue'
+// import GameHeader from './components/GameHeader.vue'
+// import PongCanvas from './components/PongCanvas.vue'
+// import Sidebar from './components/Sidebar.vue'
+// import Chat from './components/Chat.vue'
+
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

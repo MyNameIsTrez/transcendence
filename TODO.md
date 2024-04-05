@@ -1,6 +1,6 @@
 # General
 
-- Discuss with others who did the project whether there's a way to get around the redirection to the intra page, since it means our website gets loaded twice, which can create an annoying argument about whether it's still a single-page application then
+- Mark as much stuff `private readonly` as possible in every constructor?
 
 # From subject.pdf
 

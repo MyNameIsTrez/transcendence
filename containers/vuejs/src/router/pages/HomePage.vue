@@ -50,6 +50,10 @@ function joinGame() {
   console.log('in joinGame()')
   gameSocket.emit('joinGame', 'deadbeef')
 }
+
+gameSocket.on('game', (data) => {
+  console.log('game', data)
+})
 </script>
 
 <template>

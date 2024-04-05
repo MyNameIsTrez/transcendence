@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
   async getAccessToken(code: string): Promise<string> {
@@ -61,6 +63,14 @@ export class AuthService {
     })
       .then((response) => response.json())
       .then((j) => {
+        console.log(`Saving user with intra_id ${j.id}`);
+        this.usersService.create({
+          intra_id: j.id,
+          displayname: j.displayname,
+          email: j.email,
+          image_url: j.image.versions.medium,
+        });
+
         const payload = { sub: j.id };
         return this.jwtService.sign(payload);
       });

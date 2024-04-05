@@ -18,10 +18,7 @@ export class GameGateway {
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log('in game');
-
-    console.log('client.id in handleConnection():', client.id);
-    console.log('Client connected');
+    console.log(`Client ${client.id} connected to game socket`);
 
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
@@ -42,7 +39,7 @@ export class GameGateway {
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected in game: ${client.id}`);
+    console.log(`Client ${client.id} disconnected game socket`);
   }
 
   afterInit() {
