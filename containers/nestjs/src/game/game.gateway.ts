@@ -24,9 +24,21 @@ export class GameGateway {
 
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
-      console.error('Disconnecting client, they had no authorization header');
-      client.disconnect();
+      console.error(
+        'Disconnecting client, because they had no authorization header',
+      );
+      client.emit('exception', {
+        errorMessage: 'Missing the authorization header',
+        redirectToLoginPage: true,
+      });
       return;
+
+      // Ideally we'd throw an exception,
+      // but I (Sander) couldn't figure out how to make it not crash NestJS
+      // client.disconnect();
+      // throw new WsException(
+      //   'Disconnecting client, because they had no authorization header',
+      // );
     }
 
     const jwt = authorization.split(' ')[1];
@@ -36,7 +48,10 @@ export class GameGateway {
       client.data.intra_id = decoded.sub;
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
-      client.disconnect();
+      client.emit('exception', {
+        errorMessage: 'Verifying jwt failed',
+        redirectToLoginPage: true,
+      });
     }
   }
 

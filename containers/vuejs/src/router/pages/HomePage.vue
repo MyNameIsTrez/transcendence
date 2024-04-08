@@ -6,6 +6,10 @@ import axios from 'axios'
 
 const router = useRouter()
 
+function redirectToLoginPage() {
+  router.replace({ path: '/login' })
+}
+
 async function get(path: string) {
   const jwt = localStorage.getItem('jwt')
   return await axios
@@ -14,7 +18,7 @@ async function get(path: string) {
       return response.data
     })
     .catch(() => {
-      router.replace({ path: '/login' })
+      redirectToLoginPage()
     })
 }
 
@@ -25,8 +29,7 @@ async function getUsername() {
 const jwt = localStorage.getItem('jwt')
 if (!jwt) {
   console.error('Expected a jwt in the localstorage')
-  console.log('router', router)
-  router.replace({ path: '/login' })
+  redirectToLoginPage()
 }
 
 const authorization_string = `Bearer ${jwt}`
@@ -44,6 +47,19 @@ const chatSocket = io(url + '/chat', opts)
 onUnmounted(() => {
   gameSocket.disconnect()
   chatSocket.disconnect()
+})
+
+gameSocket.on('exception', (error) => {
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    redirectToLoginPage()
+  }
+})
+chatSocket.on('exception', (error) => {
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    redirectToLoginPage()
+  }
 })
 
 function joinGame() {
