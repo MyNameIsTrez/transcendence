@@ -33,11 +33,7 @@ const reset = () => {
 gameSocket.on('gameOver', (won: boolean) => {
   endOfGame.value = true
   startOfGame.value = false
-  if (won) {
-    gameTitle.value = 'YOU WON'
-  } else {
-    gameTitle.value = 'YOU LOST'
-  }
+  gameTitle.value = won ? 'YOU WON' : 'YOU LOST'
 })
 gameSocket.on('gameStart', () => {
   startOfGame.value = true

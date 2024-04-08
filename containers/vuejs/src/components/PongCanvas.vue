@@ -13,7 +13,7 @@ import ScoreBoard from './ScoreBoard.vue'
 gameSocket.on('pong', (data: any) => {
   render(data)
 })
-gameSocket.on('gameOver', (data: any) => {
+gameSocket.on('gameOver', () => {
   drawCanvas()
 })
 

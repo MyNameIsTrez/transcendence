@@ -1,4 +1,5 @@
 import {
+  MessageBody,
   ConnectedSocket,
   SubscribeMessage,
   WebSocketGateway,
@@ -33,8 +34,7 @@ export class GameGateway {
       });
       return;
 
-      // Ideally we'd throw an exception,
-      // but I (Sander) couldn't figure out how to make it not crash NestJS
+      // Ideally we'd throw an exception, but it seems to always crash handleConnection()
       // client.disconnect();
       // throw new WsException(
       //   'Disconnecting client, because they had no authorization header',
@@ -57,6 +57,7 @@ export class GameGateway {
 
   handleDisconnect(client: Socket) {
     console.log(`Client ${client.id} disconnected game socket`);
+    this.lobbyManager.removeClient(client);
   }
 
   afterInit() {
@@ -67,5 +68,14 @@ export class GameGateway {
   @SubscribeMessage('joinGame')
   async joinGame(@ConnectedSocket() client: Socket) {
     this.lobbyManager.queue(client);
+  }
+
+  @SubscribeMessage('movePaddle')
+  async movePaddle(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('keydown') keydown: boolean,
+    @MessageBody('north') north: boolean,
+  ) {
+    client.data.lobby?.movePaddle(client, keydown, north);
   }
 }

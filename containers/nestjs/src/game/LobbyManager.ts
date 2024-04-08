@@ -18,12 +18,13 @@ export default class LobbyManager {
     const lobby = this.getLobby();
     lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
+    client.data.lobby = lobby;
   }
 
   // TODO: Also throw if the same intra account is in different lobbies?
   private isClientAlreadyInLobby(client: Socket): boolean {
     return Array.from(this.lobbies.values()).some((lobby) =>
-      lobby.clients.has(client.id),
+      lobby.hasClient(client),
     );
   }
 
@@ -37,7 +38,7 @@ export default class LobbyManager {
       (lobby) => !lobby.isFull(),
     );
     if (notFullLobby) {
-      console.log('Found a not full lobby');
+      console.log("Found a lobby that wasn't full");
       return notFullLobby;
     }
 
@@ -49,6 +50,19 @@ export default class LobbyManager {
 
   // TODO: Use this to join private lobbies
   // public join(lobby_id: string) {}
+
+  public removeClient(client: Socket) {
+    const lobby: Lobby | undefined = client.data.lobby;
+
+    if (lobby) {
+      lobby.removeClient(client);
+
+      if (lobby.isEmpty()) {
+        console.log(`Removing empty lobby ${lobby.id}`);
+        this.lobbies.delete(lobby.id);
+      }
+    }
+  }
 
   public updateLoop() {
     setInterval(() => {
