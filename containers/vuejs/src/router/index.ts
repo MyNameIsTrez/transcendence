@@ -5,29 +5,33 @@ import Leaderboard from '../components/sidebar/Leaderboard.vue'
 import FriendProfile from '../components/sidebar/FriendProfile.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes: [
-    {
-    	path: '/profile',
-    	component: Profile,
-    },
-	{
-		path: '/friends',
-		component: Friends,
-	},
-	{
-		path: '/leaderboard',
-		component: Leaderboard,
-	},
-	{
-		path: '/friendprofile',
-		component: FriendProfile,
-	}
-    // {
-    //   path: '/about',
-    //   component: () => import('../views/About.vue')
-    // }
-  ]
+	history: createWebHistory(),
+	routes: [
+		{
+			path: '/',
+			component: Profile,
+		},
+		{
+			path: '/profile',
+			component: Profile,
+		},
+		{
+			path: '/friends',
+			component: Friends,
+		},
+		{
+			path: '/leaderboard',
+			component: Leaderboard,
+		},
+		{
+			path: '/friendprofile',
+			component: FriendProfile,
+		}
+		// {
+		//   path: '/about',
+		//   component: () => import('../views/About.vue')
+		// }
+	]
 })
 
 export default router
