@@ -7,6 +7,10 @@ import FriendProfile from '../components/sidebar/FriendProfile.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+	{
+		path: '/',
+		component: Profile,
+	},
     {
     	path: '/profile',
     	component: Profile,
