@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Profile from '../components/sidebar/Profile.vue'
 import Friends from '../components/sidebar/Friends.vue'
 import Leaderboard from '../components/sidebar/Leaderboard.vue'
+import FriendProfile from '../components/sidebar/FriendProfile.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -17,6 +18,10 @@ const router = createRouter({
 	{
 		path: '/leaderboard',
 		component: Leaderboard,
+	},
+	{
+		path: '/friendprofile',
+		component: FriendProfile,
 	}
     // {
     //   path: '/about',
