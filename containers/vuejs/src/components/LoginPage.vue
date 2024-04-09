@@ -4,3 +4,14 @@
     >Login</a
   >
 </template>
+
+<script setup lang="ts">
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const jwt = localStorage.getItem('jwt')
+if (jwt) {
+  router.replace({ path: '/' })
+}
+</script>

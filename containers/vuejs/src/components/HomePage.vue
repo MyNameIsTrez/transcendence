@@ -4,7 +4,23 @@ import io from 'socket.io-client'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-const router = useRouter()
+function extractJwtFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const jwt = urlParams.get('jwt')
+  if (jwt) {
+    localStorage.setItem('jwt', jwt)
+  }
+  router.replace({ path: '/' }) // Trims the jwt parameter from the URL
+}
+
+function retrieveJwt() {
+  const jwt = localStorage.getItem('jwt')
+  if (!jwt) {
+    console.error('Expected a jwt in the localstorage; redirecting to login page')
+    redirectToLoginPage()
+  }
+  return jwt
+}
 
 function redirectToLoginPage() {
   router.replace({ path: '/login' })
@@ -18,6 +34,7 @@ async function get(path: string) {
       return response.data
     })
     .catch(() => {
+      localStorage.removeItem('jwt')
       redirectToLoginPage()
     })
 }
@@ -26,11 +43,16 @@ async function getUsername() {
   console.log(`username: ${await get('user/username')}`)
 }
 
-const jwt = localStorage.getItem('jwt')
-if (!jwt) {
-  console.error('Expected a jwt in the localstorage')
-  redirectToLoginPage()
+function joinGame() {
+  console.log('in joinGame()')
+  gameSocket.emit('joinGame', 'deadbeef')
 }
+
+const router = useRouter()
+
+extractJwtFromUrl()
+
+const jwt = retrieveJwt()
 
 const authorization_string = `Bearer ${jwt}`
 const opts = {
@@ -61,11 +83,6 @@ chatSocket.on('exception', (error) => {
     redirectToLoginPage()
   }
 })
-
-function joinGame() {
-  console.log('in joinGame()')
-  gameSocket.emit('joinGame', 'deadbeef')
-}
 
 gameSocket.on('game', (data) => {
   console.log('game', data)
