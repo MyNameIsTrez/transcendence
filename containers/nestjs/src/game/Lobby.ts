@@ -51,6 +51,10 @@ export default class Lobby {
   }
 
   public update() {
+    if (!this.gameHasStarted) {
+      return;
+    }
+
     this.pong.update();
 
     this.emit('pong', this.pong.getData());
@@ -64,6 +68,16 @@ export default class Lobby {
     }
   }
 
+  public didSomeoneWin() {
+    return this.pong.didSomeoneWin();
+  }
+
+  public disconnectClients() {
+    this.clients.forEach((client) => {
+      this.removeClient(client);
+    });
+  }
+
   private emit(event: string, payload: any) {
     console.log(
       `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
@@ -75,6 +89,7 @@ export default class Lobby {
     if (!this.gameHasStarted) {
       return;
     }
-    client.data.lobby.movePaddle(client.data.playerIndex, keydown, north);
+
+    this.pong.movePaddle(client.data.playerIndex, keydown, north);
   }
 }

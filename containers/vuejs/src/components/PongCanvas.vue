@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import gameSocket from './SocketManager.vue'
+import { gameSocket } from './SocketManager.ts'
 import ScoreBoard from './ScoreBoard.vue'
 
 gameSocket.on('pong', (data: any) => {
@@ -25,6 +25,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
     north = false
   }
   if (north !== undefined) {
+    console.log('movePaddle')
     gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }

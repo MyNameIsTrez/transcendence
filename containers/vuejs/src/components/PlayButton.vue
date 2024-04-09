@@ -4,20 +4,12 @@
   </button>
 </template>
 <script setup lang="ts">
-import { ref, defineProps } from 'vue'
-import gameSocket from './SocketManager.vue'
-
-const joinGame = () => {
-  console.log('Joining game')
-  gameSocket.emit('joinGame')
-}
-const displayText = ref('PLAY')
+import { defineProps } from 'vue'
 
 const emit = defineEmits(['clicked'])
 const props = defineProps({
   buttonText: String
 })
-console.log(props)
 </script>
 <style>
 .play-button {

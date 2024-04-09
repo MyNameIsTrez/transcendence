@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import chatSocket from './SocketManager.vue'
+import { chatSocket } from './SocketManager.ts'
 
 export default {
   data() {
@@ -21,7 +21,7 @@ export default {
   },
   mounted() {
     chatSocket.on('connect', () => {
-      console.log(`Connected with id: ${chatSocket.id}`)
+      // console.log(`Connected with id: ${chatSocket.id}`)
     })
 
     chatSocket.on('newMessage', (message) => {

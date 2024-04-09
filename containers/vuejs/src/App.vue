@@ -3,6 +3,15 @@
   <RouterView />
 </template>
 
+<script setup lang="ts">
+import { onUnmounted } from 'vue'
+import { disconnectSockets } from './components/SocketManager'
+
+onUnmounted(() => {
+  disconnectSockets()
+})
+</script>
+
 <!-- TODO: Is this still used? -->
 <style>
 * {

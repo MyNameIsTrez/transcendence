@@ -5,7 +5,7 @@ import { WsException } from '@nestjs/websockets';
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
 
-  private readonly updateIntervalMs = 1000;
+  private readonly updateIntervalMs = 1000 / 60;
 
   constructor(private readonly server: Server) {}
 
@@ -69,7 +69,15 @@ export default class LobbyManager {
       console.log('In LobbyManager its updateLoop()');
       this.lobbies.forEach((lobby) => {
         lobby.update();
+        if (lobby.didSomeoneWin()) {
+          this.removeLobby(lobby);
+        }
       });
     }, this.updateIntervalMs);
+  }
+
+  private removeLobby(lobby: Lobby) {
+    lobby.disconnectClients();
+    this.lobbies.delete(lobby.id);
   }
 }
