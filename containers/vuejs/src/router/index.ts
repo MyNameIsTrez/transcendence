@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ProfilePage from './pages/ProfilePage.vue'
-import LoginPage from './pages/LoginPage.vue'
-import HomePage from './pages/HomePage.vue'
+import Profile from '../components/sidebar/Profile.vue'
+import LoginPage from '../components/LoginPage.vue'
+import HomePage from '../components/HomePage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,7 +12,7 @@ const router = createRouter({
     },
     {
       path: '/profile',
-      component: ProfilePage
+      component: Profile
     },
     {
       path: '/login',
