@@ -66,7 +66,7 @@ export default class LobbyManager {
 
   public updateLoop() {
     setInterval(() => {
-      console.log('In LobbyManager its updateLoop()');
+      // console.log('In LobbyManager its updateLoop()');
       this.lobbies.forEach((lobby) => {
         lobby.update();
         if (lobby.didSomeoneWin()) {

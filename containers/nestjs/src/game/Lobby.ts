@@ -9,7 +9,7 @@ export default class Lobby {
 
   private readonly clients = new Map<Socket['id'], Socket>();
 
-  private readonly pong = new Pong(1);
+  private readonly pong = new Pong(10);
 
   private gameHasStarted = false;
 

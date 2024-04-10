@@ -8,10 +8,19 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+function extractJwtFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const jwt = urlParams.get('jwt')
+  if (jwt) {
+    localStorage.setItem('jwt', jwt)
+    return true
+  }
+  return false
+}
+
 const router = useRouter()
 
-const jwt = localStorage.getItem('jwt')
-if (jwt) {
+if (localStorage.getItem('jwt') || extractJwtFromUrl()) {
   router.replace({ path: '/' })
 }
 </script>

@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { chatSocket } from './SocketManager.ts'
+import { chatSocket } from './getSocket'
 
 export default {
   data() {

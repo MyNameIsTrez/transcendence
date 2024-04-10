@@ -31,7 +31,7 @@ export class AuthController {
         process.env.VITE_ADDRESS +
         ':' +
         process.env.FRONTEND_PORT +
-        `?jwt=${jwt}`,
+        `/login?jwt=${jwt}`,
       statusCode: 302,
     };
   }
