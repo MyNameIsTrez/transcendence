@@ -31,7 +31,7 @@ export class UsersService {
 
   getUsername(intra_id: number): Promise<string> {
     return this.findOne(intra_id).then((user) => {
-      return user.displayname;
+      return user?.displayname;
     });
   }
 }
