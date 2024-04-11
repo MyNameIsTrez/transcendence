@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { gameSocket } from './getSocket'
+import { gameSocket } from '../getSocket'
 import { ref } from 'vue'
 
 const emit = defineEmits(['resetCanvas'])

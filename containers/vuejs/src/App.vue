@@ -1,12 +1,15 @@
 <template>
+  <!-- Suspense is needed for the async get() requests we do -->
   <!-- RouterView is required to have route components like LoginView be rendered -->
-  <RouterView />
+  <Suspense>
+    <RouterView />
+  </Suspense>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { onUnmounted } from 'vue'
-import { gameSocket, chatSocket, initGameSocket, initChatSocket } from './components/getSocket'
+import { gameSocket, chatSocket, initGameSocket, initChatSocket } from './getSocket'
 
 const router = useRouter()
 

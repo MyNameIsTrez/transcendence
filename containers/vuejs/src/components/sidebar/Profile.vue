@@ -2,7 +2,7 @@
   <div class="p-6">
     <div class="grid justify-center">
       <span class="grid grid-cols-2">
-        <div class="text-2xl justify-self-start text-yellow-200">mforstho</div>
+        <div class="text-2xl justify-self-start text-yellow-200">{{ username }}</div>
         <!-- The button to open modal -->
         <label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
 
@@ -82,6 +82,9 @@
 import MatchReport from './profile/MatchReport.vue'
 // import Achievements from './profile/Achievements.vue'
 import Achievements from './achievements/Achievements.vue'
+import { get } from '../../httpRequests'
+
+const username = await get('user/username')
 </script>
 
 <style lang="scss" scoped></style>

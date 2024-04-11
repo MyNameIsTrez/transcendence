@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { chatSocket } from './getSocket'
+import { chatSocket } from '../getSocket'
 
 export default {
   data() {
@@ -51,3 +51,4 @@ export default {
   position: relative;
 }
 </style>
+../getSocket

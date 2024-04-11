@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ScoreBoard from './ScoreBoard.vue'
-import { gameSocket } from './getSocket'
+import { gameSocket } from '../getSocket'
 
 gameSocket.on('pong', (data: any) => {
   render(data)

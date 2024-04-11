@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { gameSocket } from './getSocket'
+import { gameSocket } from '../getSocket'
 
 const leftPlayerScore = ref(0)
 const rightPlayerScore = ref(0)
