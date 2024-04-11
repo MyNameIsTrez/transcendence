@@ -4,4 +4,4 @@ import { PublicController } from './public.controller';
 @Module({
   controllers: [PublicController],
 })
-export class PublicModule {}
+export class ApiPublicModule {}

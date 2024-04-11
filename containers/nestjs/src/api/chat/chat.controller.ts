@@ -1,8 +1,11 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { Visibility } from 'src/chat/chat.entity';
+import { ChatService } from 'src/chat/chat.service';
 
 @Controller('api/chat')
 export class ChatController {
+  constructor(private readonly chatService: ChatService) {}
+
   @Get('chats')
   chats(@Request() req) {
     // TODO: Access the chat db
@@ -12,6 +15,9 @@ export class ChatController {
 
   @Get('name')
   name(@Request() req) {
+    // TODO: Use something like this
+    // this.chatService.getName(chatId);
+
     // TODO: Access the chat db
     return 'AwesomeChat';
   }

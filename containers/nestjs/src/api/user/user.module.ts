@@ -6,4 +6,4 @@ import { UsersModule } from 'src/users/users.module';
   imports: [UsersModule],
   controllers: [UserController],
 })
-export class UserModule {}
+export class ApiUserModule {}
