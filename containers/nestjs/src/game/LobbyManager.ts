@@ -57,10 +57,10 @@ export default class LobbyManager {
     if (lobby) {
       lobby.removeClient(client);
 
-      if (lobby.isEmpty()) {
-        console.log(`Removing empty lobby ${lobby.id}`);
-        this.lobbies.delete(lobby.id);
-      }
+      // If one of the clients disconnects, the other client wins
+      lobby.emit('gameOver', true);
+
+      this.removeLobby(lobby);
     }
   }
 

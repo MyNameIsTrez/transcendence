@@ -47,10 +47,6 @@ export default class Lobby {
     return this.clients.size >= this.maxClients;
   }
 
-  public isEmpty() {
-    return this.clients.size == 0;
-  }
-
   public update() {
     if (!this.gameHasStarted) {
       return;
@@ -79,7 +75,7 @@ export default class Lobby {
     });
   }
 
-  private emit(event: string, payload?: any) {
+  public emit(event: string, payload?: any) {
     console.log(
       `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
     );

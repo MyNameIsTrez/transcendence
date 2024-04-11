@@ -25,10 +25,10 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
     north = false
   }
   if (north !== undefined) {
-    console.log('movePaddle')
     gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
+
 const server_window_height = 1080
 const server_window_width = 1920
 const pongContainer = ref(null)
