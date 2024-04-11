@@ -26,6 +26,7 @@ export default class Lobby {
     // TODO: Start the game only once both players have pressed a "Ready" button
     if (this.isFull()) {
       this.gameHasStarted = true;
+      this.emit('gameStart');
     }
   }
 
@@ -78,7 +79,7 @@ export default class Lobby {
     });
   }
 
-  private emit(event: string, payload: any) {
+  private emit(event: string, payload?: any) {
     console.log(
       `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
     );
