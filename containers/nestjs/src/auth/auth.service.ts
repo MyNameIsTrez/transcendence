@@ -69,6 +69,7 @@ export class AuthService {
           displayname: j.displayname,
           email: j.email,
           image_url: j.image.versions.medium,
+          my_chats: [],
         });
 
         const payload = { sub: j.id };

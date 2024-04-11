@@ -30,4 +30,10 @@ export class UsersService {
       return user?.displayname;
     });
   }
+
+  getMyChats(intra_id: number): Promise<string[]> {
+    return this.findOne(intra_id).then((user) => {
+      return user?.my_chats;
+    });
+  }
 }

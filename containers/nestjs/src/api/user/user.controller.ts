@@ -9,4 +9,9 @@ export class UserController {
   username(@Request() req) {
     return this.usersService.getUsername(req.user.intra_id);
   }
+
+  @Get('myChats')
+  myChats(@Request() req) {
+    return this.usersService.getMyChats(req.user.intra_id);
+  }
 }
