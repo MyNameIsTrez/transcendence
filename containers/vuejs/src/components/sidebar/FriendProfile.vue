@@ -2,35 +2,13 @@
   <div class="p-6">
     <div class="grid justify-center">
       <span class="grid grid-cols-2">
-        <div class="text-2xl justify-self-start text-yellow-200">mforstho</div>
-        <!-- The button to open modal -->
-        <label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
-
-        <!-- Put this part before </body> tag -->
-        <input type="checkbox" id="my_modal_7" class="modal-toggle" />
-        <div class="modal" role="dialog">
-          <div class="modal-box">
-            <p class="py-4">Edit your name</p>
-            <span class="flex justify-center">
-              <input
-                type="text"
-                placeholder="New name"
-                class="input input-bordered w-full max-w-xs"
-              />
-              <button class="btn">Save</button>
-            </span>
-            <br />
-            <p class="py-4">Upload new avatar</p>
-            <input type="file" class="file-input file-input-bordered w-full max-w-md" />
-          </div>
-          <label class="modal-backdrop" for="my_modal_7">Close</label>
-        </div>
+        <div class="text-2xl justify-self-start text-yellow-200">sbos</div>
       </span>
       <br />
       <div class="flex justify-between">
         <div class="avatar justify-start">
           <div class="w-24 rounded">
-            <img src="/vuejs/code/src/assets/mforstho.png" />
+            <img src="https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg" />
           </div>
         </div>
         <div class="text">
