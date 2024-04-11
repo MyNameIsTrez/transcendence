@@ -29,7 +29,7 @@ export class AuthService {
       this.configService.getOrThrow('VITE_ADDRESS') +
         ':' +
         this.configService.getOrThrow('BACKEND_PORT') +
-        '/auth/login',
+        '/login',
     );
 
     return fetch('https://api.intra.42.fr/oauth/token', {

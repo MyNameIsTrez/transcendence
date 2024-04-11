@@ -13,7 +13,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @Get('auth/login')
+  @Get('login')
   @Redirect()
   async login(@Request() req) {
     const code = req.query.code;
