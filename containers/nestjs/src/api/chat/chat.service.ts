@@ -6,14 +6,7 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 
 @Injectable()
-export class ChatService {
-  constructor(
-    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
-    @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>,
-    @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
-  ) {}
-
+export class ApiChatService {
   create(chat: Chat): Promise<Chat> {
     return this.chatRepository.save(chat);
   }

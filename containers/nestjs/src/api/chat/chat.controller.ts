@@ -1,10 +1,38 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { Visibility } from 'src/chat/chat.entity';
 import { ChatService } from 'src/chat/chat.service';
+import { v4 as uuid } from 'uuid';
 
 @Controller('api/chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  @Post('create')
+  create(
+    @Request() req,
+    @Body('name') name,
+    @Body('visibility') visibility,
+    @Body('password') password,
+  ) {
+    // TODO: Implement
+    const hashed_password =
+      visibility === 'PROTECTED' ? hashPassword(password) : '';
+
+    return this.chatService.create({
+      chat_id: uuid(),
+      name: name,
+      users: [req.user.intra_id],
+      history: [],
+      visibility: visibility,
+      hashed_password: hashed_password,
+    });
+  }
+
+  // TODO: Do we want this?
+  // @Post('setName')
+  // setName(@Request() req) {
+  //   return this.chatService.setName();
+  // }
 
   @Get('chats')
   chats(@Request() req) {
@@ -13,10 +41,10 @@ export class ChatController {
     return ['uuid1', 'uuid2'];
   }
 
-  @Get('name')
+  @Post('name')
   name(@Request() req) {
     // TODO: Use something like this
-    // this.chatService.getName(chatId);
+    // return this.chatService.getName(chatId);
 
     // TODO: Access the chat db
     return 'AwesomeChat';

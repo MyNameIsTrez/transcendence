@@ -2,12 +2,6 @@ import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 
-export enum Visibility {
-  PUBLIC,
-  PRIVATE,
-  PROTECTED,
-}
-
 @Entity()
 export class Chat {
   @PrimaryColumn('uuid')
@@ -22,11 +16,7 @@ export class Chat {
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
 
-  @Column({
-    type: 'enum',
-    enum: Visibility,
-  })
-  visibility: Visibility;
+  visibility: string;
 
   @Column()
   hashed_password: string;

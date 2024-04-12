@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import Pong from './pong';
 
 export default class Lobby {
-  public readonly id: string = uuidv4();
+  public readonly id: string = uuid();
 
   private readonly maxClients = 2;
 
