@@ -15,7 +15,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import { chatSocket } from '../getSocket'
-import { post } from '../httpRequests'
+import { get, post } from '../httpRequests'
 
 const chatName = ref('')
 
@@ -25,7 +25,17 @@ async function createChat() {
     visibility: 'PUBLIC'
   })
   console.log('chat', chat)
+  getMyChats()
 }
+
+const myChats = ref('')
+
+async function getMyChats() {
+  myChats.value = await get('user/myChats')
+  console.log('myChats', typeof myChats.value, myChats.value)
+}
+
+getMyChats()
 </script>
 
 <style scoped>
@@ -34,4 +44,3 @@ async function createChat() {
   position: relative;
 }
 </style>
-../getSocket

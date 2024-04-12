@@ -21,7 +21,7 @@ export class ChatController {
     const hashed_password =
       visibility === 'PROTECTED' ? this.chatService.hashPassword(password) : '';
 
-    return this.chatService.create({
+    return this.chatService.create(intra_id, {
       chat_id: uuid(),
       name: name,
       users: [intra_id],

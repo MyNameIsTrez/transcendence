@@ -5,9 +5,10 @@ import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { ChatService } from './chat.service';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chat, Message, Mute])],
+  imports: [UsersModule, TypeOrmModule.forFeature([Chat, Message, Mute])],
   providers: [ChatGateway, ChatService],
   exports: [ChatService],
 })

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ChatService {
@@ -12,9 +13,12 @@ export class ChatService {
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
+    private readonly usersService: UsersService,
   ) {}
 
-  create(chat: Chat): Promise<Chat> {
+  create(intra_id: number, chat: Chat): Promise<Chat> {
+    this.usersService.addToChat(intra_id, chat.chat_id, chat.name);
+
     return this.chatRepository.save(chat);
   }
 
