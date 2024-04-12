@@ -17,4 +17,15 @@ export class ChatService {
   create(chat: Chat): Promise<Chat> {
     return this.chatRepository.save(chat);
   }
+
+  hashPassword(password: string) {
+    // TODO: Hashing
+    return password;
+  }
+
+  getName(chat_id: string) {
+    return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
+      return chat?.name;
+    });
+  }
 }

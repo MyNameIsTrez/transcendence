@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Post, Request } from '@nestjs/common';
-import { Visibility } from 'src/chat/chat.entity';
 import { ChatService } from 'src/chat/chat.service';
 import { v4 as uuid } from 'uuid';
 
@@ -14,17 +13,25 @@ export class ChatController {
     @Body('visibility') visibility,
     @Body('password') password,
   ) {
+    const intra_id = req.user.intra_id;
+
+    // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
+
     // TODO: Implement
     const hashed_password =
-      visibility === 'PROTECTED' ? hashPassword(password) : '';
+      visibility === 'PROTECTED' ? this.chatService.hashPassword(password) : '';
 
     return this.chatService.create({
       chat_id: uuid(),
       name: name,
-      users: [req.user.intra_id],
+      users: [intra_id],
       history: [],
       visibility: visibility,
       hashed_password: hashed_password,
+      owner: intra_id,
+      admins: [intra_id],
+      banned: [],
+      muted: [],
     });
   }
 
@@ -42,12 +49,8 @@ export class ChatController {
   }
 
   @Post('name')
-  name(@Request() req) {
-    // TODO: Use something like this
-    // return this.chatService.getName(chatId);
-
-    // TODO: Access the chat db
-    return 'AwesomeChat';
+  name(@Request() req, @Body('chat_id') chat_id) {
+    return this.chatService.getName(chat_id);
   }
 
   @Get('users')
@@ -76,9 +79,9 @@ export class ChatController {
   }
 
   @Get('visibility')
-  visibility(@Request() req): Visibility {
+  visibility(@Request() req) {
     // TODO: Access the chat db
-    return Visibility.PUBLIC;
+    return 'PUBLIC';
   }
 
   @Get('owner')
