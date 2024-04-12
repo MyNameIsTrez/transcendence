@@ -1,48 +1,41 @@
 <template>
   <div>
-    <div v-for="msg in messages" :key="msg.id">
-      <strong>{{ msg.sender }}:</strong> {{ msg.content }}
-    </div>
-    <input v-model="typedMessage" placeholder="Type your message..." />
-    <button @click="sendMessage">Send</button>
+    <!-- createChat -->
+    <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
+    <button @click="createChat">Create</button>
+    <!-- <br /><br /> -->
+
+    <!-- getChat -->
+    <!-- <input v-model="typedQuery" placeholder="Chat name..." @keyup.enter="getChat" />
+    <button @click="getChat">Search</button>
+    <br /><br /> -->
   </div>
 </template>
 
-<script>
-import { chatSocket } from './SocketManager'
+<script setup lang="ts">
+import { ref } from 'vue'
+// import { chatSocket } from '../getSocket'
+import { get, post } from '../httpRequests'
 
-export default {
-  data() {
-    return {
-      typedMessage: '',
-      messages: [],
-      recipient: 'other-client-id' // Replace with the recipient's client id
-    }
-  },
-  mounted() {
-    chatSocket.on('connect', () => {
-      console.log(`Connected with id: ${chatSocket.id}`)
-    })
+const chatName = ref('')
 
-    chatSocket.on('newMessage', (message) => {
-      this.messages.push(message)
-    })
-  },
-  methods: {
-    sendMessage() {
-      const message = {
-        content: this.typedMessage,
-        sender: chatSocket.id,
-        recipient: this.recipient
-      }
-
-      this.messages = []
-
-      chatSocket.emit('sendMessage', message)
-      this.typedMessage = ''
-    }
-  }
+async function createChat() {
+  const chat = await post('chat/create', {
+    name: chatName.value,
+    visibility: 'PUBLIC'
+  })
+  console.log('chat', chat)
+  getMyChats()
 }
+
+const myChats = ref('')
+
+async function getMyChats() {
+  myChats.value = await get('user/myChats')
+  console.log('myChats', typeof myChats.value, myChats.value)
+}
+
+getMyChats()
 </script>
 
 <style scoped>
@@ -51,4 +44,3 @@ export default {
   position: relative;
 }
 </style>
-

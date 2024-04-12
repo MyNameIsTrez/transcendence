@@ -10,9 +10,13 @@ Enter a container:
 
 ## Entering psql
 
+Enter the db container:
+
+`docker compose exec db bash`
+
 Log into the database:
 
-`psql --username=postgres`
+`psql --username=foo --db=bar`
 
 List all commands:
 
@@ -42,7 +46,7 @@ If you want to allow someone else to play with you, you'll need to change the `V
 
 Print all databases:
 
-`psql --username=postgres -l`
+`psql --username=foo --db=bar -l`
 
 # nestjs
 

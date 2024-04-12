@@ -1,17 +1,35 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Chat } from './chat.entity';
+import { Message } from './message.entity';
+import { Mute } from './mute.entity';
+import { UsersService } from 'src/users/users.service';
 
-// @Injectable()
-// export class ChatService {
-//   private messages: string[] = []; // For demonstration, using an in-memory array to store messages
+@Injectable()
+export class ChatService {
+  constructor(
+    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
+    @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
+    private readonly usersService: UsersService,
+  ) {}
 
-//   saveMessage(message: string): string {
-//     // Save the message to the array or perform other business logic
-//     this.messages.push(message);
-//     return message;
-//   }
+  create(intra_id: number, chat: Chat): Promise<Chat> {
+    this.usersService.addToChat(intra_id, chat.chat_id, chat.name);
 
-//   getMessages(): string[] {
-//     // Retrieve all stored messages
-//     return this.messages;
-//   }
-// }
+    return this.chatRepository.save(chat);
+  }
+
+  hashPassword(password: string) {
+    // TODO: Hashing
+    return password;
+  }
+
+  getName(chat_id: string) {
+    return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
+      return chat?.name;
+    });
+  }
+}
