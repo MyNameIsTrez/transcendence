@@ -5,6 +5,9 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { existsSync, mkdirSync, writeFile } from 'fs';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -12,6 +15,7 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private readonly httpService: HttpService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -62,17 +66,37 @@ export class AuthService {
       headers: requestHeaders,
     })
       .then((response) => response.json())
-      .then((j) => {
-        console.log(`Saving user with intra_id ${j.id}`);
+      .then(async (j) => {
+        const intra_id = j.id;
+
+        console.log(`Saving user with intra_id ${intra_id}`);
+
+        const url = j.image.versions.medium;
+        console.log('url', url);
+
+        const { data } = await firstValueFrom(
+          this.httpService.get(url, {
+            responseType: 'arraybuffer',
+          }),
+        );
+
+        if (!existsSync('profile_pictures')) {
+          mkdirSync('profile_pictures');
+        }
+
+        writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
+          if (err) throw err;
+          console.log('Saved profile picture');
+        });
+
         this.usersService.create({
-          intra_id: j.id,
+          intra_id: intra_id,
           displayname: j.displayname,
           email: j.email,
-          image_url: j.image.versions.medium,
           my_chats: [],
         });
 
-        const payload = { sub: j.id };
+        const payload = { sub: intra_id };
         return this.jwtService.sign(payload);
       });
   }
