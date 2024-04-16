@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { HttpModule } from '@nestjs/axios';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
@@ -12,7 +11,6 @@ import { UsersModule } from 'src/users/users.module';
 @Module({
   imports: [
     ConfigModule,
-    HttpModule,
     UsersModule,
     JwtModule.register({
       global: true,
