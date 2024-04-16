@@ -18,6 +18,11 @@ export class UserController {
     return this.usersService.getUsername(req.user.intra_id);
   }
 
+  @Get('intraId')
+  intraId(@Request() req) {
+    return req.user.intra_id;
+  }
+
   @Get('myChats')
   myChats(@Request() req) {
     return this.usersService.getMyChats(req.user.intra_id);
@@ -26,7 +31,7 @@ export class UserController {
   @Get('profilePicture/:id.png')
   @Header('Content-Type', 'image/png')
   profilePicture(@Param('id') id): StreamableFile {
-    const file = createReadStream(`profile_pictures/${id}.png`);
+    const file = createReadStream(`profile_pictures/${id}.png`, 'base64');
     return new StreamableFile(file);
   }
 }
