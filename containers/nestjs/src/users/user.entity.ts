@@ -12,9 +12,6 @@ export class User {
   @Column()
   email: string;
 
-  @Column()
-  image_url: string;
-
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
 }
