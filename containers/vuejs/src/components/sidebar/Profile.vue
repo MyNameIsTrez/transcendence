@@ -30,7 +30,7 @@
       <div class="flex justify-between">
         <div class="avatar justify-start">
           <div class="w-24 rounded">
-            <img src="/vuejs/code/src/assets/mforstho.png" />
+            <img :src="profilePicture" />
           </div>
         </div>
         <div class="text">
@@ -82,9 +82,11 @@
 import MatchReport from './profile/MatchReport.vue'
 // import Achievements from './profile/Achievements.vue'
 import Achievements from './achievements/Achievements.vue'
-import { get } from '../../httpRequests'
+import { get, getImage } from '../../httpRequests'
 
 const username = await get('user/username')
+const intraId = await get('user/intraId')
+const profilePicture = await getImage(`user/profilePicture/${intraId}.png`)
 </script>
 
 <style lang="scss" scoped></style>
