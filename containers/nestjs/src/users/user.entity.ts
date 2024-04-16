@@ -1,16 +1,20 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { MyChat } from './mychat.entity';
 
 @Entity()
 export class User {
-  @PrimaryColumn()
-  intra_id!: number
+  @PrimaryColumn('int')
+  intra_id: number;
 
   @Column()
-  displayname!: string
+  displayname: string;
 
   @Column()
-  email!: string
+  email: string;
 
   @Column()
-  image_url!: string
+  image_url: string;
+
+  @OneToMany(() => MyChat, (my_chat) => my_chat.user)
+  my_chats: MyChat[];
 }

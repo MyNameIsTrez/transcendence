@@ -12,11 +12,10 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "strictPropertyInitialization": true
+    "noFallthroughCasesInSwitch": false
   }
 }

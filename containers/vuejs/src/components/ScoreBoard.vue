@@ -8,7 +8,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { gameSocket } from './SocketManager'
+import { gameSocket } from '../getSocket'
+
 const leftPlayerScore = ref(0)
 const rightPlayerScore = ref(0)
 const startGame = ref(false)
@@ -22,9 +23,9 @@ gameSocket.on('gameStart', () => {
 })
 gameSocket.on('pong', (data: any) => {
   leftPlayerScore.value = data.leftPlayer.score
-  console.log('leftPlayerScore', leftPlayerScore.value)
+  // console.log('leftPlayerScore', leftPlayerScore.value)
   rightPlayerScore.value = data.rightPlayer.score
-  console.log('rightPlayerScore', rightPlayerScore.value)
+  // console.log('rightPlayerScore', rightPlayerScore.value)
 })
 </script>
 

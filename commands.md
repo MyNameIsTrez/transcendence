@@ -10,9 +10,13 @@ Enter a container:
 
 ## Entering psql
 
+Enter the db container:
+
+`docker compose exec db bash`
+
 Log into the database:
 
-`psql --username=postgres`
+`psql --username=foo --db=bar`
 
 List all commands:
 
@@ -42,7 +46,7 @@ If you want to allow someone else to play with you, you'll need to change the `V
 
 Print all databases:
 
-`psql --username=postgres -l`
+`psql --username=foo --db=bar -l`
 
 # nestjs
 
@@ -54,7 +58,7 @@ We're using npx to directly execute these commands without installing them, sinc
 
 `npx @nestjs/cli new .`
 
-`npx @vue/cli create client`
+`npm create vue@latest`
 
 See [this tutorial](https://medium.com/js-dojo/how-to-serve-vue-with-nest-f23f10b33e1) on how to use nest.js together with vue.js
 

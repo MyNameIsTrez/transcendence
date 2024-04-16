@@ -1,36 +1,64 @@
 <template>
-	<div class="flex flex-col overflow-hidden w-full lg:flex-row">
-		<div class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"><Sidebar v-if="loggedIn" /></div>
-		<div class="grid h-screen card bg-base-300 rounded-box place-items-center"><PongCanvas v-if="loggedIn" /></div>
-		<div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch"><Chat v-if="loggedIn" /></div>
-	</div>
-	<GameHeader />
+  <!-- Suspense is needed for the async get() requests we do -->
+  <!-- RouterView is required to have route components like LoginView be rendered -->
+  <Suspense>
+    <RouterView />
+  </Suspense>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount, onUnmounted } from 'vue'
-import GameHeader from './components/GameHeader.vue'
-import PongCanvas from './components/PongCanvas.vue'
-import { rootSocket, disconnectSockets } from './components/SocketManager'
-import Sidebar from './components/Sidebar.vue'
+import { useRouter } from 'vue-router'
+import { onUnmounted } from 'vue'
+import { gameSocket, chatSocket, initGameSocket, initChatSocket } from './getSocket'
 
-import Chat from './components/Chat.vue'
-const loggedIn = ref(false)
-onBeforeMount(() => {
-  const code = new URLSearchParams(window.location.search).get('code') || ''
-  console.log('code', code)
-  rootSocket.on('attemptLogin', (success: boolean) => {
-    loggedIn.value = success
-  })
-  rootSocket.emit('code', code)
+const router = useRouter()
+
+const retrieveJwt = () => {
+  const jwt = localStorage.getItem('jwt')
+  // TODO: Less janky startsWith() solution pls
+  if (!jwt && !window.location.href.startsWith('http://localhost:2424/login')) {
+    console.error('Expected a jwt in the localstorage; redirecting to login page')
+    router.replace({ path: '/login' })
+  }
+  return jwt
+}
+
+const disconnectSockets = (): void => {
+  gameSocket.disconnect()
+  chatSocket.disconnect()
+}
+
+const jwt = retrieveJwt()
+
+const authorization_string = `Bearer ${jwt}`
+const opts = {
+  extraHeaders: {
+    Authorization: authorization_string
+  }
+}
+
+initGameSocket(opts)
+initChatSocket(opts)
+
+gameSocket.on('exception', (error) => {
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    router.replace({ path: '/login' })
+  }
+})
+chatSocket.on('exception', (error) => {
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    router.replace({ path: '/login' })
+  }
 })
 
 onUnmounted(() => {
   disconnectSockets()
 })
-
 </script>
 
+<!-- TODO: Is this still used? -->
 <style>
 * {
   margin: 0;

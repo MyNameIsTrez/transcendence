@@ -7,13 +7,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { gameSocket } from './SocketManager'
 import ScoreBoard from './ScoreBoard.vue'
+import { gameSocket } from '../getSocket'
 
 gameSocket.on('pong', (data: any) => {
   render(data)
 })
-gameSocket.on('gameOver', (data: any) => {
+gameSocket.on('gameOver', () => {
   drawCanvas()
 })
 
@@ -28,6 +28,7 @@ const emitMovePaddle = (code: string, keydown: boolean) => {
     gameSocket.emit('movePaddle', { keydown: keydown, north: north })
   }
 }
+
 const server_window_height = 1080
 const server_window_width = 1920
 const pongContainer = ref(null)
