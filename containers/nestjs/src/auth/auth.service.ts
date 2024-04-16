@@ -22,17 +22,17 @@ export class AuthService {
   async getAccessToken(code: string): Promise<string> {
     const formData = new FormData();
     formData.set('grant_type', 'authorization_code');
-    formData.set('client_id', this.configService.getOrThrow('INTRA_CLIENT_ID'));
+    formData.set('client_id', this.configService.get('INTRA_CLIENT_ID'));
     formData.set(
       'client_secret',
-      this.configService.getOrThrow('INTRA_CLIENT_SECRET'),
+      this.configService.get('INTRA_CLIENT_SECRET'),
     );
     formData.set('code', code);
     formData.set(
       'redirect_uri',
-      this.configService.getOrThrow('VITE_ADDRESS') +
+      this.configService.get('VITE_ADDRESS') +
         ':' +
-        this.configService.getOrThrow('BACKEND_PORT') +
+        this.configService.get('BACKEND_PORT') +
         '/login',
     );
 

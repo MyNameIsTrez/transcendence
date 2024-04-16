@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.3.7",
+    "joi": "^17.12.3",
     "axios": "^1.6.8",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
