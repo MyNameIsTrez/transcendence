@@ -1,5 +1,13 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Param,
+  Request,
+  StreamableFile,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
+import { createReadStream } from 'fs';
 
 @Controller('api/user')
 export class UserController {
@@ -10,8 +18,20 @@ export class UserController {
     return this.usersService.getUsername(req.user.intra_id);
   }
 
+  @Get('intraId')
+  intraId(@Request() req) {
+    return req.user.intra_id;
+  }
+
   @Get('myChats')
   myChats(@Request() req) {
     return this.usersService.getMyChats(req.user.intra_id);
+  }
+
+  @Get('profilePicture/:id.png')
+  @Header('Content-Type', 'image/png')
+  profilePicture(@Param('id') id): StreamableFile {
+    const file = createReadStream(`profile_pictures/${id}.png`, 'base64');
+    return new StreamableFile(file);
   }
 }
