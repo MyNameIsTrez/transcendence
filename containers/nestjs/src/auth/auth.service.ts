@@ -72,7 +72,6 @@ export class AuthService {
         console.log(`Saving user with intra_id ${intra_id}`);
 
         const url = j.image.versions.medium;
-        console.log('url', url);
 
         const { data } = await firstValueFrom(
           this.httpService.get(url, {
@@ -91,7 +90,7 @@ export class AuthService {
 
         this.usersService.create({
           intra_id: intra_id,
-          displayname: j.displayname,
+          username: j.displayname,
           email: j.email,
           my_chats: [],
         });

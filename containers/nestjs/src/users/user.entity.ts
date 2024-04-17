@@ -7,7 +7,7 @@ export class User {
   intra_id: number;
 
   @Column()
-  displayname: string;
+  username: string;
 
   @Column()
   email: string;

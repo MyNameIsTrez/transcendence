@@ -30,8 +30,12 @@ export class UsersService {
 
   getUsername(intra_id: number): Promise<string> {
     return this.findOne(intra_id).then((user) => {
-      return user?.displayname;
+      return user?.username;
     });
+  }
+
+  setUsername(intra_id: number, username: string) {
+    this.usersRepository.update({ intra_id }, { username: username });
   }
 
   async addToChat(intra_id: number, chat_id: string, name: string) {
