@@ -25,11 +25,11 @@ export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('username')
-  username(@Request() req) {
+  getUsername(@Request() req) {
     return this.usersService.getUsername(req.user.intra_id);
   }
 
-  @Post('setUsername')
+  @Post('username')
   setUsername(@Request() req, @Body() setUsernameDto: SetUsernameDto) {
     this.usersService.setUsername(req.user.intra_id, setUsernameDto.username);
   }
@@ -55,5 +55,10 @@ export class UserController {
   @UseInterceptors(FileInterceptor('file'))
   setProfilePicture(@Request() req, @UploadedFile() file: Express.Multer.File) {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
+  }
+
+  @Get('friends')
+  getFriends(@Request() req) {
+	return this.usersService.getFriends(req.user.intra_id);
   }
 }
