@@ -2,6 +2,8 @@
   <div class="p-6">
     <div class="grid justify-center">
       <span class="grid grid-cols-2">
+        <input name="file" type="file" accept="image/*" @change="uploadProfilePicture" />
+
         <div class="text-2xl justify-self-start text-yellow-200">{{ username }}</div>
         <!-- The button to open modal -->
         <label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
@@ -82,11 +84,18 @@
 import MatchReport from './profile/MatchReport.vue'
 // import Achievements from './profile/Achievements.vue'
 import Achievements from './achievements/Achievements.vue'
-import { get, getImage } from '../../httpRequests'
+import { get, getImage, post } from '../../httpRequests'
 
 const username = await get('user/username')
 const intraId = await get('user/intraId')
 const profilePicture = await getImage(`user/profilePicture/${intraId}.png`)
+
+function uploadProfilePicture(event: any) {
+  let data = new FormData()
+  data.append('name', 'profilePicture')
+  data.append('file', event.target.files[0])
+  post('user/profilePicture', data)
+}
 </script>
 
 <style lang="scss" scoped></style>
