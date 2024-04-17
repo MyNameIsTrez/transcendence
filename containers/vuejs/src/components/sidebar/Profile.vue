@@ -1,12 +1,10 @@
 <template>
-  <div class="p-6">
-    <div class="grid justify-center">
-      <span class="grid grid-cols-2">
-        <input name="file" type="file" accept="image/*" @change="uploadProfilePicture" />
-
-        <div class="text-2xl justify-self-start text-yellow-200">{{ username }}</div>
-        <!-- The button to open modal -->
-        <label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
+	<div class="p-6">
+		<div class="grid justify-center">
+			<span class="grid grid-cols-2">
+				<div class="text-2xl justify-self-start text-yellow-200">{{ username }}</div>
+				<!-- The button to open modal -->
+				<label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
 
 				<!-- Put this part before </body> tag -->
 				<input type="checkbox" id="my_modal_7" class="modal-toggle" />
@@ -20,7 +18,9 @@
 						</span>
 						<br />
 						<p class="py-4">Upload new avatar</p>
-						<input type="file" class="file-input file-input-bordered w-full max-w-md" />
+						<input name="file" type="file" class="file-input file-input-bordered w-full max-w-md"
+							accept="image/*" @change="uploadProfilePicture" />
+						<!-- <input type="file" class="file-input file-input-bordered w-full max-w-md" /> -->
 					</div>
 					<label class="modal-backdrop" for="my_modal_7">Close</label>
 				</div>
@@ -71,17 +71,12 @@ const intraId = await get('user/intraId')
 const profilePicture = await getImage(`user/profilePicture/${intraId}.png`)
 
 function uploadProfilePicture(event: any) {
-  let data = new FormData()
-  data.append('name', 'profilePicture')
-  data.append('file', event.target.files[0])
-  post('user/profilePicture', data)
+	let data = new FormData()
+	data.append('name', 'profilePicture')
+	data.append('file', event.target.files[0])
+	post('user/profilePicture', data).then(() => location.reload())
 }
 
-function othername() {
-	var input = { username };
-	input = document.getElementById("userInput").value;
-	alert(input);
-}
 </script>
 
 <style lang="scss" scoped></style>
