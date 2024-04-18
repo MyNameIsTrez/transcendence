@@ -58,4 +58,18 @@ export class UsersService {
         return user?.my_chats;
       });
   }
+
+  async turnOnTwoFactorAuthentication(intra_id: number) {
+    const user = await this.findOne(intra_id);
+    if (user) {
+      user.isTwoFactorAuthenticationEnabled = true;
+    }
+  }
+
+  async setTwoFactorAuthenticationSecret(secret: string, intra_id: number) {
+    const user = await this.findOne(intra_id);
+    if (user) {
+      user.twoFactorAuthenticationSecret = secret;
+    }
+  }
 }

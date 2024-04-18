@@ -12,6 +12,12 @@ export class User {
   @Column()
   email: string;
 
+  @Column()
+  isTwoFactorAuthenticationEnabled: boolean;
+
+  @Column()
+  twoFactorAuthenticationSecret: string | null;
+
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
 }
