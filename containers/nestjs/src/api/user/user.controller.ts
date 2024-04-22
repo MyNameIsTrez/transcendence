@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../../users/users.service';
 import { createReadStream, writeFileSync } from 'fs';
 import { IsNotEmpty } from 'class-validator';
 
