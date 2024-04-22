@@ -1,32 +1,48 @@
 import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { ChatService } from 'src/chat/chat.service';
 import { v4 as uuid } from 'uuid';
+import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
+
+class CreateDto {
+  @IsNotEmpty()
+  name: string;
+
+  @IsIn(['PUBLIC', 'PROTECTED', 'PRIVATE'])
+  visibility: string;
+
+  // TODO: Only make this required if visiblity is PROTECTED
+  @IsNotEmpty()
+  password: string;
+}
+
+class NameDto {
+  @IsUUID()
+  chat_id: string;
+}
 
 @Controller('api/chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('create')
-  create(
-    @Request() req,
-    @Body('name') name,
-    @Body('visibility') visibility,
-    @Body('password') password,
-  ) {
+  // create(@Request() req, @Body() dto: CreateDto) {
+  create(@Request() req, @Body() dto: CreateDto) {
     const intra_id = req.user.intra_id;
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
 
     // TODO: Implement
     const hashed_password =
-      visibility === 'PROTECTED' ? this.chatService.hashPassword(password) : '';
+      dto.visibility === 'PROTECTED'
+        ? this.chatService.hashPassword(dto.password)
+        : '';
 
     return this.chatService.create(intra_id, {
       chat_id: uuid(),
-      name: name,
+      name: dto.name,
       users: [intra_id],
       history: [],
-      visibility: visibility,
+      visibility: dto.visibility,
       hashed_password: hashed_password,
       owner: intra_id,
       admins: [intra_id],
@@ -34,12 +50,6 @@ export class ChatController {
       muted: [],
     });
   }
-
-  // TODO: Do we want this?
-  // @Post('setName')
-  // setName(@Request() req) {
-  //   return this.chatService.setName();
-  // }
 
   @Get('chats')
   chats(@Request() req) {
@@ -49,8 +59,8 @@ export class ChatController {
   }
 
   @Post('name')
-  name(@Request() req, @Body('chat_id') chat_id) {
-    return this.chatService.getName(chat_id);
+  name(@Request() req, @Body() dto: NameDto) {
+    return this.chatService.getName(dto.chat_id);
   }
 
   @Get('users')

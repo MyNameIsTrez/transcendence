@@ -15,7 +15,7 @@ import { UsersService } from 'src/users/users.service';
 import { createReadStream, writeFileSync } from 'fs';
 import { IsNotEmpty } from 'class-validator';
 
-export class SetUsernameDto {
+class SetUsernameDto {
   @IsNotEmpty()
   username: string;
 }
@@ -30,8 +30,8 @@ export class UserController {
   }
 
   @Post('setUsername')
-  setUsername(@Request() req, @Body() setUsernameDto: SetUsernameDto) {
-    this.usersService.setUsername(req.user.intra_id, setUsernameDto.username);
+  setUsername(@Request() req, @Body() dto: SetUsernameDto) {
+    this.usersService.setUsername(req.user.intra_id, dto.username);
   }
 
   @Get('intraId')
