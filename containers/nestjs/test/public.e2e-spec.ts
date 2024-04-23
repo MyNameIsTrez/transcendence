@@ -4,11 +4,13 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 
 require('leaked-handles'); // TODO: Remove?
 
 describe('App (e2e)', () => {
   let app: INestApplication;
+  let bearer_value: string;
 
   beforeEach(async () => {
     // Prevents the LobbyManager's infinite setInterval() loop from hanging our tests
@@ -21,6 +23,10 @@ describe('App (e2e)', () => {
     app = moduleRef.createNestApplication();
 
     app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
+
+    const bearer_token = app.get(ConfigService).get('TEST_BEARER_TOKEN');
+    console.log('bearer_token', bearer_token);
+    bearer_value = 'Bearer ' + bearer_token;
 
     await app.init();
   });
@@ -36,10 +42,7 @@ describe('App (e2e)', () => {
     return request(app.getHttpServer())
       .post('/api/chat/create')
       .send({ name: 'foo', visibility: 'PUBLIC', password: 'foo' })
-      .set(
-        'Authorization',
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjc2NjU3LCJpYXQiOjE3MTM4NzkzNTIsImV4cCI6MTcxMzk2NTc1Mn0.FsRa0txFOFgrBaJIPH0BHcndwWes6Gl_O2nNwD0Sw18',
-      )
+      .set('Authorization', bearer_value)
       .set('Content-Type', 'application/json')
       .expect(201)
       .then((res) =>
