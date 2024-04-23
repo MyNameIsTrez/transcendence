@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../app.module';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { Reflector } from '@nestjs/core';
 
 require('leaked-handles'); // TODO: Remove?
 
@@ -15,7 +17,11 @@ describe('PublicController (e2e)', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
+
     app = moduleRef.createNestApplication();
+
+    app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
+
     await app.init();
   });
 
