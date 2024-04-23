@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
 import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
@@ -58,8 +58,8 @@ export class ChatController {
     return ['uuid1', 'uuid2'];
   }
 
-  @Post('name')
-  name(@Request() req, @Body() dto: NameDto) {
+  @Get('name/:chat_id')
+  name(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getName(dto.chat_id);
   }
 
