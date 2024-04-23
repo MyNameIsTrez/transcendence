@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Request } from '@nestjs/common';
-import { ChatService } from 'src/chat/chat.service';
+import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
 import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
 
