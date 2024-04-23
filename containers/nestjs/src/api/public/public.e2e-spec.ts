@@ -7,16 +7,16 @@ require('leaked-handles'); // TODO: Remove?
 
 describe('PublicController (e2e)', () => {
   let app: INestApplication;
-  // let server: any;
 
   beforeEach(async () => {
+    // Prevents the LobbyManager's infinite setInterval() loop from hanging our tests
+    jest.useFakeTimers({ legacyFakeTimers: true });
+
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-
     app = moduleRef.createNestApplication();
     await app.init();
-    // server = app.getHttpServer();
   });
 
   it('/api/public/leaderboard (GET)', () => {
@@ -35,10 +35,7 @@ describe('PublicController (e2e)', () => {
   // });
 
   afterEach(async () => {
-    console.log('foo');
+    jest.useRealTimers();
     await app.close();
-    console.log('bar');
-    // server.close();
-    console.log('baz');
   });
 });
