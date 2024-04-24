@@ -15,7 +15,7 @@ export class User {
   @Column()
   isTwoFactorAuthenticationEnabled: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   twoFactorAuthenticationSecret: string | null;
 
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)

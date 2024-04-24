@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
+import { Jwt2faStrategy } from './jwt-2fa.strategy';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
@@ -23,6 +24,7 @@ import { UsersModule } from 'src/users/users.module';
   providers: [
     AuthService,
     JwtStrategy,
+    Jwt2faStrategy,
     {
       provide: APP_GUARD,
       useClass: Jwt2faAuthGuard,
