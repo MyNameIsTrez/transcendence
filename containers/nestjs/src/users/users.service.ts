@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -38,6 +38,24 @@ export class UsersService {
     this.usersRepository.update({ intra_id }, { username: username });
   }
 
+  set2faSecret(intra_id: number, secret: string) {
+    this.usersRepository.update(
+      { intra_id },
+      { twoFactorAuthenticationSecret: secret },
+    );
+  }
+
+  set2faState(intra_id: number, state: boolean, secret: string) {
+    // State doens't HAVE to be checked but it is nice to have this just in case someone locks themselfs out of their account some way
+    if (state == false && !secret) {
+      throw new BadRequestException("Can't enable 2fa without a secret");
+    }
+    this.usersRepository.update(
+      { intra_id },
+      { isTwoFactorAuthenticationEnabled: state },
+    );
+  }
+
   async addToChat(intra_id: number, chat_id: string, name: string) {
     const myChat = new MyChat();
     myChat.chat_id = chat_id;
@@ -57,5 +75,19 @@ export class UsersService {
       .then((user) => {
         return user?.my_chats;
       });
+  }
+
+  async turnOnTwoFactorAuthentication(intra_id: number) {
+    const user = await this.findOne(intra_id);
+    if (user) {
+      this.set2faState(intra_id, true, user.twoFactorAuthenticationSecret);
+    }
+  }
+
+  async setTwoFactorAuthenticationSecret(secret: string, intra_id: number) {
+    const user = await this.findOne(intra_id);
+    if (user) {
+      this.set2faSecret(intra_id, secret);
+    }
   }
 }

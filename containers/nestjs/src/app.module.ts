@@ -27,6 +27,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         INTRA_CLIENT_ID: Joi.string(),
         INTRA_CLIENT_SECRET: Joi.string(),
         JWT_SECRET: Joi.string(),
+
+        APP_NAME: Joi.string(),
       }),
       validationOptions: {
         allowUnknown: true,

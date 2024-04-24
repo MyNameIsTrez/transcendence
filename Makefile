@@ -24,4 +24,4 @@ clean: rmvol
 .PHONY: rmvol
 rmvol: down
 	docker volume rm $$(docker volume ls -q) 2> /dev/null || exit 0
-	rm -r containers/nestjs/profile_pictures
+	rm -rf containers/nestjs/profile_pictures
