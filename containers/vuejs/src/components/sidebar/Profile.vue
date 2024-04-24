@@ -17,7 +17,6 @@
                 v-model="newUsername"
                 placeholder="New name"
                 class="input input-bordered w-full max-w-xs"
-                id="NewUsername"
               />
               <button class="btn" @click="changeUsername">Save</button>
             </span>

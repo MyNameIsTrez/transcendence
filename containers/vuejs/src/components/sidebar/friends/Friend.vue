@@ -1,8 +1,8 @@
 <template>
   <div class="card lg:card-side bg-base-200">
     <figure>
-      <div :class="`w-28 avatar ${this.status}`">
-        <img class="rounded" :src="`${this.image}`" alt="Album" />
+      <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
+        <img class="rounded" :src="`${image}`" alt="Album" />
       </div>
     </figure>
     <div class="card-body h-28">
@@ -26,14 +26,15 @@
       </div>
     </div>
   </div>
+  <br>
 </template>
 
-<script>
-export default {
-  props: {
+<script setup lang="ts">
+
+const props = defineProps({
     name: String,
     image: String,
-    status: String
-  }
-}
+    isOnline: Boolean
+})
+
 </script>

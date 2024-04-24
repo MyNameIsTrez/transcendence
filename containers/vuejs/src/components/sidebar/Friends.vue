@@ -11,11 +11,13 @@
             <span class="flex justify-center">
               <input
                 type="text"
+                v-model="friendSearch"
                 placeholder="Type here"
                 class="input input-bordered w-full max-w-xs"
               />
-              <button class="btn">Add</button>
+              <button class="btn" @click="addFriend">Add</button>
             </span>
+            <p class="text pt-6">{{ addMessage }}</p>
           </div>
           <form method="dialog" class="modal-backdrop">
             <button>close</button>
@@ -23,34 +25,76 @@
         </dialog>
       </div>
     </div>
-    <h1>---- Online ----</h1>
-    <Friend
-      name="sbos"
-      status="online"
-      image="https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg"
-    />
-    <br />
-    <Friend
-      name="safoh"
-      status="online"
-      image="https://cdn.intra.42.fr/users/300b8f9ea2e55b6f9e7cf25723d86958/safoh.jpg"
-    />
-    <br />
-    <h1>---- Offline ----</h1>
-    <Friend
-      name="vebnn"
-      status="offline"
-      image="https://cdn.intra.42.fr/users/0519bc4a463d666788591a6fcb3dc296/vbenneko.jpg"
-    />
-    <br />
-    <Friend
-      name="lvan"
-      status="offline"
-      image="https://cdn.intra.42.fr/users/fd9763e1d199fc213b51af711e0ecb83/lvan-bus.jpg"
+    <h1 class="text-center">---- Online ----</h1>
+    <template v-for="friend in friends">
+      <Friend
+        v-if="friend.isOnline"
+        :name="friend.name"
+        :isOnline="friend.isOnline"
+        :image="friend.profilePicture"
+      />
+    </template>
+    <h1 class="text-center">---- Offline ----</h1>
+    <template v-for="friend in friends">
+      <Friend
+        v-if="!friend.isOnline"
+        :name="friend.name"
+        :isOnline="friend.isOnline"
+        :image="friend.profilePicture"
+      />
+    </template>
+    <h1 class="text-center">---- Incoming ----</h1>
+    <Incoming
+	v-for="request in incomingRequests"
+      :name="request.name"
+      :image="request.profilePicture"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import Friend from './friends/Friend.vue'
+import Incoming from './friends/Incoming.vue'
+import { get, getImage, post } from '../../httpRequests'
+import { ref } from 'vue'
+
+const friends = await get('user/friends')
+const incomingRequests = await get('user/incomingFriendRequests')
+
+const friendSearch = ref('')
+
+// const props = defineProps({
+// 	addMessage: String,
+// })
+
+var addMessage = ''
+
+async function addFriend() {
+  console.log(friendSearch.value)
+  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }).then((resp) => {
+    console.log(resp)
+    if (resp != '') {
+      addMessage = 'Friend request sent'
+    } else {
+      addMessage = 'User not found'
+    }
+  })
+  //   addMessage = 'test'
+}
+
+// const friends = [
+//   {
+//     name: 'sbos',
+//     isOnline: true,
+//     profilePicture: 'https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg'
+//   },
+//   {
+//     name: 'vbenneko',
+//     isOnline: false,
+//     profilePicture: 'https://cdn.intra.42.fr/users/0519bc4a463d666788591a6fcb3dc296/vbenneko.jpg'
+//   }
+// ]
+
+console.log('friends', friends)
+// function displayFriends() {}
 </script>

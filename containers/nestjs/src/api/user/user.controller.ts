@@ -61,4 +61,15 @@ export class UserController {
   getFriends(@Request() req) {
 	return this.usersService.getFriends(req.user.intra_id);
   }
+
+  @Get('incomingFriendRequests')
+  getIncomingFriendRequests(@Request() req) {
+	return this.usersService.getIncomingFriendRequests(req.user.intra_id);
+  }
+
+  //TODO: misschien verplaatsen
+  @Post('sendFriendRequest')
+  sendFriendRequest(@Request() req, @Body() body) {
+	return this.usersService.sendFriendRequest(req.user.intra_id, body.intra_name);
+  }
 }

@@ -88,12 +88,36 @@ export class AuthService {
           console.log('Saved profile picture');
         });
 
+		// console.log(j);
         this.usersService.create({
           intra_id: intra_id,
           username: j.displayname,
+          intra_name: j.login,
           email: j.email,
           my_chats: [],
+          friends: [], // TODO: DONT HARDCODE THIS!!
+          incoming_friend_requests: [],
         });
+
+        // TODO: REMOVE! WE SHOULD BE ADDING USERS VIA HTTP ENDPOINTS!!
+        // this.usersService.create({
+        //   intra_id: 88874,
+        //   username: 'Sander',
+        //   intra_name: 'sbos',
+        //   email: 'foo',
+        //   my_chats: [],
+        //   friends: [],
+        //   incoming_friend_requests: [],
+        // });
+        // this.usersService.create({
+        //   intra_id: 76657,
+        //   username: 'Victor',
+        //   intra_name: 'vbenneko',
+        //   email: 'bar',
+        //   my_chats: [],
+        //   friends: [],
+        //   incoming_friend_requests: [],
+        // });
 
         const payload = { sub: intra_id };
         return this.jwtService.sign(payload);
