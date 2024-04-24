@@ -263,6 +263,12 @@ describe('App (e2e)', () => {
   it('/api/chat/users (GET)', () => {
     return getAuthorized('/api/chat/users', 200, [42, 69, 420]);
   });
+  it('/api/chat/users (GET) - unauthorized', () => {
+    return getPublic('/api/chat/users', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
 
   it('/api/chat/history (GET)', () => {
     return getAuthorized('/api/chat/history', 200, [
@@ -280,31 +286,77 @@ describe('App (e2e)', () => {
       },
     ]);
   });
+  it('/api/chat/history (GET) - unauthorized', () => {
+    return getPublic('/api/chat/history', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
 
   it('/api/chat/visibility (GET)', () => {
     return getAuthorized('/api/chat/visibility', 200, 'PUBLIC');
+  });
+  it('/api/chat/visibility (GET) - unauthorized', () => {
+    return getPublic('/api/chat/visibility', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
   });
 
   it('/api/chat/owner (GET)', () => {
     return getAuthorized('/api/chat/owner', 200, '42');
   });
+  it('/api/chat/owner (GET) - unauthorized', () => {
+    return getPublic('/api/chat/owner', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
 
   it('/api/chat/admins (GET)', () => {
     return getAuthorized('/api/chat/admins', 200, [42, 69]);
+  });
+  it('/api/chat/admins (GET) - unauthorized', () => {
+    return getPublic('/api/chat/admins', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
   });
 
   it('/api/chat/banned (GET)', () => {
     return getAuthorized('/api/chat/banned', 200, [7, 666]);
   });
+  it('/api/chat/banned (GET) - unauthorized', () => {
+    return getPublic('/api/chat/banned', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
 
   it('/api/chat/muted (GET)', () => {
     return getAuthorized('/api/chat/muted', 200, [42, 69]);
+  });
+  it('/api/chat/muted (GET) - unauthorized', () => {
+    return getPublic('/api/chat/muted', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
   });
 
   it('/api/public/leaderboard (GET)', () => {
     return getPublic('/api/public/leaderboard', 200, {
       sander: 42,
       victor: 69,
+    });
+  });
+
+  it('/api/user/username (GET)', () => {
+    return getAuthorized('/api/user/username', 200, 'Sander Bos');
+  });
+  it('/api/user/username (GET) - unauthorized', () => {
+    return getPublic('/api/user/username', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
     });
   });
 });
