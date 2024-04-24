@@ -25,7 +25,6 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('create')
-  // create(@Request() req, @Body() dto: CreateDto) {
   create(@Request() req, @Body() dto: CreateDto) {
     const intra_id = req.user.intra_id;
 
