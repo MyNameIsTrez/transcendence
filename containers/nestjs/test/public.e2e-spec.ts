@@ -66,7 +66,11 @@ describe('App (e2e)', () => {
       .get(path)
       .set('Authorization', bearer_value)
       .expect(expectedStatus)
-      .then((res) => expect(res.body).toStrictEqual(expectedBody));
+      .then((res) =>
+        expect(
+          Object.keys(res.body).length > 0 ? res.body : res.text,
+        ).toStrictEqual(expectedBody),
+      );
   }
   function postAuthorized(path, sent, expectedStatus, expectedBody) {
     return request(app.getHttpServer())
@@ -75,15 +79,12 @@ describe('App (e2e)', () => {
       .set('Content-Type', 'application/json')
       .set('Authorization', bearer_value)
       .expect(expectedStatus)
-      .then((res) => expect(res.body).toStrictEqual(expectedBody));
+      .then((res) =>
+        expect(
+          Object.keys(res.body).length > 0 ? res.body : res.text,
+        ).toStrictEqual(expectedBody),
+      );
   }
-
-  it('/api/public/leaderboard (GET)', () => {
-    return getPublic('/api/public/leaderboard', 200, {
-      sander: 42,
-      victor: 69,
-    });
-  });
 
   it('/api/chat/create (POST) - PUBLIC', () => {
     return postAuthorized(
@@ -225,9 +226,7 @@ describe('App (e2e)', () => {
       .set('Authorization', bearer_value)
       .expect(201)
       .then((res) => {
-        return getAuthorized('/api/chat/name/' + res.body.chat_id, 200, {
-          name: 'foo',
-        });
+        return getAuthorized('/api/chat/name/' + res.body.chat_id, 200, 'foo');
       });
   });
   it('/api/chat/name (GET) - chat_id must be a uuid', () => {
@@ -259,5 +258,53 @@ describe('App (e2e)', () => {
           message: 'Internal server error',
         });
       });
+  });
+
+  it('/api/chat/users (GET)', () => {
+    return getAuthorized('/api/chat/users', 200, [42, 69, 420]);
+  });
+
+  it('/api/chat/history (GET)', () => {
+    return getAuthorized('/api/chat/history', 200, [
+      {
+        sender: 42,
+        body: 'hello',
+      },
+      {
+        sender: 69,
+        body: 'world',
+      },
+      {
+        sender: 420,
+        body: 'lmao',
+      },
+    ]);
+  });
+
+  it('/api/chat/visibility (GET)', () => {
+    return getAuthorized('/api/chat/visibility', 200, 'PUBLIC');
+  });
+
+  it('/api/chat/owner (GET)', () => {
+    return getAuthorized('/api/chat/owner', 200, '42');
+  });
+
+  it('/api/chat/admins (GET)', () => {
+    return getAuthorized('/api/chat/admins', 200, [42, 69]);
+  });
+
+  it('/api/chat/banned (GET)', () => {
+    return getAuthorized('/api/chat/banned', 200, [7, 666]);
+  });
+
+  it('/api/chat/muted (GET)', () => {
+    return getAuthorized('/api/chat/muted', 200, [42, 69]);
+  });
+
+  it('/api/public/leaderboard (GET)', () => {
+    return getPublic('/api/public/leaderboard', 200, {
+      sander: 42,
+      victor: 69,
+    });
   });
 });
