@@ -30,7 +30,7 @@ export class ChatService {
   getName(chat_id: string) {
     return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
       if (chat) {
-        return { name: chat.name };
+        return chat.name;
       } else {
         throw new BadRequestException('Invalid chat_id');
       }
