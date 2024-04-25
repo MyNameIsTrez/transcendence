@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Header,
+  HttpCode,
   Param,
   Post,
   Request,
@@ -30,8 +31,9 @@ export class UserController {
   }
 
   @Post('setUsername')
-  setUsername(@Request() req, @Body() dto: SetUsernameDto) {
-    this.usersService.setUsername(req.user.intra_id, dto.username);
+  @HttpCode(204)
+  async setUsername(@Request() req, @Body() dto: SetUsernameDto) {
+    await this.usersService.setUsername(req.user.intra_id, dto.username);
   }
 
   @Get('intraId')

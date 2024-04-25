@@ -4,14 +4,17 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../src/users/users.service';
 
-require('leaked-handles'); // TODO: Remove?
+// This constantly monitors if there are any socket leaks
+require('leaked-handles');
 
 describe('App (e2e)', () => {
   let app: INestApplication;
   let bearer_value: string;
+  let usersService: UsersService;
 
   beforeEach(async () => {
     // Prevents the LobbyManager's infinite setInterval() loop from hanging our tests
@@ -37,8 +40,9 @@ describe('App (e2e)', () => {
     app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
 
     const bearer_token = app.get(ConfigService).get('TEST_BEARER_TOKEN');
-    console.log('bearer_token', bearer_token);
     bearer_value = 'Bearer ' + bearer_token;
+
+    usersService = moduleRef.get<UsersService>(UsersService);
 
     await app.init();
   });
@@ -72,7 +76,7 @@ describe('App (e2e)', () => {
         ).toStrictEqual(expectedBody),
       );
   }
-  function postAuthorized(path, sent, expectedStatus, expectedBody) {
+  async function postAuthorized(path, sent, expectedStatus, expectedBody) {
     return request(app.getHttpServer())
       .post(path)
       .send(sent)
@@ -155,7 +159,6 @@ describe('App (e2e)', () => {
       },
     );
   });
-
   it('/api/chat/create (POST) - empty name', () => {
     return postAuthorized(
       '/api/chat/create',
@@ -350,11 +353,72 @@ describe('App (e2e)', () => {
     });
   });
 
-  it('/api/user/username (GET)', () => {
-    return getAuthorized('/api/user/username', 200, 'Sander Bos');
+  it('/api/user/username (GET)', async () => {
+    await usersService.create({
+      intra_id: 76657,
+      username: 'foo',
+      email: 'foo',
+      my_chats: [],
+    });
+    return getAuthorized('/api/user/username', 200, 'foo');
+  });
+  it('/api/user/username (GET) - not in database', () => {
+    return getAuthorized('/api/user/username', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
   });
   it('/api/user/username (GET) - unauthorized', () => {
     return getPublic('/api/user/username', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+
+  it('/api/user/setUsername (POST)', async () => {
+    await usersService.create({
+      intra_id: 76657,
+      username: 'bar',
+      email: 'foo',
+      my_chats: [],
+    });
+    return postAuthorized(
+      '/api/user/setUsername',
+      {
+        username: 'foo',
+      },
+      204,
+      '',
+    );
+  });
+  it('/api/user/setUsername (POST) - empty username', async () => {
+    return await postAuthorized(
+      '/api/user/setUsername',
+      {
+        username: '',
+      },
+      500,
+      {
+        message: 'Internal server error',
+        statusCode: 500,
+      },
+    );
+  });
+  it('/api/user/setUsername (POST) - user does not exist', async () => {
+    return postAuthorized(
+      '/api/user/setUsername',
+      {
+        username: 'foo',
+      },
+      500,
+      {
+        message: 'Internal server error',
+        statusCode: 500,
+      },
+    );
+  });
+  it('/api/user/setUsername (POST) - unauthorized', () => {
+    return postPublic('/api/user/setUsername', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
