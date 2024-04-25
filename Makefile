@@ -26,10 +26,6 @@ rmvol: down
 	docker volume rm $$(docker volume ls -q) 2> /dev/null || exit 0
 	rm -rf containers/nestjs/profile_pictures
 
-.PHONE: test-unit
-test-unit:
-	docker compose exec --workdir /nestjs/code/ nestjs npm run test-unit
-
-.PHONE: test-e2e
-test-e2e:
-	docker compose exec --workdir /nestjs/code/ nestjs npm run test-e2e
+.PHONY: test
+test:
+	docker compose exec --workdir /nestjs/code/ nestjs npm run test
