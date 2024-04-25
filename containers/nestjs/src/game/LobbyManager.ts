@@ -10,8 +10,8 @@ export default class LobbyManager {
   constructor(private readonly server: Server) {}
 
   public queue(client: Socket) {
-    if (this.isClientAlreadyInLobby(client)) {
-      console.error(`Client ${client.id} is already in a lobby`);
+    if (this.isUserAlreadyInLobby(client.data)) {
+      console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }
 
@@ -21,10 +21,9 @@ export default class LobbyManager {
     client.data.lobby = lobby;
   }
 
-  // TODO: Also throw if the same intra account is in different lobbies?
-  private isClientAlreadyInLobby(client: Socket): boolean {
+  private isUserAlreadyInLobby(user: any): boolean {
     return Array.from(this.lobbies.values()).some((lobby) =>
-      lobby.hasClient(client),
+      lobby.hasUser(user),
     );
   }
 

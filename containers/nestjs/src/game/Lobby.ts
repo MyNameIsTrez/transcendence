@@ -7,7 +7,9 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  private readonly clients = new Map<Socket['id'], Socket>();
+  // TODO: Could maybe be deleted and be replaced with an Array?
+  // 'any' is client.data.intra_id struct
+  private readonly clients = new Map<number, Socket>();
 
   private readonly pong = new Pong(10);
 
@@ -16,14 +18,15 @@ export default class Lobby {
   constructor(private readonly server: Server) {}
 
   public addClient(client: Socket) {
-    console.log(
-      `In Lobby ${this.id} its addClient(), client ${client.id} was added`,
-    );
+    // console.log(
+    //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
+    // );
     client.data.playerIndex = this.clients.size;
-    this.clients.set(client.id, client);
+    // console.log('Adding user', client.data);
+    this.clients.set(client.data.intra_id, client);
     client.join(this.id);
 
-    // TODO: Start the game only once both players have pressed a "Ready" button
+    // TODO: Maybe add a countdown when game starts?
     if (this.isFull()) {
       this.gameHasStarted = true;
       this.emit('gameStart');
@@ -31,16 +34,16 @@ export default class Lobby {
   }
 
   public removeClient(client: Socket) {
-    console.log(
-      `In Lobby ${this.id} its removeClient(), client ${client.id} was removed`,
-    );
-    this.clients.delete(client.id);
+    // console.log(
+    //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
+    // );
+    this.clients.delete(client.data.intra_id);
     client.leave(this.id);
     client.data.lobby = undefined;
   }
 
-  public hasClient(client: Socket) {
-    return this.clients.has(client.id);
+  public hasUser(user: any) {
+    return this.clients.has(user.intra_id);
   }
 
   public isFull() {
@@ -48,9 +51,11 @@ export default class Lobby {
   }
 
   public update() {
+    // console.log(this.clients.size);
     if (!this.gameHasStarted) {
       return;
     }
+    // console.log('In game loop');
 
     this.pong.update();
 
@@ -76,17 +81,17 @@ export default class Lobby {
   }
 
   public emit(event: string, payload?: any) {
-    console.log(
-      `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
-    );
+    // console.log(
+    //   `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
+    // );
     this.server.to(this.id).emit(event, payload);
   }
 
-  public movePaddle(client: Socket, keydown: boolean, north: boolean) {
+  public movePaddle(playerIndex: number, keydown: boolean, north: boolean) {
     if (!this.gameHasStarted) {
       return;
     }
 
-    this.pong.movePaddle(client.data.playerIndex, keydown, north);
+    this.pong.movePaddle(playerIndex, keydown, north);
   }
 }

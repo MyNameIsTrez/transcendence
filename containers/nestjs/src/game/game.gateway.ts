@@ -56,7 +56,7 @@ export class GameGateway {
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client ${client.id} disconnected game socket`);
+    // console.log(`User ${client.data.intra_id} disconnected game socket`);
     this.lobbyManager.removeClient(client);
   }
 
@@ -76,6 +76,6 @@ export class GameGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean,
   ) {
-    client.data.lobby?.movePaddle(client, keydown, north);
+    client.data.lobby?.movePaddle(client.data.playerIndex, keydown, north);
   }
 }
