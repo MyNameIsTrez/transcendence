@@ -8,9 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
 
 @Injectable()

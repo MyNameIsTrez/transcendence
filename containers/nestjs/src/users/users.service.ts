@@ -16,26 +16,38 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  // TODO: Remove?
+  // findAll(): Promise<User[]> {
+  //   return this.usersRepository.find();
+  // }
+
+  findOne(intra_id: number): Promise<User> {
+    const user = this.usersRepository.findOneBy({ intra_id });
+    if (!user) {
+      throw new BadRequestException('No user with this intra_id exists');
+    }
+    return user;
   }
 
-  findOne(intra_id: number): Promise<User | null> {
-    return this.usersRepository.findOneBy({ intra_id });
-  }
-
-  async remove(intra_id: number): Promise<void> {
-    await this.usersRepository.delete(intra_id);
-  }
+  // TODO: Remove?
+  // async remove(intra_id: number): Promise<void> {
+  //   await this.usersRepository.delete(intra_id);
+  // }
 
   getUsername(intra_id: number): Promise<string> {
     return this.findOne(intra_id).then((user) => {
-      return user?.username;
+      return user.username;
     });
   }
 
-  setUsername(intra_id: number, username: string) {
-    this.usersRepository.update({ intra_id }, { username: username });
+  async setUsername(intra_id: number, username: string) {
+    const result = await this.usersRepository.update(
+      { intra_id },
+      { username: username },
+    );
+    if (result.affected === 0) {
+      throw new BadRequestException('No user with this intra_id exists');
+    }
   }
 
   set2faSecret(intra_id: number, secret: string) {

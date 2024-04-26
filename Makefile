@@ -25,3 +25,7 @@ clean: rmvol
 rmvol: down
 	docker volume rm $$(docker volume ls -q) 2> /dev/null || exit 0
 	rm -rf containers/nestjs/profile_pictures
+
+.PHONY: test
+test:
+	docker compose exec --workdir /nestjs/code/ nestjs npm run test
