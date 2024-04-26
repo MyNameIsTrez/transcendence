@@ -12,7 +12,7 @@
     <br /><br />
     <!-- getChat -->
     <div>
-      >> {{ currentChat }} << <div v-for="instance in chatHistory">
+      == {{ currentChat }} == <div v-for="instance in chatHistory">
         {{ instance }}
     </div>
   </div>
@@ -23,11 +23,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { chatSocket } from '../getSocket'
+import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 
 const chatName = ref('')
-const currentChat = ref('')
+const currentChat = ref('Select a chat')
 const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
@@ -41,6 +41,7 @@ async function createChat() {
     password: 'foo'
   })
   console.log('chat', chat)
+  chatName.value = ''
   getMyChats()
 }
 
@@ -59,9 +60,7 @@ async function getChat(chat: string) {
   }
 
   chatHistory.value = []
-  console.log("test before get request chat/history")
   history = await get('chat/history/' + chat_id)
-  console.log("test after get request chat/history")
   i = 0
   while (history[i]) {
     chatHistory.value[i] = history[i].sender + ': ' + history[i].body
@@ -85,7 +84,13 @@ async function getMyChats() {
 }
 
 async function sendMessage() {
-
+  const message = {
+    sender: chatSocket.id,
+    chatName: currentChat.value,
+    body: typedMessage.value
+  }
+  chatSocket.emit('sendMessage', message)
+  typedMessage.value = ''
 }
 
 getMyChats()

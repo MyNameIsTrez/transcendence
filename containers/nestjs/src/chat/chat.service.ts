@@ -42,4 +42,9 @@ export class ChatService {
       return chat?.history
     })
   }
+
+  // handleMessage(sender: string, chat_id: string, message: String) {
+  //   return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
+  //     chat?.history.push()
+  // })
 }
