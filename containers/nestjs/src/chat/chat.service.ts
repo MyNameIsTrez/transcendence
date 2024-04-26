@@ -43,8 +43,10 @@ export class ChatService {
     })
   }
 
-  // handleMessage(sender: string, chat_id: string, message: String) {
-  //   return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
-  //     chat?.history.push()
-  // })
+  handleMessage(sender: number, chat_id: string, body: String) {
+    console.log(sender, chat_id, body)
+    // return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
+      // chat?.history.push(sender, body)
+    // })
+  }
 }

@@ -13,7 +13,7 @@ import LobbyManager from './LobbyManager';
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'game' })
 export class GameGateway {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) { }
 
   @WebSocketServer()
   server: Server;

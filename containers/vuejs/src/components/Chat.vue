@@ -14,10 +14,10 @@
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
         {{ instance }}
+      </div>
     </div>
-  </div>
-  <input v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
-  <button @click="sendMessage">Send</button>
+    <input v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
+    <button @click="sendMessage">Send</button>
   </div>
 </template>
 
@@ -28,6 +28,7 @@ import { get, post } from '../httpRequests'
 
 const chatName = ref('')
 const currentChat = ref('Select a chat')
+const currentChatId = ref('')
 const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
@@ -50,17 +51,16 @@ const myChats = ref('')
 async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
-  let chat_id: string = ''
   let history: string[] = []
 
   while (chatsOnIndex.value[i]) {
     if (chatsOnIndex.value[i] == chat)
-      chat_id = chatIdsOnIndex.value[i]
+      currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
 
   chatHistory.value = []
-  history = await get('chat/history/' + chat_id)
+  history = await get('chat/history/' + currentChatId.value)
   i = 0
   while (history[i]) {
     chatHistory.value[i] = history[i].sender + ': ' + history[i].body
@@ -85,10 +85,10 @@ async function getMyChats() {
 
 async function sendMessage() {
   const message = {
-    sender: chatSocket.id,
-    chatName: currentChat.value,
+    chatId: currentChatId.value,
     body: typedMessage.value
   }
+  console.log('message', message)
   chatSocket.emit('sendMessage', message)
   typedMessage.value = ''
 }
