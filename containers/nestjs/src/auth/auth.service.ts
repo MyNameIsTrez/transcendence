@@ -9,6 +9,9 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
 import { UsersService } from '../users/users.service';
+import { authenticator } from 'otplib';
+import { User } from '../users/user.entity';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -92,11 +95,60 @@ export class AuthService {
           intra_id: intra_id,
           username: j.displayname,
           email: j.email,
+          isTwoFactorAuthenticationEnabled: false,
+          twoFactorAuthenticationSecret: null,
           my_chats: [],
         });
 
         const payload = { sub: intra_id };
         return this.jwtService.sign(payload);
       });
+  }
+
+  async generateTwoFactorAuthenticationSecret(user: User) {
+    console.log('In generateTwoFactorAuthenticationSecret()');
+    const secret = authenticator.generateSecret();
+
+    const otpAuthUrl = authenticator.keyuri(
+      user.intra_id.toString(),
+      this.configService.get('APP_NAME'),
+      secret,
+    );
+
+    await this.usersService.setTwoFactorAuthenticationSecret(
+      secret,
+      user.intra_id,
+    );
+
+    return {
+      secret,
+      otpAuthUrl,
+    };
+  }
+
+  async generateQrCodeDataURL(otpAuthUrl: string) {
+    return toDataURL(otpAuthUrl);
+  }
+
+  isTwoFactorAuthenticationCodeValid(
+    twoFactorAuthenticationCode: string,
+    twoFactorAuthenticationSecret: string,
+  ) {
+    console.log('token', twoFactorAuthenticationCode);
+    console.log('secret', twoFactorAuthenticationSecret);
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: twoFactorAuthenticationSecret,
+    });
+  }
+
+  async loginWith2fa(intra_id: number) {
+    const payload = {
+      sub: intra_id,
+      isTwoFactorAuthenticationEnabled: true,
+      isTwoFactorAuthenticated: true,
+    };
+
+    return this.jwtService.sign(payload);
   }
 }
