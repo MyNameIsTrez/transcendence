@@ -36,4 +36,10 @@ export class ChatService {
       }
     });
   }
+
+  getHistory(chat_id: string) {
+    return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
+      return chat?.history
+    })
+  }
 }

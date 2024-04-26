@@ -73,3 +73,7 @@ Also change the port in `src/main.ts` from 3000 to 4242.
 ## Remove dependency
 
 `npm uninstall foo`
+
+## Manual curl request
+
+`curl localhost:4242/api/chat/create -d '{"name": "foo", "visibility": "PUBLIC", "password": "foo"}' -H "Content-Type: application/json" -H "Authorization: Bearer <insert jwt here>"`

@@ -68,26 +68,24 @@ export class ChatController {
     return [42, 69, 420];
   }
 
-  @Get('history')
-  history(@Request() req) {
-
-    // TODO: Access the chat db
-    // return [{42: 'hello'}, {69: 'world'}, {420: '!'}]
-
-    return [
-      {
-        sender: 42,
-        body: 'hello',
-      },
-      {
-        sender: 69,
-        body: 'world',
-      },
-      {
-        sender: 420,
-        body: 'lmao',
-      },
-    ];
+  @Get('history/:chat_id')
+  history(@Request() req, @Param() dto: NameDto) {
+    console.log("kom ik hier?")
+    return this.chatService.getHistory(dto.chat_id)
+    // return [
+    //   {
+    //     sender: 42,
+    //     body: 'hello',
+    //   },
+    //   {
+    //     sender: 69,
+    //     body: 'world',
+    //   },
+    //   {
+    //     sender: 420,
+    //     body: 'lmao',
+    //   },
+    // ];
   }
 
   @Get('visibility')
