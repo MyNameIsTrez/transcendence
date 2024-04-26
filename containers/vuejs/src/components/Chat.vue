@@ -1,18 +1,20 @@
 <template>
   <div>
     <!-- Chats -->
-    <div v-for="chat in chats">
-      {{ chat }}
+    <div>>> CHATS <<</div>
+    <div v-for="chat in chatsOnIndex">
+      <button @click="getChat(chat)">{{ chat }}</button>
     </div>
+    <br/>
     <!-- createChat -->
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
     <button @click="createChat">Create</button>
-    <!-- <br /><br /> -->
-
+    <br/><br/>
     <!-- getChat -->
-    <!-- <input v-model="typedQuery" placeholder="Chat name..." @keyup.enter="getChat" />
-    <button @click="getChat">Search</button> -->
-    <!-- <br /><br /> -->
+    <div>
+      >> {{ currentChat }} <<
+    </div>
+
   </div>
 </template>
 
@@ -22,7 +24,10 @@ import { ref } from 'vue'
 import { get, post } from '../httpRequests'
 
 const chatName = ref('')
-const chats = ref<string[]>([]);
+const currentChat = ref('')
+const chatsOnIndex = ref<string[]>([]);
+const chatIdsOnIndex = ref<string[]>([]);
+// const chatHistory = ref<string[]>([]);
 
 
 async function createChat() {
@@ -36,25 +41,36 @@ async function createChat() {
 
 const myChats = ref('')
 
-// function findDataInString(bigString: string): string[] {
-//     const dataRegex = /\{([^}]+)\}/g; // Regular expression to match {data} pattern
-//     const dataList: string[] = [];
-    
-//     let match: RegExpExecArray | null;
-//     while ((match = dataRegex.exec(bigString)) !== null) {
-//         // match[1] contains the captured data inside {}
-//         dataList.push(match[1]);
-//     }
-    
-//     return dataList;
-// }
+function getChat(chat: string) {
+  currentChat.value = chat
+  let i: number = 0
+  let chat_id: string = ''
+
+  while (chatsOnIndex.value[i]) {
+    if (chatsOnIndex.value[i] == chat)
+      chat_id = chatIdsOnIndex.value[i]
+    i++
+  }
+
+  // chatHistory.value = []
+  // history = await get()
+
+  console.log("getChat is called on", chat, "with chat_id", chat_id)
+}
 
 async function getMyChats() {
 
   myChats.value = await get('user/myChats')
   console.log('myChats', myChats.value)
-  console.log(myChats.value[0].name)
-  chats.value.push(myChats.value[0].name)
+  let i: number = 0
+
+  chatsOnIndex.value = []
+  chatIdsOnIndex.value = []
+  while (myChats.value[i]) {
+    chatsOnIndex.value.push(myChats.value[i].name)
+    chatIdsOnIndex.value.push(myChats.value[i].chat_id)
+    i++;
+  }
 }
 
 getMyChats()
