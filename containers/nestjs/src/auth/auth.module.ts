@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
 import { Jwt2faStrategy } from './jwt-2fa.strategy';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { UsersModule } from 'src/users/users.module';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '1d' },
+      signOptions: { expiresIn: '30d' },
     }),
   ],
   providers: [
@@ -26,6 +26,7 @@ import { UsersModule } from 'src/users/users.module';
     JwtStrategy,
     Jwt2faStrategy,
     {
+      // TODO: PUT THIS BACK!
       provide: APP_GUARD,
       useClass: Jwt2faAuthGuard,
     },

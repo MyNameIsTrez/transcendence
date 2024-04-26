@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ChatService {
@@ -29,7 +29,11 @@ export class ChatService {
 
   getName(chat_id: string) {
     return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
-      return chat?.name;
+      if (chat) {
+        return chat.name;
+      } else {
+        throw new BadRequestException('Invalid chat_id');
+      }
     });
   }
 }
