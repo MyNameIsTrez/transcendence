@@ -61,7 +61,10 @@ export class ChatController {
 
   @Get('history')
   history(@Request() req) {
+
     // TODO: Access the chat db
+    // return [{42: 'hello'}, {69: 'world'}, {420: '!'}]
+
     return [
       {
         sender: 42,

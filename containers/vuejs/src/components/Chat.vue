@@ -13,6 +13,9 @@
     <!-- getChat -->
     <div>
       >> {{ currentChat }} <<
+      <div v-for="instance in chatHistory">
+        {{ instance }}
+      </div>
     </div>
 
   </div>
@@ -27,7 +30,7 @@ const chatName = ref('')
 const currentChat = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
-// const chatHistory = ref<string[]>([]);
+const chatHistory = ref<string[]>([]);
 
 
 async function createChat() {
@@ -41,10 +44,11 @@ async function createChat() {
 
 const myChats = ref('')
 
-function getChat(chat: string) {
+async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
   let chat_id: string = ''
+  let history: string[] = []
 
   while (chatsOnIndex.value[i]) {
     if (chatsOnIndex.value[i] == chat)
@@ -52,10 +56,17 @@ function getChat(chat: string) {
     i++
   }
 
-  // chatHistory.value = []
-  // history = await get()
+  chatHistory.value = []
+  history = await get('chat/history')
+  i = 0
+  while (history[i]) {
+    chatHistory.value[i] = history[i].sender + ': ' + history[i].body
+    i++
+  }
+  // console.log(chatHistory.value)
 
-  console.log("getChat is called on", chat, "with chat_id", chat_id)
+
+  // console.log("getChat is called on (", chat, ") with chat_id (", chat_id, ")")
 }
 
 async function getMyChats() {
