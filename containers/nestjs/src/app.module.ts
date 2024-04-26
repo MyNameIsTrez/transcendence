@@ -52,7 +52,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: true, // TODO: Remove, as it's unsafe in production according to the docs!
         logging: true, // TODO: Remove?
         retryAttempts: 420, // The default of 10 was too low with our Docker containers
-        dropSchema: true, // TODO: Set this back to false for production!!!
+        dropSchema: false, // TODO: Set this back to false for production!!!
       }),
       inject: [ConfigService],
     }),

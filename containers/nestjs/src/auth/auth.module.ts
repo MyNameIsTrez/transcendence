@@ -23,10 +23,11 @@ import { UsersModule } from '../users/users.module';
   providers: [
     AuthService,
     JwtStrategy,
-    // { // TODO: PUT THIS BACK!
-    //   provide: APP_GUARD,
-    //   useClass: JwtAuthGuard,
-    // },
+    {
+      // TODO: PUT THIS BACK!
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
   controllers: [AuthController],
 })
