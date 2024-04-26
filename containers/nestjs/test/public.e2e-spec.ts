@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { JwtAuthGuard } from '../src/auth/jwt-auth.guard';
+import { Jwt2faAuthGuard } from '../src/auth/jwt-2fa-auth.guard';
 import { Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -35,9 +35,9 @@ describe('App (e2e)', () => {
       }),
     );
 
-    // This fixes reflector not being injected into JwtAuthGuard,
-    // but requires manually commenting out the global JwtAuthGuard in auth.module.ts
-    app.useGlobalGuards(new JwtAuthGuard(new Reflector()));
+    // This fixes reflector not being injected into Jwt2faAuthGuard,
+    // but requires manually commenting out the global Jwt2faAuthGuard in auth.module.ts
+    app.useGlobalGuards(new Jwt2faAuthGuard(new Reflector()));
 
     const bearer_token = app.get(ConfigService).get('TEST_BEARER_TOKEN');
     bearer_value = 'Bearer ' + bearer_token;
@@ -51,6 +51,17 @@ describe('App (e2e)', () => {
     jest.useRealTimers();
     await app.close();
   });
+
+  async function addUser() {
+    await usersService.create({
+      intra_id: 76657,
+      username: 'foo',
+      email: 'foo',
+      isTwoFactorAuthenticationEnabled: false,
+      twoFactorAuthenticationSecret: null,
+      my_chats: [],
+    });
+  }
 
   function getPublic(path, expectedStatus, expectedBody) {
     return request(app.getHttpServer())
@@ -90,7 +101,8 @@ describe('App (e2e)', () => {
       );
   }
 
-  it('/api/chat/create (POST) - PUBLIC', () => {
+  it('/api/chat/create (POST) - PUBLIC', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -113,7 +125,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - PROTECTED', () => {
+  it('/api/chat/create (POST) - PROTECTED', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -136,7 +149,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - PRIVATE', () => {
+  it('/api/chat/create (POST) - PRIVATE', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -159,7 +173,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - empty name', () => {
+  it('/api/chat/create (POST) - empty name', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -174,7 +189,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - unrecognized visibility', () => {
+  it('/api/chat/create (POST) - unrecognized visibility', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -189,7 +205,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - empty password', () => {
+  it('/api/chat/create (POST) - empty password', async () => {
+    await addUser();
     return postAuthorized(
       '/api/chat/create',
       {
@@ -204,24 +221,34 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/create (POST) - unauthorized', () => {
+  it('/api/chat/create (POST) - unauthorized', async () => {
+    await addUser();
     return postPublic('/api/chat/create', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/chats (GET)', () => {
+  it('/api/chat/chats (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/chats', 200, ['uuid1', 'uuid2']);
   });
-  it('/api/chat/chats (GET) - unauthorized', () => {
+  it('/api/chat/chats (GET) - not in database', () => {
+    return getAuthorized('/api/chat/chats', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/chats (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/chats', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/name (GET)', () => {
+  it('/api/chat/name (GET)', async () => {
+    await addUser();
     return request(app.getHttpServer())
       .post('/api/chat/create')
       .send({ name: 'foo', visibility: 'PUBLIC', password: 'foo' })
@@ -232,13 +259,15 @@ describe('App (e2e)', () => {
         return getAuthorized('/api/chat/name/' + res.body.chat_id, 200, 'foo');
       });
   });
-  it('/api/chat/name (GET) - chat_id must be a uuid', () => {
+  it('/api/chat/name (GET) - chat_id must be a uuid', async () => {
+    await addUser();
     return getAuthorized('/api/chat/name/a', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
-  it('/api/chat/name (GET) - chat_id must not be a random uuid', () => {
+  it('/api/chat/name (GET) - chat_id must not be a random uuid', async () => {
+    await addUser();
     return getAuthorized(
       '/api/chat/name/a2c996be-4d14-4a39-aa20-052c1b57de06',
       500,
@@ -248,7 +277,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/chat/name (GET) - unauthorized', () => {
+  it('/api/chat/name (GET) - unauthorized', async () => {
+    await addUser();
     return request(app.getHttpServer())
       .post('/api/chat/create')
       .send({ name: 'foo', visibility: 'PUBLIC', password: 'foo' })
@@ -263,17 +293,26 @@ describe('App (e2e)', () => {
       });
   });
 
-  it('/api/chat/users (GET)', () => {
+  it('/api/chat/users (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/users', 200, [42, 69, 420]);
   });
-  it('/api/chat/users (GET) - unauthorized', () => {
+  it('/api/chat/users (GET) - not in database', () => {
+    return getAuthorized('/api/chat/users', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/users (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/users', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/history (GET)', () => {
+  it('/api/chat/history (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/history', 200, [
       {
         sender: 42,
@@ -289,57 +328,104 @@ describe('App (e2e)', () => {
       },
     ]);
   });
-  it('/api/chat/history (GET) - unauthorized', () => {
+  it('/api/chat/history (GET) - not in database', () => {
+    return getAuthorized('/api/chat/history', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/history (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/history', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/visibility (GET)', () => {
+  it('/api/chat/visibility (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/visibility', 200, 'PUBLIC');
   });
-  it('/api/chat/visibility (GET) - unauthorized', () => {
+  it('/api/chat/visibility (GET) - not in database', () => {
+    return getAuthorized('/api/chat/visibility', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/visibility (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/visibility', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/owner (GET)', () => {
+  it('/api/chat/owner (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/owner', 200, '42');
   });
-  it('/api/chat/owner (GET) - unauthorized', () => {
+  it('/api/chat/owner (GET) - not in database', () => {
+    return getAuthorized('/api/chat/owner', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/owner (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/owner', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/admins (GET)', () => {
+  it('/api/chat/admins (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/admins', 200, [42, 69]);
   });
-  it('/api/chat/admins (GET) - unauthorized', () => {
+  it('/api/chat/admins (GET) - not in database', () => {
+    return getAuthorized('/api/chat/admins', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/admins (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/admins', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/banned (GET)', () => {
+  it('/api/chat/banned (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/banned', 200, [7, 666]);
   });
-  it('/api/chat/banned (GET) - unauthorized', () => {
+  it('/api/chat/banned (GET) - not in database', () => {
+    return getAuthorized('/api/chat/banned', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/banned (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/banned', 500, {
       statusCode: 500,
       message: 'Internal server error',
     });
   });
 
-  it('/api/chat/muted (GET)', () => {
+  it('/api/chat/muted (GET)', async () => {
+    await addUser();
     return getAuthorized('/api/chat/muted', 200, [42, 69]);
   });
-  it('/api/chat/muted (GET) - unauthorized', () => {
+  it('/api/chat/muted (GET) - not in database', () => {
+    return getAuthorized('/api/chat/muted', 500, {
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  });
+  it('/api/chat/muted (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/chat/muted', 500, {
       statusCode: 500,
       message: 'Internal server error',
@@ -354,12 +440,7 @@ describe('App (e2e)', () => {
   });
 
   it('/api/user/username (GET)', async () => {
-    await usersService.create({
-      intra_id: 76657,
-      username: 'foo',
-      email: 'foo',
-      my_chats: [],
-    });
+    await addUser();
     return getAuthorized('/api/user/username', 200, 'foo');
   });
   it('/api/user/username (GET) - not in database', () => {
@@ -368,7 +449,8 @@ describe('App (e2e)', () => {
       message: 'Internal server error',
     });
   });
-  it('/api/user/username (GET) - unauthorized', () => {
+  it('/api/user/username (GET) - unauthorized', async () => {
+    await addUser();
     return getPublic('/api/user/username', 500, {
       statusCode: 500,
       message: 'Internal server error',
@@ -376,22 +458,18 @@ describe('App (e2e)', () => {
   });
 
   it('/api/user/setUsername (POST)', async () => {
-    await usersService.create({
-      intra_id: 76657,
-      username: 'bar',
-      email: 'foo',
-      my_chats: [],
-    });
+    await addUser();
     return postAuthorized(
       '/api/user/setUsername',
       {
-        username: 'foo',
+        username: 'bar',
       },
       204,
       '',
     );
   });
   it('/api/user/setUsername (POST) - empty username', async () => {
+    await addUser();
     return await postAuthorized(
       '/api/user/setUsername',
       {
@@ -404,7 +482,7 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/user/setUsername (POST) - user does not exist', async () => {
+  it('/api/user/setUsername (POST) - user does not exist', () => {
     return postAuthorized(
       '/api/user/setUsername',
       {
@@ -417,7 +495,8 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/user/setUsername (POST) - unauthorized', () => {
+  it('/api/user/setUsername (POST) - unauthorized', async () => {
+    await addUser();
     return postPublic('/api/user/setUsername', 500, {
       statusCode: 500,
       message: 'Internal server error',
