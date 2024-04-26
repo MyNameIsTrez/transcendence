@@ -39,14 +39,23 @@ export class ChatService {
 
   getHistory(chat_id: string) {
     return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
-      return chat?.history
-    })
+      return chat?.history;
+    });
   }
 
-  handleMessage(sender: number, chat_id: string, body: String) {
-    console.log(sender, chat_id, body)
-    // return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
-      // chat?.history.push(sender, body)
-    // })
+  handleMessage(sender: number, chat_id: string, body: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { history: true } })
+      .then(async (chat) => {
+        if (!chat) { return }
+
+        const message = new Message();
+        message.sender = sender;
+        message.body = body;
+        await this.messageRepository.save(message);
+
+        chat.history = [...chat.history, message]
+        await this.chatRepository.save(chat)
+      });
   }
 }

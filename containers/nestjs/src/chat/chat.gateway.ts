@@ -1,5 +1,5 @@
 import { ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from './chat.service';
@@ -19,6 +19,7 @@ class HandleMessageDto {
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'chat' })
 @UseFilters(BadRequestTransformFilter)
+@UsePipes(new ValidationPipe())
 export class ChatGateway {
 	// TODO: Add send and receive message db logic and socket endpoints
 	@WebSocketServer()
@@ -28,7 +29,7 @@ export class ChatGateway {
 
 	constructor(private readonly chatService: ChatService, private jwtService: JwtService) { }
 
-	handleConnection(client: Socket) {
+	handleConnection(@ConnectedSocket() client: Socket) {
 		console.log(`Client ${client.id} connected to chat socket`);
 
 		const authorization = client.handshake.headers.authorization;
@@ -41,12 +42,6 @@ export class ChatGateway {
 				redirectToLoginPage: true,
 			});
 			return;
-
-			// Ideally we'd throw an exception, but it seems to always crash handleConnection()
-			// client.disconnect();
-			// throw new WsException(
-			//   'Disconnecting client, because they had no authorization header',
-			// );
 		}
 
 		const jwt = authorization.split(' ')[1];
@@ -67,7 +62,7 @@ export class ChatGateway {
 		// this.sendChatHistory(client);
 	}
 
-	handleDisconnect(client: Socket) {
+	handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
 		this.connectedClients.delete(client.id);
 		this.sendConnectedClients();
@@ -77,11 +72,8 @@ export class ChatGateway {
 		this.server.emit('connectedClients', Array.from(this.connectedClients));
 	}
 
-	@UsePipes(new ValidationPipe())
 	@SubscribeMessage('sendMessage')
-	// handleMessage(client: Socket, message: { chatId: string, body: string }): void {
-	handleMessage(client: Socket, @MessageBody() dto: HandleMessageDto) {
-		console.log(dto)
+	handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
 		this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
 	}
 }

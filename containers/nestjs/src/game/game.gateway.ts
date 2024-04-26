@@ -1,3 +1,4 @@
+import { ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
 import {
   MessageBody,
   ConnectedSocket,
@@ -8,10 +9,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import LobbyManager from './LobbyManager';
+import { BadRequestTransformFilter } from '../bad-request-transform.filter';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'game' })
+@UseFilters(BadRequestTransformFilter)
+@UsePipes(new ValidationPipe())
 export class GameGateway {
   constructor(private jwtService: JwtService) { }
 
@@ -20,7 +24,7 @@ export class GameGateway {
 
   lobbyManager: LobbyManager;
 
-  handleConnection(client: Socket) {
+  handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`Client ${client.id} connected to game socket`);
 
     const authorization = client.handshake.headers.authorization;
@@ -33,12 +37,6 @@ export class GameGateway {
         redirectToLoginPage: true,
       });
       return;
-
-      // Ideally we'd throw an exception, but it seems to always crash handleConnection()
-      // client.disconnect();
-      // throw new WsException(
-      //   'Disconnecting client, because they had no authorization header',
-      // );
     }
 
     const jwt = authorization.split(' ')[1];
@@ -55,7 +53,7 @@ export class GameGateway {
     }
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`Client ${client.id} disconnected game socket`);
     this.lobbyManager.removeClient(client);
   }
