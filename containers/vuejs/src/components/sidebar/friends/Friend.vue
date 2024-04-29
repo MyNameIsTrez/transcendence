@@ -20,21 +20,27 @@
             <!-- <li><a>View profile</a></li> -->
             <li><a>Invite to game</a></li>
             <li><a>Open chat</a></li>
-            <li><a>Remove friend</a></li>
+            <li><a @click="removeFriend">Remove friend</a></li>
           </ul>
         </div>
       </div>
     </div>
   </div>
-  <br>
+  <br />
 </template>
 
 <script setup lang="ts">
+import { post } from '../../../httpRequests'
 
 const props = defineProps({
-    name: String,
-    image: String,
-    isOnline: Boolean
+  name: String,
+  image: String,
+  isOnline: Boolean,
+  intraId: Number
 })
 
+async function removeFriend() {
+  console.log('friend_id: ', props.intraId)
+  post('user/removeFriend', { friend_id: props.intraId })
+}
 </script>

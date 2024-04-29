@@ -32,6 +32,7 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :image="friend.profilePicture"
+        :intraId="friend.intraId"
       />
     </template>
     <h1 class="text-center">---- Offline ----</h1>
@@ -41,13 +42,15 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :image="friend.profilePicture"
+        :intraId="friend.intraId"
       />
     </template>
     <h1 class="text-center">---- Incoming ----</h1>
     <Incoming
-	v-for="request in incomingRequests"
+      v-for="request in incomingRequests"
       :name="request.name"
       :image="request.profilePicture"
+      :intraId="request.intraId"
     />
   </div>
 </template>
@@ -71,14 +74,16 @@ var addMessage = ''
 
 async function addFriend() {
   console.log(friendSearch.value)
-  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }).then((resp) => {
-    console.log(resp)
-    if (resp != '') {
-      addMessage = 'Friend request sent'
-    } else {
-      addMessage = 'User not found'
+  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }).then(
+    (resp) => {
+      console.log(resp)
+      if (resp != '') {
+        addMessage = 'Friend request sent'
+      } else {
+        addMessage = 'User not found'
+      }
     }
-  })
+  )
   //   addMessage = 'test'
 }
 

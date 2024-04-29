@@ -72,4 +72,19 @@ export class UserController {
   sendFriendRequest(@Request() req, @Body() body) {
 	return this.usersService.sendFriendRequest(req.user.intra_id, body.intra_name);
   }
+
+  @Post('acceptFriendRequest')
+  acceptFriendRequest(@Request() req, @Body() body) {
+	this.usersService.acceptFriendRequest(req.user.intra_id, body.sender_id);
+  }
+
+  @Post('declineFriendRequest')
+  declineFriendRequest(@Request() req, @Body() body) {
+	this.usersService.declineFriendRequest(req.user.intra_id, body.sender_id);
+  }
+
+  @Post('removeFriend')
+  removeFriend(@Request() req, @Body() body) {
+	this.usersService.removeFriend(req.user.intra_id, body.friend_id);
+  }
 }

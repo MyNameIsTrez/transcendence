@@ -30,7 +30,7 @@ export class UsersService {
   }
 
   updateIncomingFriendRequests(
-    sender_id: number,
+    sender_id: number, //TODO: kijken of dit weg kan
     receiver_id: number,
     incoming_friend_requests,
   ) {
@@ -44,18 +44,25 @@ export class UsersService {
     sender_id: number,
     receiver_name: string,
   ): Promise<Boolean> {
-    const intraUser = await this.findOneByName(receiver_name);
-    console.log('intra_user', intraUser);
+    const sender = await this.findOne(sender_id);
+    const receiver = await this.findOneByName(receiver_name);
+    console.log('intra_user', receiver);
     console.log('receiver_name', receiver_name);
-    if (!intraUser) {
+    if (!receiver) {
       throw new BadRequestException('User does not exist');
     }
+    if (sender.friends.indexOf(receiver.intra_id) != -1) {
+      throw new BadRequestException('You are already friends with this user'); //TODO: vragen of dit de juiste exception is
+    }
+    if (receiver.intra_id == sender_id) {
+      throw new BadRequestException('You cannot add yourself as a friend');
+    }
     //TODO: misschien een mooiere manier vinden om dit te doen
-    intraUser.incoming_friend_requests.push(sender_id);
+    receiver.incoming_friend_requests.push(sender_id);
     this.updateIncomingFriendRequests(
       sender_id,
-      intraUser.intra_id,
-      intraUser.incoming_friend_requests.filter(function (elem, index, self) {
+      receiver.intra_id,
+      receiver.incoming_friend_requests.filter(function (elem, index, self) {
         return index === self.indexOf(elem);
       }),
     );
@@ -109,8 +116,8 @@ export class UsersService {
           const returned = {
             name: friend.username,
             isOnline: true, // TODO: Store this in the user!
-            profilePicture: //TODO: replace with actual pf
-              'https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg',
+            profilePicture: friend.profile_picture,
+            intraId: friend.intra_id,
           };
           console.log('returned', returned);
           return returned;
@@ -130,15 +137,99 @@ export class UsersService {
           console.log('incoming', incoming);
           const returned = {
             name: incoming.username,
-            profilePicture: //TODO: replace with actual pf
-              'https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg',
+            profilePicture: incoming.profile_picture,
+            intraId: incoming.intra_id,
           };
-		  console.log('returned', returned);
-		  return returned;
+          console.log('returned', returned);
+          return returned;
         }),
       );
-	  console.log(incomingRequests);
-	  return incomingRequests;
+      console.log(incomingRequests);
+      return incomingRequests;
     }
+  }
+
+  updateFriends(user_id: number, friends) {
+    this.usersRepository.update({ intra_id: user_id }, { friends });
+  }
+
+  async acceptFriendRequest(receiver_id: number, sender_id: number) {
+    const receiver = await this.findOne(receiver_id);
+    const sender = await this.findOne(sender_id);
+    console.log('SENDER ID: ', sender_id);
+    console.log('aFR receiver: ', receiver);
+    console.log('aFR sender: ', sender);
+
+    sender.friends.push(receiver_id);
+    this.updateFriends(
+      sender.intra_id,
+      sender.friends.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
+
+    receiver.friends.push(sender_id);
+    this.updateFriends(
+      receiver.intra_id,
+      receiver.friends.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
+
+    receiver.incoming_friend_requests.splice(
+      receiver.incoming_friend_requests.indexOf(sender_id),
+    );
+    this.updateIncomingFriendRequests(
+      sender_id,
+      receiver.intra_id,
+      receiver.incoming_friend_requests.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
+    console.log('aFR user', receiver);
+  }
+
+  async declineFriendRequest(receiver_id: number, sender_id: number) {
+    const receiver = await this.findOne(receiver_id);
+    const sender = await this.findOne(sender_id);
+    console.log('SENDER ID: ', sender_id);
+    console.log('dFR receiver: ', receiver);
+    console.log('dFR sender: ', sender);
+
+    receiver.incoming_friend_requests.splice(
+      receiver.incoming_friend_requests.indexOf(sender_id),
+    );
+    this.updateIncomingFriendRequests(
+      sender_id,
+      receiver.intra_id,
+      receiver.incoming_friend_requests.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
+    console.log('dFR user', receiver);
+  }
+
+  async removeFriend(user_id: number, friend_id: number) {
+    const user = await this.findOne(user_id);
+    const friend = await this.findOne(friend_id);
+    console.log('user ID: ', user_id);
+    console.log('rF user: ', user);
+    console.log('rF friend: ', friend);
+
+    user.friends.splice(user.friends.indexOf(friend_id));
+    this.updateFriends(
+      user.intra_id,
+      user.friends.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
+
+    friend.friends.splice(friend.friends.indexOf(user_id));
+    this.updateFriends(
+      friend.intra_id,
+      friend.friends.filter(function (elem, index, self) {
+        return index === self.indexOf(elem);
+      }),
+    );
   }
 }
