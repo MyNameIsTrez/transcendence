@@ -41,6 +41,6 @@ const props = defineProps({
 
 async function removeFriend() {
   console.log('friend_id: ', props.intraId)
-  post('user/removeFriend', { friend_id: props.intraId })
+  post('user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
 }
 </script>

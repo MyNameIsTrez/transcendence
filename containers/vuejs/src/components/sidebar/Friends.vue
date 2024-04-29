@@ -5,8 +5,25 @@
         <button class="btn btn-primary btn-square self-auto" onclick="my_modal_2.showModal()">
           <span class="material-symbols-outlined">person_add</span>
         </button>
-        <dialog id="my_modal_2" class="modal">
-          <div class="modal-box">
+
+        <dialog id="my_modal_2" class="modal place-content-center">
+          <div role="alert" :class="`alert ${alertColor} ${alertVisibility}`">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{{ alertMessage }}</span>
+          </div>
+          <div class="modal-box w-auto">
             <p class="py-4">Add a friend</p>
             <span class="flex justify-center">
               <input
@@ -17,7 +34,6 @@
               />
               <button class="btn" @click="addFriend">Add</button>
             </span>
-            <p class="text pt-6">{{ addMessage }}</p>
           </div>
           <form method="dialog" class="modal-backdrop">
             <button>close</button>
@@ -66,40 +82,31 @@ const incomingRequests = await get('user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
-// const props = defineProps({
-// 	addMessage: String,
-// })
+const alertVisibility = ref('invisible')
 
-var addMessage = ''
+const alertColor = ref('alert-success')
+
+const alertMessage = ref('Friend request sent')
 
 async function addFriend() {
   console.log(friendSearch.value)
-  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }).then(
-    (resp) => {
-      console.log(resp)
-      if (resp != '') {
-        addMessage = 'Friend request sent'
-      } else {
-        addMessage = 'User not found'
-      }
-    }
-  )
-  //   addMessage = 'test'
+  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value })
+    .then((resp) => {
+      alertColor.value = 'alert-success'
+      alertMessage.value = 'Friend request sent'
+      alertVisibility.value = 'visible'
+      setTimeout(() => {
+        alertVisibility.value = 'invisible'
+      }, 3500)
+    })
+    .catch((err) => {
+      console.log('catch test', err.response.data.message)
+      alertColor.value = 'alert-warning'
+      alertMessage.value = err.response.data.message
+      alertVisibility.value = 'visible'
+      setTimeout(() => {
+        alertVisibility.value = 'invisible'
+      }, 3500)
+    })
 }
-
-// const friends = [
-//   {
-//     name: 'sbos',
-//     isOnline: true,
-//     profilePicture: 'https://cdn.intra.42.fr/users/9a7a6d2e4ef5139c2bc8bb5271f7e3cc/sbos.jpg'
-//   },
-//   {
-//     name: 'vbenneko',
-//     isOnline: false,
-//     profilePicture: 'https://cdn.intra.42.fr/users/0519bc4a463d666788591a6fcb3dc296/vbenneko.jpg'
-//   }
-// ]
-
-console.log('friends', friends)
-// function displayFriends() {}
 </script>

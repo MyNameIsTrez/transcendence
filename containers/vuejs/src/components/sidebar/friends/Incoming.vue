@@ -32,11 +32,11 @@ const props = defineProps({
 
 async function acceptFriendRequest() {
   console.log('test_id: ', props.intraId)
-  post('user/acceptFriendRequest', { sender_id: props.intraId })
+  post('user/acceptFriendRequest', { sender_id: props.intraId }).then(() => location.reload())
 }
 
 async function declineFriendRequest() {
   console.log('test_id: ', props.intraId)
-  post('user/declineFriendRequest', { sender_id: props.intraId })
+  post('user/declineFriendRequest', { sender_id: props.intraId }).then(() => location.reload())
 }
 </script>

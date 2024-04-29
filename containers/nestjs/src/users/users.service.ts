@@ -51,12 +51,15 @@ export class UsersService {
     if (!receiver) {
       throw new BadRequestException('User does not exist');
     }
-    if (sender.friends.indexOf(receiver.intra_id) != -1) {
+    if (sender.friends.includes(receiver.intra_id)) {
       throw new BadRequestException('You are already friends with this user'); //TODO: vragen of dit de juiste exception is
     }
     if (receiver.intra_id == sender_id) {
       throw new BadRequestException('You cannot add yourself as a friend');
     }
+	if (receiver.incoming_friend_requests.includes(sender_id)) {
+		throw new BadRequestException('Friend request already sent');
+	}
     //TODO: misschien een mooiere manier vinden om dit te doen
     receiver.incoming_friend_requests.push(sender_id);
     this.updateIncomingFriendRequests(
