@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
 import Pong from './pong';
@@ -9,13 +10,23 @@ export default class Lobby {
 
   // TODO: Could maybe be deleted and be replaced with an Array?
   // 'any' is client.data.intra_id struct
-  private readonly clients = new Map<number, Socket>();
+  private readonly clients = new Map<string, Socket>();
 
   private readonly pong = new Pong(10);
 
   private gameHasStarted = false;
 
-  constructor(private readonly server: Server) {}
+  constructor(
+    private readonly server: Server,
+    private configService: ConfigService,
+  ) {}
+
+  private getClientKey(client: Socket) {
+    if (this.configService.get('DEBUG')) {
+      return client.data.intra_id + '-' + client.id;
+    }
+    return client.data.intra_id;
+  }
 
   public addClient(client: Socket) {
     // console.log(
@@ -23,7 +34,7 @@ export default class Lobby {
     // );
     client.data.playerIndex = this.clients.size;
     // console.log('Adding user', client.data);
-    this.clients.set(client.data.intra_id, client);
+    this.clients.set(this.getClientKey(client), client);
     client.join(this.id);
 
     // TODO: Maybe add a countdown when game starts?
@@ -37,7 +48,7 @@ export default class Lobby {
     // console.log(
     //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
     // );
-    this.clients.delete(client.data.intra_id);
+    this.clients.delete(this.getClientKey(client));
     client.leave(this.id);
     client.data.lobby = undefined;
   }
