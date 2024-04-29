@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { Public } from 'src/auth/auth.decorator';
+import { Public } from '../../auth/auth.decorator';
 
 @Public()
 @Controller('api/public')

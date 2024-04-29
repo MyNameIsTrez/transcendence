@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Header,
+  HttpCode,
   Param,
   Post,
   Request,
@@ -11,11 +12,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../../users/users.service';
 import { createReadStream, writeFileSync } from 'fs';
 import { IsNotEmpty } from 'class-validator';
 
-export class SetUsernameDto {
+class SetUsernameDto {
   @IsNotEmpty()
   username: string;
 }
@@ -30,8 +31,9 @@ export class UserController {
   }
 
   @Post('setUsername')
-  setUsername(@Request() req, @Body() setUsernameDto: SetUsernameDto) {
-    this.usersService.setUsername(req.user.intra_id, setUsernameDto.username);
+  @HttpCode(204)
+  async setUsername(@Request() req, @Body() dto: SetUsernameDto) {
+    await this.usersService.setUsername(req.user.intra_id, dto.username);
   }
 
   @Get('intraId')
