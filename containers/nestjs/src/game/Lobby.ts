@@ -8,8 +8,6 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  // TODO: Could maybe be deleted and be replaced with an Array?
-  // 'any' is client.data.intra_id struct
   private readonly clients = new Map<string, Socket>();
 
   private readonly pong = new Pong(10);
