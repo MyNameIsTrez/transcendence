@@ -264,11 +264,12 @@ class Ball extends Rect {
   // }
 }
 
-export default class Pong {
+export abstract class APong {
   _winScore: number;
   _ball: Ball;
   _leftPlayer: Player;
   _rightPlayer: Player;
+  type: string = 'APong';
 
   constructor(winScore: number) {
     this._winScore = winScore;
@@ -280,14 +281,6 @@ export default class Pong {
 
     this._leftPlayer = new Player(PADDLE_LEFT_X);
     this._rightPlayer = new Player(PADDLE_RIGHT_X);
-  }
-
-  update() {
-    this._leftPlayer.update();
-    this._rightPlayer.update();
-
-    this._ball.updatePos();
-    this._ball.collide(this._leftPlayer, this._rightPlayer);
   }
 
   didSomeoneWin(): boolean {
@@ -306,45 +299,12 @@ export default class Pong {
     return this.didLeftWin() ? 0 : 1;
   }
 
-  // TODO: Use?
-  // resetGame() {
-  //   this._ball._hidden = false;
-  //   this._ball.reset();
-  //   this._leftPlayer._score = 0;
-  //   this._rightPlayer._score = 0;
-  // }
-
-  getData() {
-    return {
-      ball: {
-        pos: this._ball._pos,
-        size: this._ball._size,
-      },
-      leftPlayer: {
-        score: this._leftPlayer._score,
-        paddle: {
-          pos: this._leftPlayer.paddle._pos,
-          size: this._leftPlayer.paddle._size,
-        },
-      },
-      rightPlayer: {
-        score: this._rightPlayer._score,
-        paddle: {
-          pos: this._rightPlayer.paddle._pos,
-          size: this._rightPlayer.paddle._size,
-        },
-      },
-    };
-  }
-
   movePaddle(playerIndex: number, keydown: boolean, north: boolean) {
     const paddle = this.getPlayer(playerIndex)?.paddle;
     if (paddle) {
       if (north) {
-        console.log('Moving north');
         paddle.dyNorth = keydown ? -10 : 0;
       } else {
-        console.log('Moving south');
         paddle.dySouth = keydown ? 10 : 0;
       }
     }
@@ -356,4 +316,7 @@ export default class Pong {
     }
     return playerIndex == 0 ? this._leftPlayer : this._rightPlayer;
   }
+
+  abstract update(): void;
+  abstract getData(): any;
 }
