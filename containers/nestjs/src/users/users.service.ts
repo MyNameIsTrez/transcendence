@@ -39,6 +39,10 @@ export class UsersService {
   //   await this.usersRepository.delete(intra_id);
   // }
 
+  hasUser(intra_id: number) {
+    return this.usersRepository.existsBy({ intra_id });
+  }
+
   getUsername(intra_id: number): Promise<string> {
     return this.findOne(intra_id).then((user) => {
       return user.username;
