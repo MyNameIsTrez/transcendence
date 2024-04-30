@@ -29,6 +29,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         JWT_SECRET: Joi.string(),
 
         APP_NAME: Joi.string(),
+
+        DEBUG: Joi.boolean(),
       }),
       validationOptions: {
         allowUnknown: true,
