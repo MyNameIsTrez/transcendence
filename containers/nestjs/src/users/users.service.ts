@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { MyChat } from './mychat.entity';
+import { createReadStream } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -101,5 +106,21 @@ export class UsersService {
     if (user) {
       this.set2faSecret(intra_id, secret);
     }
+  }
+
+  getProfilePicture(intra_id: number) {
+    const stream = createReadStream(
+      `profile_pictures/${intra_id}.png`,
+      'base64',
+    );
+
+    // If you add this line back, with nothing between the {},
+    // it'll return 200 when the png doesn't exist
+    // stream.on('error', () => {
+    // TODO: Why does this not work?? It seems like the stream is catching it
+    // throw new BadRequestException('foo');
+    // });
+
+    return new StreamableFile(stream);
   }
 }
