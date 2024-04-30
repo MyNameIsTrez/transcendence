@@ -2,14 +2,29 @@
   <div class="p-6">
     <div class="grid justify-center">
       <span class="grid grid-cols-2">
-        <div class="text-2xl justify-self-start text-yellow-200">{{ username }}</div>
+        <div class="text text-lg justify-self-start text-yellow-200">{{ username }}</div>
         <!-- The button to open modal -->
-        <label for="my_modal_7" class="btn w-24 justify-self-end">Edit</label>
+        <button class="btn w-24 justify-self-end" onclick="my_modal_7.showModal()">Edit</button>
 
         <!-- Put this part before </body> tag -->
-        <input type="checkbox" id="my_modal_7" class="modal-toggle" />
-        <div class="modal" role="dialog">
-          <div class="modal-box">
+        <dialog id="my_modal_7" class="modal place-content-center">
+          <div role="alert" :class="`alert alert-warning ${alertVisibility}`">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{{ alertMessage }}</span>
+          </div>
+          <div class="modal-box w-auto">
             <p class="py-4">Edit your name</p>
             <span class="flex justify-center">
               <input
@@ -29,10 +44,12 @@
               accept="image/*"
               @change="uploadProfilePicture"
             />
-            <!-- <input type="file" class="file-input file-input-bordered w-full max-w-md" /> -->
+			<p class="text-center text-gray-400" style="padding-top: 20px">Press [ESC] to close</p>
           </div>
-          <label class="modal-backdrop" for="my_modal_7">Close</label>
-        </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </span>
       <br />
       <div class="flex justify-between">
@@ -106,9 +123,39 @@ function uploadProfilePicture(event: any) {
   post('user/profilePicture', data).then(() => location.reload())
 }
 
+const alertVisibility = ref('invisible')
+
+const alertMessage = ref('Name change failed')
+
+function checkName() {
+  if (newUsername.value != '') {
+    const checking = newUsername.value
+    for (let i = 0; i < checking.length; i++) {
+      if (i >= 16) {
+        alertMessage.value = 'Name exceeds character limit of 16'
+        return false
+      }
+      if (checking.charCodeAt(i) < 32 || checking.charCodeAt(i) > 122) {
+        alertMessage.value = 'Name contains an illegal character'
+        return false
+      }
+      console.log(checking.charAt(i), checking.charCodeAt(i))
+    }
+  }
+  return true
+}
+
 function changeUsername() {
   if (newUsername.value != '') {
-    post('user/username', { username: newUsername.value }).then(() => location.reload())
+    if (checkName()) {
+      post('user/username', { username: newUsername.value }).then(() => location.reload())
+    } else {
+      console.log('invalid username')
+      alertVisibility.value = 'visible'
+      setTimeout(() => {
+        alertVisibility.value = 'invisible'
+      }, 3500)
+    }
   }
 }
 </script>

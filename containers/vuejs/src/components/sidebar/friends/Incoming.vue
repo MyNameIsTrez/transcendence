@@ -7,13 +7,13 @@
     </figure>
     <div class="card-body h-28">
       <div style="clear: both">
-        <h2 style="float: left; padding-top: 10px" class="card-title">{{ name }}</h2>
+        <h2 style="float: left; padding-top: 10px" class="text justify-self-start font-bold text-sm w-36">{{ name }}</h2>
         <div style="float: right" class="dropdown dropdown-bottom dropdown-end">
-          <button class="btn m-1 btn-success btn-square" @click="acceptFriendRequest">
-            <span class="material-symbols-outlined" style="font-size: 30px">person_check</span>
+          <button class="btn m-1 btn-success w-8 h-8 min-h-0" @click="acceptFriendRequest">
+            <span class="material-symbols-outlined" style="font-size: 20px">person_check</span>
           </button>
-          <button class="btn m-1 btn-error btn-square" @click="declineFriendRequest">
-            <span class="material-symbols-outlined" style="font-size: 30px">person_remove</span>
+          <button class="btn m-1 btn-error w-8 h-8 min-h-0" @click="declineFriendRequest">
+            <span class="material-symbols-outlined" style="font-size: 20px">person_remove</span>
           </button>
         </div>
       </div>
