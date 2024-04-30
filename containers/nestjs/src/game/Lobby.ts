@@ -1,8 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import NormalPong from './NormalPong';
 import { APong } from './APong';
+import NormalPong from './NormalPong';
+import SpecialPong from './SpecialPong';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -15,6 +16,7 @@ export default class Lobby {
 
   private readonly gamemodes: Map<string, Function> = new Map([
     ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
+    ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
   ]);
 
   private gameHasStarted = false;
