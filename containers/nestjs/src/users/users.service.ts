@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { MyChat } from './mychat.entity';
-import { createReadStream, writeFileSync } from 'fs';
+import { createReadStream } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -113,6 +113,14 @@ export class UsersService {
       `profile_pictures/${intra_id}.png`,
       'base64',
     );
+
+    // If you add this line back, with nothing between the {},
+    // it'll return 200 when the png doesn't exist
+    // stream.on('error', () => {
+    // TODO: Why does this not work?? It seems like the stream is catching it
+    // throw new BadRequestException('foo');
+    // });
+
     return new StreamableFile(stream);
   }
 }

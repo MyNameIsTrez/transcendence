@@ -89,7 +89,7 @@ describe('App (e2e)', () => {
         ).toStrictEqual(expectedBody),
       );
   }
-  async function postAuthorized(path, sent, expectedStatus, expectedBody) {
+  function postAuthorized(path, sent, expectedStatus, expectedBody) {
     return request(app.getHttpServer())
       .post(path)
       .send(sent)
@@ -486,7 +486,7 @@ describe('App (e2e)', () => {
       {
         username: 'bar',
       },
-      204,
+      HttpStatus.NO_CONTENT,
       '',
     );
     return getAuthorized('/api/user/username', HttpStatus.OK, 'bar');
@@ -602,6 +602,7 @@ describe('App (e2e)', () => {
     });
   });
 
+  // TODO: Make this test pass
   // it('/api/user/profilePicture/:intra_id.png (GET)', async () => {
   //   await addUser();
   //   return getAuthorized(
@@ -610,7 +611,9 @@ describe('App (e2e)', () => {
   //     intraId.toString(),
   //   );
   // });
-  // it('/api/user/profilePicture/:intra_id.png (GET) - profile picture not in database', () => {
+  // TODO: Make this test pass
+  // it('/api/user/profilePicture/:intra_id.png (GET) - profile picture not in database', async () => {
+  //   await addUser();
   //   return getAuthorized(
   //     '/api/user/profilePicture/42.png',
   //     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -620,17 +623,71 @@ describe('App (e2e)', () => {
   //     },
   //   );
   // });
-  // it('/api/user/profilePicture/:intra_id.png (GET) - user not in database', () => {
-  //   return getAuthorized(`/api/user/profilePicture/${intraId}.png`, HttpStatus.INTERNAL_SERVER_ERROR, {
-  //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-  //     message: 'Internal server error',
-  //   });
-  // });
-  // it('/api/user/profilePicture/:intra_id.png (GET) - unauthorized', async () => {
+  it('/api/user/profilePicture/:intra_id.png (GET) - user not in database', () => {
+    return getAuthorized(
+      `/api/user/profilePicture/${intraId}.png`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
+  it('/api/user/profilePicture/:intra_id.png (GET) - unauthorized', async () => {
+    await addUser();
+    return getPublic(
+      `/api/user/profilePicture/${intraId}.png`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
+
+  // TODO: Make this test pass
+  // it('/api/user/profilePicture (POST)', async () => {
   //   await addUser();
-  //   return getPublic(`/api/user/profilePicture/${intraId}.png`, HttpStatus.INTERNAL_SERVER_ERROR, {
-  //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-  //     message: 'Internal server error',
-  //   });
+  //   await postAuthorized(
+  //     '/api/user/profilePicture',
+  //     ???some sort of way to read a png and send it here,
+  //     HttpStatus.NO_CONTENT,
+  //     '',
+  //   );
+  //   return getAuthorized('/api/user/username', HttpStatus.OK, 'bar');
   // });
+  it('/api/user/profilePicture (POST) - invalid body', async () => {
+    await addUser();
+    return postAuthorized(
+      '/api/user/profilePicture',
+      { a: 'b' },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        message: 'Internal server error',
+        statusCode: 500,
+      },
+    );
+  });
+  it('/api/user/profilePicture (POST) - user does not exist', async () => {
+    return postAuthorized(
+      '/api/user/profilePicture',
+      { a: 'b' },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        message: 'Internal server error',
+        statusCode: 500,
+      },
+    );
+  });
+  it('/api/user/profilePicture (POST) - unauthorized', async () => {
+    await addUser();
+    return postPublic(
+      '/api/user/profilePicture',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
 });

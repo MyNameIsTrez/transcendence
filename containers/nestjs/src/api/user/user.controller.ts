@@ -1,20 +1,21 @@
 import {
   Body,
   Controller,
+  FileTypeValidator,
   Get,
   Header,
   HttpCode,
   Param,
+  ParseFilePipe,
   Post,
   Request,
-  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from '../../users/users.service';
 import { IsNotEmpty } from 'class-validator';
-import { createReadStream, writeFileSync } from 'fs';
+import { writeFileSync } from 'fs';
 
 class SetUsernameDto {
   @IsNotEmpty()
@@ -54,7 +55,15 @@ export class UserController {
 
   @Post('profilePicture')
   @UseInterceptors(FileInterceptor('file'))
-  setProfilePicture(@Request() req, @UploadedFile() file: Express.Multer.File) {
+  setProfilePicture(
+    @Request() req,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: 'image/png' })],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
 }
