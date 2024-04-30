@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { MyChat } from './mychat.entity';
+import { createReadStream, writeFileSync } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -101,5 +106,13 @@ export class UsersService {
     if (user) {
       this.set2faSecret(intra_id, secret);
     }
+  }
+
+  getProfilePicture(intra_id: number) {
+    const stream = createReadStream(
+      `profile_pictures/${intra_id}.png`,
+      'base64',
+    );
+    return new StreamableFile(stream);
   }
 }

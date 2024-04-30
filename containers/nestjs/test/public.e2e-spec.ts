@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { Jwt2faAuthGuard } from '../src/auth/jwt-2fa-auth.guard';
@@ -13,8 +13,10 @@ require('leaked-handles');
 
 describe('App (e2e)', () => {
   let app: INestApplication;
-  let bearer_value: string;
+  let bearerValue: string;
   let usersService: UsersService;
+
+  const intraId = 76657;
 
   beforeEach(async () => {
     // Prevents the LobbyManager's infinite setInterval() loop from hanging our tests
@@ -40,7 +42,7 @@ describe('App (e2e)', () => {
     app.useGlobalGuards(new Jwt2faAuthGuard(new Reflector()));
 
     const bearer_token = app.get(ConfigService).get('TEST_BEARER_TOKEN');
-    bearer_value = 'Bearer ' + bearer_token;
+    bearerValue = 'Bearer ' + bearer_token;
 
     usersService = moduleRef.get<UsersService>(UsersService);
 
@@ -54,7 +56,7 @@ describe('App (e2e)', () => {
 
   async function addUser() {
     await usersService.create({
-      intra_id: 76657,
+      intra_id: intraId,
       username: 'foo',
       email: 'foo',
       isTwoFactorAuthenticationEnabled: false,
@@ -79,7 +81,7 @@ describe('App (e2e)', () => {
   function getAuthorized(path, expectedStatus, expectedBody) {
     return request(app.getHttpServer())
       .get(path)
-      .set('Authorization', bearer_value)
+      .set('Authorization', bearerValue)
       .expect(expectedStatus)
       .then((res) =>
         expect(
@@ -92,7 +94,7 @@ describe('App (e2e)', () => {
       .post(path)
       .send(sent)
       .set('Content-Type', 'application/json')
-      .set('Authorization', bearer_value)
+      .set('Authorization', bearerValue)
       .expect(expectedStatus)
       .then((res) =>
         expect(
@@ -110,16 +112,16 @@ describe('App (e2e)', () => {
         visibility: 'PUBLIC',
         password: 'foo',
       },
-      201,
+      HttpStatus.CREATED,
       {
         chat_id: expect.any(String),
         name: 'foo',
-        users: [76657],
+        users: [intraId],
         history: [],
         visibility: 'PUBLIC',
         hashed_password: '',
-        owner: 76657,
-        admins: [76657],
+        owner: intraId,
+        admins: [intraId],
         banned: [],
         muted: [],
       },
@@ -134,16 +136,16 @@ describe('App (e2e)', () => {
         visibility: 'PROTECTED',
         password: 'foo',
       },
-      201,
+      HttpStatus.CREATED,
       {
         chat_id: expect.any(String),
         name: 'foo',
-        users: [76657],
+        users: [intraId],
         history: [],
         visibility: 'PROTECTED',
         hashed_password: 'foo',
-        owner: 76657,
-        admins: [76657],
+        owner: intraId,
+        admins: [intraId],
         banned: [],
         muted: [],
       },
@@ -158,16 +160,16 @@ describe('App (e2e)', () => {
         visibility: 'PRIVATE',
         password: 'foo',
       },
-      201,
+      HttpStatus.CREATED,
       {
         chat_id: expect.any(String),
         name: 'foo',
-        users: [76657],
+        users: [intraId],
         history: [],
         visibility: 'PRIVATE',
         hashed_password: '',
-        owner: 76657,
-        admins: [76657],
+        owner: intraId,
+        admins: [intraId],
         banned: [],
         muted: [],
       },
@@ -182,9 +184,9 @@ describe('App (e2e)', () => {
         visibility: 'PUBLIC',
         password: 'foo',
       },
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
       },
     );
@@ -198,9 +200,9 @@ describe('App (e2e)', () => {
         visibility: 'foo',
         password: 'foo',
       },
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
       },
     );
@@ -214,35 +216,35 @@ describe('App (e2e)', () => {
         visibility: 'PUBLIC',
         password: '',
       },
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
       },
     );
   });
   it('/api/chat/create (POST) - unauthorized', async () => {
     await addUser();
-    return postPublic('/api/chat/create', 500, {
-      statusCode: 500,
+    return postPublic('/api/chat/create', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/chats (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/chats', 200, ['uuid1', 'uuid2']);
+    return getAuthorized('/api/chat/chats', HttpStatus.OK, ['uuid1', 'uuid2']);
   });
-  it('/api/chat/chats (GET) - not in database', () => {
-    return getAuthorized('/api/chat/chats', 500, {
-      statusCode: 500,
+  it('/api/chat/chats (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/chats', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/chats (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/chats', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/chats', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
@@ -253,16 +255,20 @@ describe('App (e2e)', () => {
       .post('/api/chat/create')
       .send({ name: 'foo', visibility: 'PUBLIC', password: 'foo' })
       .set('Content-Type', 'application/json')
-      .set('Authorization', bearer_value)
-      .expect(201)
+      .set('Authorization', bearerValue)
+      .expect(HttpStatus.CREATED)
       .then((res) => {
-        return getAuthorized('/api/chat/name/' + res.body.chat_id, 200, 'foo');
+        return getAuthorized(
+          '/api/chat/name/' + res.body.chat_id,
+          HttpStatus.OK,
+          'foo',
+        );
       });
   });
   it('/api/chat/name (GET) - chat_id must be a uuid', async () => {
     await addUser();
-    return getAuthorized('/api/chat/name/a', 500, {
-      statusCode: 500,
+    return getAuthorized('/api/chat/name/a', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
@@ -270,9 +276,9 @@ describe('App (e2e)', () => {
     await addUser();
     return getAuthorized(
       '/api/chat/name/a2c996be-4d14-4a39-aa20-052c1b57de06',
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Internal server error',
       },
     );
@@ -283,37 +289,41 @@ describe('App (e2e)', () => {
       .post('/api/chat/create')
       .send({ name: 'foo', visibility: 'PUBLIC', password: 'foo' })
       .set('Content-Type', 'application/json')
-      .set('Authorization', bearer_value)
-      .expect(201)
+      .set('Authorization', bearerValue)
+      .expect(HttpStatus.CREATED)
       .then((res) => {
-        return getPublic('/api/chat/name/' + res.body.chat_id, 500, {
-          statusCode: 500,
-          message: 'Internal server error',
-        });
+        return getPublic(
+          '/api/chat/name/' + res.body.chat_id,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal server error',
+          },
+        );
       });
   });
 
   it('/api/chat/users (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/users', 200, [42, 69, 420]);
+    return getAuthorized('/api/chat/users', HttpStatus.OK, [42, 69, 420]);
   });
-  it('/api/chat/users (GET) - not in database', () => {
-    return getAuthorized('/api/chat/users', 500, {
-      statusCode: 500,
+  it('/api/chat/users (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/users', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/users (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/users', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/users', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/history (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/history', 200, [
+    return getAuthorized('/api/chat/history', HttpStatus.OK, [
       {
         sender: 42,
         body: 'hello',
@@ -328,112 +338,120 @@ describe('App (e2e)', () => {
       },
     ]);
   });
-  it('/api/chat/history (GET) - not in database', () => {
-    return getAuthorized('/api/chat/history', 500, {
-      statusCode: 500,
-      message: 'Internal server error',
-    });
+  it('/api/chat/history (GET) - user not in database', () => {
+    return getAuthorized(
+      '/api/chat/history',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
   });
   it('/api/chat/history (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/history', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/history', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/visibility (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/visibility', 200, 'PUBLIC');
+    return getAuthorized('/api/chat/visibility', HttpStatus.OK, 'PUBLIC');
   });
-  it('/api/chat/visibility (GET) - not in database', () => {
-    return getAuthorized('/api/chat/visibility', 500, {
-      statusCode: 500,
-      message: 'Internal server error',
-    });
+  it('/api/chat/visibility (GET) - user not in database', () => {
+    return getAuthorized(
+      '/api/chat/visibility',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
   });
   it('/api/chat/visibility (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/visibility', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/visibility', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/owner (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/owner', 200, '42');
+    return getAuthorized('/api/chat/owner', HttpStatus.OK, '42');
   });
-  it('/api/chat/owner (GET) - not in database', () => {
-    return getAuthorized('/api/chat/owner', 500, {
-      statusCode: 500,
+  it('/api/chat/owner (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/owner', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/owner (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/owner', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/owner', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/admins (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/admins', 200, [42, 69]);
+    return getAuthorized('/api/chat/admins', HttpStatus.OK, [42, 69]);
   });
-  it('/api/chat/admins (GET) - not in database', () => {
-    return getAuthorized('/api/chat/admins', 500, {
-      statusCode: 500,
+  it('/api/chat/admins (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/admins', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/admins (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/admins', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/admins', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/banned (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/banned', 200, [7, 666]);
+    return getAuthorized('/api/chat/banned', HttpStatus.OK, [7, 666]);
   });
-  it('/api/chat/banned (GET) - not in database', () => {
-    return getAuthorized('/api/chat/banned', 500, {
-      statusCode: 500,
+  it('/api/chat/banned (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/banned', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/banned (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/banned', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/banned', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/chat/muted (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/chat/muted', 200, [42, 69]);
+    return getAuthorized('/api/chat/muted', HttpStatus.OK, [42, 69]);
   });
-  it('/api/chat/muted (GET) - not in database', () => {
-    return getAuthorized('/api/chat/muted', 500, {
-      statusCode: 500,
+  it('/api/chat/muted (GET) - user not in database', () => {
+    return getAuthorized('/api/chat/muted', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
   it('/api/chat/muted (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/chat/muted', 500, {
-      statusCode: 500,
+    return getPublic('/api/chat/muted', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/public/leaderboard (GET)', () => {
-    return getPublic('/api/public/leaderboard', 200, {
+    return getPublic('/api/public/leaderboard', HttpStatus.OK, {
       sander: 42,
       victor: 69,
     });
@@ -441,25 +459,29 @@ describe('App (e2e)', () => {
 
   it('/api/user/username (GET)', async () => {
     await addUser();
-    return getAuthorized('/api/user/username', 200, 'foo');
+    return getAuthorized('/api/user/username', HttpStatus.OK, 'foo');
   });
-  it('/api/user/username (GET) - not in database', () => {
-    return getAuthorized('/api/user/username', 500, {
-      statusCode: 500,
-      message: 'Internal server error',
-    });
+  it('/api/user/username (GET) - user not in database', () => {
+    return getAuthorized(
+      '/api/user/username',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
   });
   it('/api/user/username (GET) - unauthorized', async () => {
     await addUser();
-    return getPublic('/api/user/username', 500, {
-      statusCode: 500,
+    return getPublic('/api/user/username', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
 
   it('/api/user/setUsername (POST)', async () => {
     await addUser();
-    return postAuthorized(
+    await postAuthorized(
       '/api/user/setUsername',
       {
         username: 'bar',
@@ -467,6 +489,7 @@ describe('App (e2e)', () => {
       204,
       '',
     );
+    return getAuthorized('/api/user/username', HttpStatus.OK, 'bar');
   });
   it('/api/user/setUsername (POST) - empty username', async () => {
     await addUser();
@@ -475,10 +498,10 @@ describe('App (e2e)', () => {
       {
         username: '',
       },
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
         message: 'Internal server error',
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       },
     );
   });
@@ -488,18 +511,126 @@ describe('App (e2e)', () => {
       {
         username: 'foo',
       },
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       {
         message: 'Internal server error',
-        statusCode: 500,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       },
     );
   });
   it('/api/user/setUsername (POST) - unauthorized', async () => {
     await addUser();
-    return postPublic('/api/user/setUsername', 500, {
-      statusCode: 500,
+    return postPublic(
+      '/api/user/setUsername',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
+
+  it('/api/user/intraId (GET)', async () => {
+    await addUser();
+    return getAuthorized(
+      '/api/user/intraId',
+      HttpStatus.OK,
+      intraId.toString(),
+    );
+  });
+  it('/api/user/intraId (GET) - user not in database', () => {
+    return getAuthorized(
+      '/api/user/intraId',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
+  it('/api/user/intraId (GET) - unauthorized', async () => {
+    await addUser();
+    return getPublic('/api/user/intraId', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: 'Internal server error',
     });
   });
+
+  it('/api/user/myChats (GET)', async () => {
+    await addUser();
+    await getAuthorized('/api/user/myChats', HttpStatus.OK, '[]');
+    await postAuthorized(
+      '/api/chat/create',
+      {
+        name: 'foo',
+        visibility: 'PUBLIC',
+        password: 'foo',
+      },
+      HttpStatus.CREATED,
+      {
+        chat_id: expect.any(String),
+        name: 'foo',
+        users: [intraId],
+        history: [],
+        visibility: 'PUBLIC',
+        hashed_password: '',
+        owner: intraId,
+        admins: [intraId],
+        banned: [],
+        muted: [],
+      },
+    );
+    return getAuthorized('/api/user/myChats', HttpStatus.OK, [
+      { chat_id: expect.any(String), name: 'foo' },
+    ]);
+  });
+  it('/api/user/myChats (GET) - user not in database', () => {
+    return getAuthorized(
+      '/api/user/myChats',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Internal server error',
+      },
+    );
+  });
+  it('/api/user/myChats (GET) - unauthorized', async () => {
+    await addUser();
+    return getPublic('/api/user/myChats', HttpStatus.INTERNAL_SERVER_ERROR, {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal server error',
+    });
+  });
+
+  // it('/api/user/profilePicture/:intra_id.png (GET)', async () => {
+  //   await addUser();
+  //   return getAuthorized(
+  //     `/api/user/profilePicture/${intraId}.png`,
+  //     HttpStatus.OK,
+  //     intraId.toString(),
+  //   );
+  // });
+  // it('/api/user/profilePicture/:intra_id.png (GET) - profile picture not in database', () => {
+  //   return getAuthorized(
+  //     '/api/user/profilePicture/42.png',
+  //     HttpStatus.INTERNAL_SERVER_ERROR,
+  //     {
+  //       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+  //       message: 'Internal server error',
+  //     },
+  //   );
+  // });
+  // it('/api/user/profilePicture/:intra_id.png (GET) - user not in database', () => {
+  //   return getAuthorized(`/api/user/profilePicture/${intraId}.png`, HttpStatus.INTERNAL_SERVER_ERROR, {
+  //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+  //     message: 'Internal server error',
+  //   });
+  // });
+  // it('/api/user/profilePicture/:intra_id.png (GET) - unauthorized', async () => {
+  //   await addUser();
+  //   return getPublic(`/api/user/profilePicture/${intraId}.png`, HttpStatus.INTERNAL_SERVER_ERROR, {
+  //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+  //     message: 'Internal server error',
+  //   });
+  // });
 });
