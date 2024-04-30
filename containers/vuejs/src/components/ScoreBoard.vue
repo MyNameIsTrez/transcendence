@@ -22,9 +22,9 @@ gameSocket.on('gameStart', () => {
   startGame.value = true
 })
 gameSocket.on('pong', (data: any) => {
-  leftPlayerScore.value = data.leftPlayer.score
+  leftPlayerScore.value = data.score.leftPlayer
   // console.log('leftPlayerScore', leftPlayerScore.value)
-  rightPlayerScore.value = data.rightPlayer.score
+  rightPlayerScore.value = data.score.rightPlayer
   // console.log('rightPlayerScore', rightPlayerScore.value)
 })
 </script>

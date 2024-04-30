@@ -53,15 +53,11 @@ const drawObject = (
   }
 }
 // TODO: Replace "any" with Data struct typedef?
-const render = (data: {
-  ball: any
-  leftPlayer: { paddle: any; score: number }
-  rightPlayer: { paddle: any; score: number }
-}) => {
+const render = (data: { rects: Array<any>; score: any }) => {
   drawCanvas()
-  drawObject('white', data.ball)
-  drawObject('white', data.leftPlayer.paddle)
-  drawObject('white', data.rightPlayer.paddle)
+  for (const rect of data.rects) {
+    drawObject(rect.color, rect)
+  }
 }
 
 onMounted(() => {
