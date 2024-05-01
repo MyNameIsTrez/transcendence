@@ -70,7 +70,6 @@ export class ChatController {
 
   @Get('history/:chat_id')
   history(@Request() req, @Param() dto: NameDto) {
-    console.log("kom ik hier?")
     return this.chatService.getHistory(dto.chat_id)
     // return [
     //   {

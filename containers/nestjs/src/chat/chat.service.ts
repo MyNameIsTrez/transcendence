@@ -38,8 +38,12 @@ export class ChatService {
   }
 
   getHistory(chat_id: string) {
-    return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
-      return chat?.history;
+    return this.chatRepository
+    .findOne({ where: { chat_id }, relations: { history: true } })
+    .then(async (chat) => {
+      if (!chat) { return }
+
+      return chat.history
     });
   }
 
@@ -47,7 +51,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
       .then(async (chat) => {
-        if (!chat) { return }
+        if (!chat) { return false }
 
         const message = new Message();
         message.sender = sender;
@@ -55,7 +59,9 @@ export class ChatService {
         await this.messageRepository.save(message);
 
         chat.history = [...chat.history, message]
-        await this.chatRepository.save(chat)
+        let result = await this.chatRepository.save(chat)
+        if (result)
+          return true
       });
   }
 }

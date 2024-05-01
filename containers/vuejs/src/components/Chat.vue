@@ -25,6 +25,8 @@
 import { ref } from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
+import { waitForDebugger } from 'inspector';
+import { Socket } from 'socket.io-client';
 
 const chatName = ref('')
 const currentChat = ref('Select a chat')
@@ -83,6 +85,11 @@ async function getMyChats() {
   }
 }
 
+chatSocket.on('confirm', result => {
+      typedMessage.value = ''
+      getChat(currentChat.value)
+})
+
 async function sendMessage() {
   const message = {
     chatId: currentChatId.value,
@@ -90,7 +97,6 @@ async function sendMessage() {
   }
   console.log('message', message)
   chatSocket.emit('sendMessage', message)
-  typedMessage.value = ''
 }
 
 getMyChats()

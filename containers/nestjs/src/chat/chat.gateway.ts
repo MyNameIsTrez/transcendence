@@ -73,7 +73,10 @@ export class ChatGateway {
 	}
 
 	@SubscribeMessage('sendMessage')
-	handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
-		this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
+	async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
+		let result = await this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
+		if (result) {
+			client.emit('confirm', true);
+		}
 	}
 }
