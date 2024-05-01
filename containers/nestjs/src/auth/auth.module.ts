@@ -26,7 +26,6 @@ import { UsersModule } from '../users/users.module';
     JwtStrategy,
     Jwt2faStrategy,
     {
-      // TODO: PUT THIS BACK!
       provide: APP_GUARD,
       useClass: Jwt2faAuthGuard,
     },
