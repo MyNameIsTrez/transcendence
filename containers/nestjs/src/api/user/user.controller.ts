@@ -22,6 +22,11 @@ class SetUsernameDto {
   username: string;
 }
 
+class SetIntraIdDto {
+  @IsNotEmpty()
+  intraId: number;
+}
+
 @Controller('api/user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
@@ -29,6 +34,11 @@ export class UserController {
   @Get('username')
   username(@Request() req) {
     return this.usersService.getUsername(req.user.intra_id);
+  }
+
+  @Get('usernameOnIntraId/:intraId')
+  usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
+    return this.usersService.getUsername(dto.intraId);
   }
 
   @Post('setUsername')

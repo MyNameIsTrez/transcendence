@@ -20,9 +20,19 @@ class NameDto {
   chat_id: string;
 }
 
+class AddUserDto {
+  @IsNotEmpty()
+  chat_id: string;
+
+  @IsNotEmpty()
+  username: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+  ) {}
 
   @Post('create')
   create(@Request() req, @Body() dto: CreateDto) {
@@ -50,6 +60,12 @@ export class ChatController {
     });
   }
 
+  @Post('addUserToChat')
+  AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
+    console.log("addUserToChat")
+    return this.chatService.addUser(dto.chat_id, dto.username);
+  }
+
   @Get('chats')
   chats(@Request() req) {
     // TODO: Access the chat db
@@ -71,20 +87,6 @@ export class ChatController {
   @Get('history/:chat_id')
   history(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getHistory(dto.chat_id)
-    // return [
-    //   {
-    //     sender: 42,
-    //     body: 'hello',
-    //   },
-    //   {
-    //     sender: 69,
-    //     body: 'world',
-    //   },
-    //   {
-    //     sender: 420,
-    //     body: 'lmao',
-    //   },
-    // ];
   }
 
   @Get('visibility')

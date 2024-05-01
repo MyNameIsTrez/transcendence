@@ -10,6 +10,10 @@
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
     <button @click="createChat">Create</button>
     <br /><br />
+    <!-- addToChat -->
+    <input v-model="newUser" placeholder="42 student..." @keyup.enter="addUser" />
+    <button @click="addUser">Add</button>
+    <br /><br />
     <!-- getChat -->
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
@@ -25,10 +29,9 @@
 import { ref } from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
-import { waitForDebugger } from 'inspector';
-import { Socket } from 'socket.io-client';
 
 const chatName = ref('')
+const newUser = ref('')
 const currentChat = ref('Select a chat')
 const currentChatId = ref('')
 const typedMessage = ref('')
@@ -36,6 +39,14 @@ const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
 
+async function addUser() {
+  console.log("chat id: ", currentChatId.value, "username: ", newUser.value)
+  const add_user = await post('chat/addUserToChat', {
+    chat_id: currentChatId.value,
+    username: newUser.value,
+  })
+  newUser.value = ''
+}
 
 async function createChat() {
   const chat = await post('chat/create', {
@@ -64,9 +75,14 @@ async function getChat(chat: string) {
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
   i = 0
+
   while (history[i]) {
-    chatHistory.value[i] = history[i].sender + ': ' + history[i].body
-    i++
+    let intraId = history[i].sender;
+    let user = await get('user/usernameOnIntraId/' + intraId)
+    if (user) {
+      chatHistory.value[i] = user + ': ' + history[i].body
+      i++
+    }
   }
 }
 

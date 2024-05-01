@@ -34,6 +34,14 @@ export class UsersService {
     return user;
   }
 
+  findOneByUsername(username: string): Promise<User> {
+    const user = this.usersRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException('No user with this username exists');
+    }
+    return user;
+  }
+  
   // TODO: Remove?
   // async remove(intra_id: number): Promise<void> {
   //   await this.usersRepository.delete(intra_id);
@@ -48,6 +56,7 @@ export class UsersService {
       return user.username;
     });
   }
+
 
   async setUsername(intra_id: number, username: string) {
     const result = await this.usersRepository.update(
@@ -94,6 +103,7 @@ export class UsersService {
         },
       })
       .then((user) => {
+        console.log("my chats: ", user?.my_chats)
         return user?.my_chats;
       });
   }
