@@ -72,33 +72,38 @@ export class AuthService {
       .then(async (j) => {
         const intra_id = j.id;
 
-        console.log(`Saving user with intra_id ${intra_id}`);
+        if (this.usersService.hasUser(intra_id)) {
+          console.log('Only updating intra name');
+          // TODO: Only update intra name
+        } else {
+          console.log(`Saving user with intra_id ${intra_id}`);
 
-        const url = j.image.versions.medium;
+          const url = j.image.versions.medium;
 
-        const { data } = await firstValueFrom(
-          this.httpService.get(url, {
-            responseType: 'arraybuffer',
-          }),
-        );
+          const { data } = await firstValueFrom(
+            this.httpService.get(url, {
+              responseType: 'arraybuffer',
+            }),
+          );
 
-        if (!existsSync('profile_pictures')) {
-          mkdirSync('profile_pictures');
+          if (!existsSync('profile_pictures')) {
+            mkdirSync('profile_pictures');
+          }
+
+          writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
+            if (err) throw err;
+            console.log('Saved profile picture');
+          });
+
+          this.usersService.create({
+            intra_id: intra_id,
+            username: j.displayname,
+            email: j.email,
+            isTwoFactorAuthenticationEnabled: false,
+            twoFactorAuthenticationSecret: null,
+            my_chats: [],
+          });
         }
-
-        writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
-          if (err) throw err;
-          console.log('Saved profile picture');
-        });
-
-        this.usersService.create({
-          intra_id: intra_id,
-          username: j.displayname,
-          email: j.email,
-          isTwoFactorAuthenticationEnabled: false,
-          twoFactorAuthenticationSecret: null,
-          my_chats: [],
-        });
 
         const payload = { sub: intra_id };
         return this.jwtService.sign(payload);

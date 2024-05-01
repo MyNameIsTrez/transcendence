@@ -13,7 +13,7 @@ import {
 import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 @Controller()
 export class AuthController {

@@ -1,17 +1,24 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
 import { WsException } from '@nestjs/websockets';
+import { ConfigService } from '@nestjs/config';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
 
   private readonly updateIntervalMs = 1000 / 60;
 
-  constructor(private readonly server: Server) {}
+  constructor(
+    private readonly server: Server,
+    private configService: ConfigService,
+  ) {}
 
   public queue(client: Socket) {
-    if (this.isClientAlreadyInLobby(client)) {
-      console.error(`Client ${client.id} is already in a lobby`);
+    if (
+      this.isUserAlreadyInLobby(client.data) &&
+      this.configService.get('DEBUG') == 0
+    ) {
+      console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }
 
@@ -21,10 +28,9 @@ export default class LobbyManager {
     client.data.lobby = lobby;
   }
 
-  // TODO: Also throw if the same intra account is in different lobbies?
-  private isClientAlreadyInLobby(client: Socket): boolean {
+  private isUserAlreadyInLobby(user: any): boolean {
     return Array.from(this.lobbies.values()).some((lobby) =>
-      lobby.hasClient(client),
+      lobby.hasUser(user),
     );
   }
 
@@ -42,7 +48,7 @@ export default class LobbyManager {
       return notFullLobby;
     }
 
-    const newLobby = new Lobby(this.server);
+    const newLobby = new Lobby(this.server, this.configService);
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;

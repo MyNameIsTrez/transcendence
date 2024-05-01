@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
 import Pong from './pong';
@@ -7,23 +8,34 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  private readonly clients = new Map<Socket['id'], Socket>();
+  private readonly clients = new Map<string, Socket>();
 
   private readonly pong = new Pong(10);
 
   private gameHasStarted = false;
 
-  constructor(private readonly server: Server) {}
+  constructor(
+    private readonly server: Server,
+    private configService: ConfigService,
+  ) {}
+
+  private getClientKey(client: Socket) {
+    if (this.configService.get('DEBUG')) {
+      return client.data.intra_id + '-' + client.id;
+    }
+    return client.data.intra_id;
+  }
 
   public addClient(client: Socket) {
-    console.log(
-      `In Lobby ${this.id} its addClient(), client ${client.id} was added`,
-    );
+    // console.log(
+    //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
+    // );
     client.data.playerIndex = this.clients.size;
-    this.clients.set(client.id, client);
+    // console.log('Adding user', client.data);
+    this.clients.set(this.getClientKey(client), client);
     client.join(this.id);
 
-    // TODO: Start the game only once both players have pressed a "Ready" button
+    // TODO: Maybe add a countdown when game starts?
     if (this.isFull()) {
       this.gameHasStarted = true;
       this.emit('gameStart');
@@ -31,16 +43,16 @@ export default class Lobby {
   }
 
   public removeClient(client: Socket) {
-    console.log(
-      `In Lobby ${this.id} its removeClient(), client ${client.id} was removed`,
-    );
-    this.clients.delete(client.id);
+    // console.log(
+    //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
+    // );
+    this.clients.delete(this.getClientKey(client));
     client.leave(this.id);
     client.data.lobby = undefined;
   }
 
-  public hasClient(client: Socket) {
-    return this.clients.has(client.id);
+  public hasUser(user: any) {
+    return this.clients.has(user.intra_id);
   }
 
   public isFull() {
@@ -48,9 +60,11 @@ export default class Lobby {
   }
 
   public update() {
+    // console.log(this.clients.size);
     if (!this.gameHasStarted) {
       return;
     }
+    // console.log('In game loop');
 
     this.pong.update();
 
@@ -76,17 +90,17 @@ export default class Lobby {
   }
 
   public emit(event: string, payload?: any) {
-    console.log(
-      `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
-    );
+    // console.log(
+    //   `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
+    // );
     this.server.to(this.id).emit(event, payload);
   }
 
-  public movePaddle(client: Socket, keydown: boolean, north: boolean) {
+  public movePaddle(playerIndex: number, keydown: boolean, north: boolean) {
     if (!this.gameHasStarted) {
       return;
     }
 
-    this.pong.movePaddle(client.data.playerIndex, keydown, north);
+    this.pong.movePaddle(playerIndex, keydown, north);
   }
 }
