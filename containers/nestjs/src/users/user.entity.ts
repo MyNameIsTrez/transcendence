@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { MyChat } from './mychat.entity';
 
 @Entity()
@@ -20,4 +20,6 @@ export class User {
 
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
+  // @ManyToMany(() => MyChat, (my_chat) => my_chat.user)
+  // my_chats: MyChat[];
 }

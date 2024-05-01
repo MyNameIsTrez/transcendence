@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryColumn } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
@@ -11,4 +11,6 @@ export class MyChat {
 
   @ManyToOne(() => User, (user) => user.my_chats)
   user: User;
+  // @ManyToMany(() => User, (user) => user.my_chats)
+  // user: User[];
 }

@@ -90,7 +90,7 @@ export class UsersService {
     const myChat = new MyChat();
     myChat.chat_id = chat_id;
     myChat.name = name;
-    myChat.user = await this.findOne(intra_id);
+    myChat.user = [await this.findOne(intra_id)];
     await this.myChatRepository.save(myChat);
   }
 

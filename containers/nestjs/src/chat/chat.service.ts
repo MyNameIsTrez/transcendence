@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './chat.entity';
+import { MyChat } from 'src/users/mychat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UsersService } from '../users/users.service';
@@ -10,6 +11,7 @@ import { UsersService } from '../users/users.service';
 export class ChatService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
+    @InjectRepository(MyChat) private readonly myChatRepository: Repository<MyChat>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
@@ -29,14 +31,17 @@ export class ChatService {
       return
     console.log("user: ", user)
 
-    return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { users: true } })
-      .then(async (chat) => {
-        if (!chat) { return }
-        console.log("chat: ", chat)
-        chat.users.push(user.intra_id);
-        await this.chatRepository.save(chat);
-        console.log("chat users: ", chat.users);
+    return this.myChatRepository
+      .findOne({ where: { chat_id }, relations: { user: true } })
+      .then(async (my_chat) => {
+        if (!my_chat) { return }
+        console.log("chat: ", my_chat)
+
+        console.log("my chat user: ", my_chat.user)
+
+        my_chat.user = [...my_chat.user, user]
+        await this.myChatRepository.save(my_chat)
+
       })
   }
 
