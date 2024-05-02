@@ -25,7 +25,7 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('create')
-  create(@Request() req, @Body() dto: CreateDto) {
+  async create(@Request() req, @Body() dto: CreateDto) {
     const intra_id = req.user.intra_id;
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
@@ -33,7 +33,7 @@ export class ChatController {
     // TODO: Implement
     const hashed_password =
       dto.visibility === 'PROTECTED'
-        ? this.chatService.hashPassword(dto.password)
+        ? await this.chatService.hashPassword(dto.password)
         : '';
 
     return this.chatService.create(intra_id, {

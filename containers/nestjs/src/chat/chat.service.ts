@@ -1,10 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UsersService } from '../users/users.service';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChatService {
@@ -14,6 +20,7 @@ export class ChatService {
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   create(intra_id: number, chat: Chat): Promise<Chat> {
@@ -23,8 +30,15 @@ export class ChatService {
   }
 
   hashPassword(password: string) {
-    // TODO: Hashing
-    return password;
+    return bcrypt
+      .hash(password, this.configService.get('BCRYPT_SALT_ROUNDS'))
+      .then((hash) => {
+        return hash;
+      })
+      .catch((err) => {
+        console.error(err.message);
+        throw new InternalServerErrorException('Hashing the password failed');
+      });
   }
 
   getName(chat_id: string) {

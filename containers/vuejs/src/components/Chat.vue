@@ -22,7 +22,8 @@ const chatName = ref('')
 async function createChat() {
   const chat = await post('chat/create', {
     name: chatName.value,
-    visibility: 'PUBLIC'
+    visibility: 'PROTECTED',
+    password: 'foo'
   })
   console.log('chat', chat)
   getMyChats()
