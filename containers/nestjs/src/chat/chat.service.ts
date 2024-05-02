@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chat } from './chat.entity';
-import { MyChat } from 'src/users/mychat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UsersService } from '../users/users.service';
@@ -11,7 +10,6 @@ import { UsersService } from '../users/users.service';
 export class ChatService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
-    @InjectRepository(MyChat) private readonly myChatRepository: Repository<MyChat>,
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
@@ -24,26 +22,26 @@ export class ChatService {
     return this.chatRepository.save(chat);
   }
 
-  async addUser(chat_id: string, username: string) {
-    console.log("chat_id: ", chat_id, "username: ", username)
-    let user = await this.usersService.findOneByUsername(username);
-    if (!user)
-      return
-    console.log("user: ", user)
+  // async addUser(chat_id: string, username: string) {
+  //   console.log("chat_id: ", chat_id, "username: ", username)
+  //   let user = await this.usersService.findOneByUsername(username);
+  //   if (!user)
+  //     return
+  //   console.log("user: ", user)
 
-    return this.myChatRepository
-      .findOne({ where: { chat_id }, relations: { user: true } })
-      .then(async (my_chat) => {
-        if (!my_chat) { return }
-        console.log("chat: ", my_chat)
+  //   return this.myChatRepository
+  //     .findOne({ where: { chat_id }, relations: { user: true } })
+  //     .then(async (my_chat) => {
+  //       if (!my_chat) { return }
+  //       console.log("chat: ", my_chat)
 
-        console.log("my chat user: ", my_chat.user)
+  //       console.log("my chat user: ", my_chat.user)
 
-        my_chat.user = [...my_chat.user, user]
-        await this.myChatRepository.save(my_chat)
+  //       my_chat.user = [...my_chat.user, user]
+  //       await this.myChatRepository.save(my_chat)
 
-      })
-  }
+  //     })
+  // }
 
   hashPassword(password: string) {
     // TODO: Hashing

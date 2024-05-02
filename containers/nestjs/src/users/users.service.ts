@@ -6,15 +6,18 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { MyChat } from './mychat.entity';
+// import { MyChat } from './mychat.entity';
+import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
+import { privateDecrypt } from 'crypto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(MyChat)
-    private readonly myChatRepository: Repository<MyChat>,
+    // @InjectRepository(MyChat)
+    // private readonly myChatRepository: Repository<MyChat>,
+    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
   ) {}
 
   create(user: User): Promise<User> {
@@ -87,26 +90,34 @@ export class UsersService {
   }
 
   async addToChat(intra_id: number, chat_id: string, name: string) {
-    const myChat = new MyChat();
-    myChat.chat_id = chat_id;
-    myChat.name = name;
-    myChat.user = [await this.findOne(intra_id)];
-    await this.myChatRepository.save(myChat);
+    const chat = new Chat();
+    chat.chat_id = chat_id;
+    chat.name = name;
+    chat.users = [...chat.users, await this.findOne(intra_id)];
+    // chat.history = []
+    await this.chatRepository.save(chat);
+
+
+    // const myChat = new MyChat();
+    // myChat.chat_id = chat_id;
+    // myChat.name = name;
+    // myChat.user = [await this.findOne(intra_id)];
+    // await this.myChatRepository.save(myChat);
   }
 
-  getMyChats(intra_id: number): Promise<MyChat[]> {
-    return this.usersRepository
-      .findOne({
-        where: { intra_id },
-        relations: {
-          my_chats: true,
-        },
-      })
-      .then((user) => {
-        console.log("my chats: ", user?.my_chats)
-        return user?.my_chats;
-      });
-  }
+  // getMyChats(intra_id: number): Promise<MyChat[]> {
+  //   return this.usersRepository
+  //     .findOne({
+  //       where: { intra_id },
+  //       relations: {
+  //         my_chats: true,
+  //       },
+  //     })
+  //     .then((user) => {
+  //       console.log("my chats: ", user?.my_chats)
+  //       return user?.my_chats;
+  //     });
+  // }
 
   async turnOnTwoFactorAuthentication(intra_id: number) {
     const user = await this.findOne(intra_id);

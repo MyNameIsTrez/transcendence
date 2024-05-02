@@ -12,6 +12,7 @@ import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
 import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
+import { Chat } from 'src/chat/chat.entity';
 
 @Injectable()
 export class AuthService {
@@ -101,7 +102,7 @@ export class AuthService {
             email: j.email,
             isTwoFactorAuthenticationEnabled: false,
             twoFactorAuthenticationSecret: null,
-            my_chats: [],
+            chats: [],
           });
         }
 

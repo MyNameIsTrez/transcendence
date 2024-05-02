@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
-import { MyChat } from './mychat.entity';
+import { Column, Entity, ManyToMany, JoinTable, OneToMany, PrimaryColumn } from 'typeorm';
+// import { MyChat } from './mychat.entity';
+import { Chat } from 'src/chat/chat.entity';
 
 @Entity()
 export class User {
@@ -18,8 +19,7 @@ export class User {
   @Column({ nullable: true })
   twoFactorAuthenticationSecret: string | null;
 
-  @OneToMany(() => MyChat, (my_chat) => my_chat.user)
-  my_chats: MyChat[];
-  // @ManyToMany(() => MyChat, (my_chat) => my_chat.user)
-  // my_chats: MyChat[];
+  @ManyToMany(() => Chat, (chat) => chat.users)
+  @JoinTable()
+  chats: Chat[];
 }

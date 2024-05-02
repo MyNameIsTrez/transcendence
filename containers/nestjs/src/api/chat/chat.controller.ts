@@ -60,11 +60,11 @@ export class ChatController {
     });
   }
 
-  @Post('addUserToChat')
-  AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
-    console.log("addUserToChat")
-    return this.chatService.addUser(dto.chat_id, dto.username);
-  }
+  // @Post('addUserToChat')
+  // AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
+  //   console.log("addUserToChat")
+  //   return this.chatService.addUser(dto.chat_id, dto.username);
+  // }
 
   @Get('chats')
   chats(@Request() req) {

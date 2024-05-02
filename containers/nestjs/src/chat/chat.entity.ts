@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
+import { User } from 'src/users/user.entity';
 
 @Entity()
 export class Chat {
@@ -10,8 +11,8 @@ export class Chat {
   @Column()
   name: string;
 
-  @Column('int', { array: true })
-  users: number[];
+  @ManyToMany(() => User, (user) => user.chats)
+  users: User[];
 
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
