@@ -3,6 +3,7 @@
     <!-- createChat -->
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
     <button @click="createChat">Create</button>
+    <button @click="joinChat">Join chat</button>
     <!-- <br /><br /> -->
 
     <!-- getChat -->
@@ -27,6 +28,15 @@ async function createChat() {
   })
   console.log('chat', chat)
   getMyChats()
+}
+
+async function joinChat() {
+  // TODO: Replace this hardcoded chat_id and password
+  const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
+  const password = 'foo'
+
+  const joined = await post('chat/join', { chat_id, password })
+  console.log('joined', joined)
 }
 
 const myChats = ref('')

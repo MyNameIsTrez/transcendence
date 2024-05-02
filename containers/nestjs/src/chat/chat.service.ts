@@ -23,13 +23,13 @@ export class ChatService {
     private readonly configService: ConfigService,
   ) {}
 
-  create(intra_id: number, chat: Chat): Promise<Chat> {
+  public create(intra_id: number, chat: Chat): Promise<Chat> {
     this.usersService.addToChat(intra_id, chat.chat_id, chat.name);
 
     return this.chatRepository.save(chat);
   }
 
-  hashPassword(password: string) {
+  public hashPassword(password: string) {
     return bcrypt
       .hash(password, this.configService.get('BCRYPT_SALT_ROUNDS'))
       .then((hash) => {
@@ -41,13 +41,36 @@ export class ChatService {
       });
   }
 
-  getName(chat_id: string) {
+  public async getName(chat_id: string) {
+    const chat = await this.getChat(chat_id);
+    return chat.name;
+  }
+
+  private getChat(chat_id: string) {
     return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
       if (chat) {
-        return chat.name;
+        return chat;
       } else {
         throw new BadRequestException('Invalid chat_id');
       }
+    });
+  }
+
+  public async join(intra_id: number, chat_id: string, password: string) {
+    const chat = await this.getChat(chat_id);
+
+    // TODO: Immediately return "true" if visibility is *not* "PROTECTED"
+    // Add tests for these in test/public.e2e-spec.ts
+
+    const hash = chat.hashed_password;
+
+    return bcrypt.compare(password, hash).then((res) => {
+      console.log('res', res);
+
+      // TODO: Add user instance to chat's 'users' db field
+      // TODO: Add chat instance to user's 'my_chats' db field
+
+      return res;
     });
   }
 }

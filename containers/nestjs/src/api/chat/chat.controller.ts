@@ -20,6 +20,14 @@ class NameDto {
   chat_id: string;
 }
 
+class JoinDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
@@ -115,5 +123,10 @@ export class ChatController {
   muted(@Request() req) {
     // TODO: Access the chat db
     return [42, 69];
+  }
+
+  @Post('join')
+  join(@Request() req, @Body() dto: JoinDto) {
+    return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
   }
 }
