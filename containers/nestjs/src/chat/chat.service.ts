@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Chat } from './chat.entity';
+import { Chat, Visibility } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UsersService } from '../users/users.service';
@@ -59,8 +59,10 @@ export class ChatService {
   public async join(intra_id: number, chat_id: string, password: string) {
     const chat = await this.getChat(chat_id);
 
-    // TODO: Immediately return "true" if visibility is *not* "PROTECTED"
-    // Add tests for these in test/public.e2e-spec.ts
+    // TODO: Add tests for these in test/public.e2e-spec.ts
+    if (chat.visibility !== Visibility.PROTECTED) {
+      return true;
+    }
 
     const hash = chat.hashed_password;
 

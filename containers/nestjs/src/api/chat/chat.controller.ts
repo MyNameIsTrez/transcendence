@@ -1,14 +1,15 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
-import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
   @IsNotEmpty()
   name: string;
 
-  @IsIn(['PUBLIC', 'PROTECTED', 'PRIVATE'])
-  visibility: string;
+  @IsEnum(Visibility)
+  visibility: Visibility;
 
   // TODO: Only make this required if visiblity is PROTECTED
   @IsNotEmpty()
@@ -40,7 +41,7 @@ export class ChatController {
 
     // TODO: Implement
     const hashed_password =
-      dto.visibility === 'PROTECTED'
+      dto.visibility === Visibility.PROTECTED
         ? await this.chatService.hashPassword(dto.password)
         : '';
 
@@ -98,7 +99,7 @@ export class ChatController {
   @Get('visibility')
   visibility(@Request() req) {
     // TODO: Access the chat db
-    return 'PUBLIC';
+    return Visibility.PUBLIC;
   }
 
   @Get('owner')
