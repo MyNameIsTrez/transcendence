@@ -19,6 +19,12 @@
     <input v-model="newUser" placeholder="42 student..." @keyup.enter="addUser" />
     <button @click="addUser">Add</button>
     <br /><br />
+
+    <!-- joinChat -->
+    <button @click="joinChat">Join chat</button>
+    <!-- <br /><br /> -->
+
+>>>>>>> master
     <!-- getChat -->
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
@@ -71,7 +77,6 @@ async function createChat() {
   getMyChats()
 }
 
-
 async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
@@ -95,6 +100,15 @@ async function getChat(chat: string) {
       i++
     }
   }
+}
+
+async function joinChat() {
+  // TODO: Replace this hardcoded chat_id and password
+  const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
+  const password = 'foo'
+
+  const joined = await post('chat/join', { chat_id, password })
+  console.log('joined', joined)
 }
 
 async function getMyChats() {

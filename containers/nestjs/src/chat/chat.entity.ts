@@ -3,6 +3,12 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { User } from 'src/users/user.entity';
 
+export enum Visibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED',
+}
+
 @Entity()
 export class Chat {
   @PrimaryColumn('uuid')
@@ -17,8 +23,11 @@ export class Chat {
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
 
-  @Column()
-  visibility: string;
+  @Column({
+    type: 'enum',
+    enum: Visibility,
+  })
+  visibility: Visibility;
 
   @Column()
   hashed_password: string;

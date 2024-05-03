@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatGateway } from './chat.gateway';
+import { ConfigModule } from '@nestjs/config';
 import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
@@ -9,7 +10,11 @@ import { UsersModule } from '../users/users.module';
 // import { MyChat } from 'src/users/mychat.entity';
 
 @Module({
-  imports: [UsersModule, TypeOrmModule.forFeature([Chat, Message, Mute])],
+  imports: [
+    ConfigModule,
+    UsersModule,
+    TypeOrmModule.forFeature([Chat, Message, Mute]),
+  ],
   providers: [ChatGateway, ChatService],
   exports: [ChatService],
 })

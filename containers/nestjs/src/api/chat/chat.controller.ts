@@ -1,16 +1,16 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
-import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
-import { User } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
   @IsNotEmpty()
   name: string;
 
-  @IsIn(['PUBLIC', 'PROTECTED', 'PRIVATE'])
-  visibility: string;
+  @IsEnum(Visibility)
+  visibility: Visibility;
 
   // TODO: Only make this required if visiblity is PROTECTED
   @IsNotEmpty()
@@ -30,6 +30,14 @@ class AddUserDto {
   username: string;
 }
 
+class JoinDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
   constructor(
@@ -39,15 +47,14 @@ export class ChatController {
 
   @Post('create')
   async create(@Request() req, @Body() dto: CreateDto) {
-
     const intra_id = req.user.intra_id;
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
 
     // TODO: Implement
     const hashed_password =
-      dto.visibility === 'PROTECTED'
-        ? this.chatService.hashPassword(dto.password)
+      dto.visibility === Visibility.PROTECTED
+        ? await this.chatService.hashPassword(dto.password)
         : '';
 
     let all_users = []
@@ -102,7 +109,7 @@ export class ChatController {
   @Get('visibility')
   visibility(@Request() req) {
     // TODO: Access the chat db
-    return 'PUBLIC';
+    return Visibility.PUBLIC;
   }
 
   @Get('owner')
@@ -127,5 +134,10 @@ export class ChatController {
   muted(@Request() req) {
     // TODO: Access the chat db
     return [42, 69];
+  }
+
+  @Post('join')
+  join(@Request() req, @Body() dto: JoinDto) {
+    return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
   }
 }
