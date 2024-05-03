@@ -8,6 +8,11 @@
     <br />
     <!-- createChat -->
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
+    
+    <button 
+      :class= "privateButtonClass"
+      @click="privateChat"> {{ visibility }}</button>
+    <br />
     <button @click="createChat">Create</button>
     <br /><br />
     <!-- addToChat -->
@@ -41,6 +46,10 @@ const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
+const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
+const visibility = ref('PUBLIC')
+const visibilityNum = ref<number>(1)
+const protectedChat = ref<boolean>(false)
 
 async function addUser() {
   console.log("chat id: ", currentChatId.value, "username: ", newUser.value)
@@ -54,7 +63,7 @@ async function addUser() {
 async function createChat() {
   const chat = await post('chat/create', {
     name: chatName.value,
-    visibility: 'PUBLIC',
+    visibility: visibility.value,
     password: 'foo'
   })
   console.log('chat', chat)
@@ -114,6 +123,26 @@ async function sendMessage() {
   }
   console.log('message', message)
   chatSocket.emit('sendMessage', message)
+}
+
+function privateChat() {
+  protectedChat.value = false
+  visibilityNum.value += 1
+  if (visibilityNum.value > 3)
+    visibilityNum.value = 1
+  if (visibilityNum.value == 1) {
+    privateButtonClass.value = "btn btn-warning mb-3"
+    visibility.value = 'PUBLIC'
+  }
+  else if (visibilityNum.value == 2) {
+    privateButtonClass.value = "btn btn-primary mx-3 mb-3"
+    visibility.value = 'PRIVATE'
+  }
+  else {
+    privateButtonClass.value = "btn btn-info mx-6 mb-3"
+    visibility.value = 'PROTECTED'
+    protectedChat.value = true
+  }
 }
 
 getMyChats()
