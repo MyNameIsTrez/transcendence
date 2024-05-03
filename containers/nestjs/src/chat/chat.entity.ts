@@ -17,6 +17,7 @@ export class Chat {
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
 
+  @Column()
   visibility: string;
 
   @Column()

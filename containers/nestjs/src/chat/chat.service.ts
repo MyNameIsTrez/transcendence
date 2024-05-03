@@ -16,7 +16,8 @@ export class ChatService {
     private readonly usersService: UsersService,
   ) {}
 
-  async create(intra_id: number, chat: Chat): Promise<Chat> {
+  create(intra_id: number, chat: Chat): Promise<Chat> {
+    console.log("chat", chat)
     return this.usersService.addToChat(intra_id, chat);
     // return await this.chatRepository.save(chat);
   }
