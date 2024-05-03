@@ -1,11 +1,5 @@
 <template>
   <div>
-    <!-- All chats -->
-    <!-- <div>== All CHATS ==</div>
-    <div v-for="chat in allChatsOnIndex">
-      <button @click="getChat(chat)">{{ chat }}</button>
-    </div>
-    <br /> -->
     <!-- My chats -->
     <div>== MY CHATS ==</div>
     <div v-for="chat in chatsOnIndex">
@@ -44,8 +38,6 @@ const newUser = ref('')
 const currentChat = ref('Select a chat')
 const currentChatId = ref('')
 const typedMessage = ref('')
-// const allChatsOnIndex = ref<string[]>([]);
-// const allChatIdsOnIndex = ref<string[]>([]);
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
@@ -96,20 +88,6 @@ async function getChat(chat: string) {
   }
 }
 
-// async function getAllChats() {
-//   allChats.value = await get('user/allChats')
-//   console.log('allChats', allChats.value)
-//   let i: number = 0
-//   allChatsOnIndex.value = []
-//   allChatIdsOnIndex.value = []
-
-//   while (allChats.value[i]) {
-//     allChatIdsOnIndex.value.push(allChats.value[i].name)
-//     allChatIdsOnIndex.value.push(allChats.value[i].chat_id)
-//     i++
-//   }
-// }
-
 async function getMyChats() {
   myChats.value = await get('user/myChats')
   console.log('myChats', myChats.value)
@@ -138,7 +116,6 @@ async function sendMessage() {
   chatSocket.emit('sendMessage', message)
 }
 
-// getAllChats()
 getMyChats()
 </script>
 

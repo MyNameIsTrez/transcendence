@@ -31,13 +31,8 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (my_chat) => {
         if (!my_chat) { return }
-        // console.log("chat: ", my_chat)
-
-        // console.log("my chat user: ", chat.user)
-
         my_chat.users = [...my_chat.users, user]
         await this.chatRepository.save(my_chat)
-
       })
   }
 

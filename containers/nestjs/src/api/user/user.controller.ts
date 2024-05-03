@@ -57,11 +57,6 @@ export class UserController {
     return this.usersService.getMyChats(req.user.intra_id);
   }
 
-  // @Get('allChats')
-  // allChats(@Request() req) {
-  //   return this.usersService.getAllChats(req.user.intra_id);
-  // }
-
   @Get('profilePicture/:intra_id.png')
   @Header('Content-Type', 'image/png')
   getProfilePicture(@Param('intra_id') intra_id) {
