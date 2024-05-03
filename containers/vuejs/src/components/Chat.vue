@@ -21,10 +21,8 @@
     <br /><br />
 
     <!-- joinChat -->
-    <button @click="joinChat">Join chat</button>
-    <!-- <br /><br /> -->
-
->>>>>>> master
+    <!-- <button @click="joinChat">Join chat</button>
+    <br /><br /> -->
     <!-- getChat -->
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
@@ -102,14 +100,14 @@ async function getChat(chat: string) {
   }
 }
 
-async function joinChat() {
-  // TODO: Replace this hardcoded chat_id and password
-  const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
-  const password = 'foo'
+// async function joinChat() {
+//   // TODO: Replace this hardcoded chat_id and password
+//   const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
+//   const password = 'foo'
 
-  const joined = await post('chat/join', { chat_id, password })
-  console.log('joined', joined)
-}
+//   const joined = await post('chat/join', { chat_id, password })
+//   console.log('joined', joined)
+// }
 
 async function getMyChats() {
   myChats.value = await get('user/myChats')
