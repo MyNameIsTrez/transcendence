@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
 import { IsIn, IsNotEmpty, IsUUID } from 'class-validator';
+import { User } from 'src/users/user.entity';
+import { UsersService } from 'src/users/users.service';
 
 class CreateDto {
   @IsNotEmpty()
@@ -32,10 +34,11 @@ class AddUserDto {
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
+    private readonly usersService: UsersService,
   ) {}
 
   @Post('create')
-  create(@Request() req, @Body() dto: CreateDto) {
+  async create(@Request() req, @Body() dto: CreateDto) {
 
     const intra_id = req.user.intra_id;
 
@@ -47,10 +50,16 @@ export class ChatController {
         ? this.chatService.hashPassword(dto.password)
         : '';
 
+    let all_users = []
+    if (dto.visibility === 'PUBLIC')
+      all_users = await this.usersService.getAllUsers()
+    else
+      all_users = [intra_id]
+
     return this.chatService.create(intra_id, {
       chat_id: uuid(),
       name: dto.name,
-      users: [intra_id],
+      users: [...all_users],
       history: [],
       visibility: dto.visibility,
       hashed_password: hashed_password,
@@ -86,7 +95,7 @@ export class ChatController {
   }
 
   @Get('history/:chat_id')
-  history(@Request() req, @Param() dto: NameDto) {
+ history(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getHistory(dto.chat_id)
   }
 

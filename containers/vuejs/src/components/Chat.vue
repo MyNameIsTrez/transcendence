@@ -1,7 +1,13 @@
 <template>
   <div>
-    <!-- Chats -->
-    <div>== CHATS ==</div>
+    <!-- All chats -->
+    <!-- <div>== All CHATS ==</div>
+    <div v-for="chat in allChatsOnIndex">
+      <button @click="getChat(chat)">{{ chat }}</button>
+    </div>
+    <br /> -->
+    <!-- My chats -->
+    <div>== MY CHATS ==</div>
     <div v-for="chat in chatsOnIndex">
       <button @click="getChat(chat)">{{ chat }}</button>
     </div>
@@ -30,11 +36,16 @@ import { ref } from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 
+// VARIABLES
+const allChats = ref('')
+const myChats = ref('')
 const chatName = ref('')
 const newUser = ref('')
 const currentChat = ref('Select a chat')
 const currentChatId = ref('')
 const typedMessage = ref('')
+// const allChatsOnIndex = ref<string[]>([]);
+// const allChatIdsOnIndex = ref<string[]>([]);
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
@@ -59,7 +70,6 @@ async function createChat() {
   getMyChats()
 }
 
-const myChats = ref('')
 
 async function getChat(chat: string) {
   currentChat.value = chat
@@ -86,17 +96,31 @@ async function getChat(chat: string) {
   }
 }
 
+// async function getAllChats() {
+//   allChats.value = await get('user/allChats')
+//   console.log('allChats', allChats.value)
+//   let i: number = 0
+//   allChatsOnIndex.value = []
+//   allChatIdsOnIndex.value = []
+
+//   while (allChats.value[i]) {
+//     allChatIdsOnIndex.value.push(allChats.value[i].name)
+//     allChatIdsOnIndex.value.push(allChats.value[i].chat_id)
+//     i++
+//   }
+// }
+
 async function getMyChats() {
   myChats.value = await get('user/myChats')
   console.log('myChats', myChats.value)
   let i: number = 0
-
   chatsOnIndex.value = []
   chatIdsOnIndex.value = []
+
   while (myChats.value[i]) {
     chatsOnIndex.value.push(myChats.value[i].name)
     chatIdsOnIndex.value.push(myChats.value[i].chat_id)
-    i++;
+    i++
   }
 }
 
@@ -114,6 +138,7 @@ async function sendMessage() {
   chatSocket.emit('sendMessage', message)
 }
 
+// getAllChats()
 getMyChats()
 </script>
 

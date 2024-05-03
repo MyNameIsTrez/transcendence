@@ -41,6 +41,10 @@ export class UsersService {
     }
     return user;
   }
+
+  async getAllUsers(): Promise<User[]> {
+    return await this.usersRepository.find()
+  }
   
   // TODO: Remove?
   // async remove(intra_id: number): Promise<void> {
@@ -87,9 +91,20 @@ export class UsersService {
   }
 
   async addToChat(intra_id: number, chat: Chat) {
-    chat.users = [await this.findOne(intra_id)];
     return await this.chatRepository.save(chat);
   }
+
+  // getAllChats(intra_id: number): Promise<Chat[]> {
+  //   return this.usersRepository
+  //   .find({
+  //     relations: {
+  //       chats: true
+  //     },
+  //   })
+  //   .then((user) => {
+  //     return user?.chats;
+  //   });
+  // }
 
   getMyChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
