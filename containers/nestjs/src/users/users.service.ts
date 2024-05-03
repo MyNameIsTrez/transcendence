@@ -6,7 +6,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-// import { MyChat } from './mychat.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { privateDecrypt } from 'crypto';
@@ -15,8 +14,6 @@ import { privateDecrypt } from 'crypto';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    // @InjectRepository(MyChat)
-    // private readonly myChatRepository: Repository<MyChat>,
     @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
   ) {}
 

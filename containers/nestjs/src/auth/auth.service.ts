@@ -72,8 +72,10 @@ export class AuthService {
       .then((response) => response.json())
       .then(async (j) => {
         const intra_id = j.id;
-
-        if (this.usersService.hasUser(intra_id)) {
+        
+        let test = true
+        // let test = false
+        if (this.usersService.hasUser(intra_id) && test) {
           console.log('Only updating intra name');
           // TODO: Only update intra name
         } else {

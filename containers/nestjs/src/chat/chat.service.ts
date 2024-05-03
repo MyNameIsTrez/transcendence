@@ -21,26 +21,25 @@ export class ChatService {
     // return await this.chatRepository.save(chat);
   }
 
-  // async addUser(chat_id: string, username: string) {
-  //   console.log("chat_id: ", chat_id, "username: ", username)
-  //   let user = await this.usersService.findOneByUsername(username);
-  //   if (!user)
-  //     return
-  //   console.log("user: ", user)
+  async addUser(chat_id: string, username: string) {
+    console.log("chat_id: ", chat_id, "username: ", username)
+    let user = await this.usersService.findOneByUsername(username);
+    if (!user)
+      return
+    console.log("user: ", user)
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true } })
+      .then(async (my_chat) => {
+        if (!my_chat) { return }
+        // console.log("chat: ", my_chat)
 
-  //   return this.myChatRepository
-  //     .findOne({ where: { chat_id }, relations: { user: true } })
-  //     .then(async (my_chat) => {
-  //       if (!my_chat) { return }
-  //       console.log("chat: ", my_chat)
+        // console.log("my chat user: ", chat.user)
 
-  //       console.log("my chat user: ", my_chat.user)
+        my_chat.users = [...my_chat.users, user]
+        await this.chatRepository.save(my_chat)
 
-  //       my_chat.user = [...my_chat.user, user]
-  //       await this.myChatRepository.save(my_chat)
-
-  //     })
-  // }
+      })
+  }
 
   hashPassword(password: string) {
     // TODO: Hashing
