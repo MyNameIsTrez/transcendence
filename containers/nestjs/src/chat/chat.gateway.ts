@@ -25,7 +25,7 @@ export class ChatGateway {
 	@WebSocketServer()
 	server!: Server
 
-	public connectedClients = new Set<string>();
+	public connectedClients = new Set<Socket>();
 
 	constructor(private readonly chatService: ChatService, private jwtService: JwtService) { }
 
@@ -57,33 +57,33 @@ export class ChatGateway {
 			});
 		}
 
-		this.connectedClients.add(client.id);
-		this.sendConnectedClients();
+		this.connectedClients.add(client);
+		// this.sendConnectedClients();
 	}
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
-		this.connectedClients.delete(client.id);
-		this.sendConnectedClients();
+		this.connectedClients.delete(client);
+		// this.sendConnectedClients();
 	}
 
-	sendConnectedClients() {
-		this.server.emit('connectedClients', Array.from(this.connectedClients));
-	}
-
-	// letClientsUpdateTheirChats() {
-	// 	for (let item of this.connectedClients.values()) {
-	// 		console.log("item:", item)
-	// 		const client = io.sockets.sockets.get(item)
-	// 	}
+	// sendConnectedClients() {
+	// 	this.server.emit('connectedClients', Array.from(this.connectedClients));
 	// }
+
+	letClientsUpdateTheirChats() {
+		for (let client of this.connectedClients.values()) {
+			console.log("item:", client.id)
+			client.emit('confirm', true)			
+		}
+	}
 
 	@SubscribeMessage('sendMessage')
 	async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
 		let result = await this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
-		// this.letClientsUpdateTheirChats()
+		this.letClientsUpdateTheirChats()
 		if (result) {
-			client.emit('confirm', true);
+			this.letClientsUpdateTheirChats()
 		}
 	}
 }
