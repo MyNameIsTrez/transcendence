@@ -59,7 +59,6 @@ export class ChatGateway {
 
 		this.connectedClients.add(client.id);
 		this.sendConnectedClients();
-		// this.sendChatHistory(client);
 	}
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -72,9 +71,17 @@ export class ChatGateway {
 		this.server.emit('connectedClients', Array.from(this.connectedClients));
 	}
 
+	// letClientsUpdateTheirChats() {
+	// 	for (let item of this.connectedClients.values()) {
+	// 		console.log("item:", item)
+	// 		const client = io.sockets.sockets.get(item)
+	// 	}
+	// }
+
 	@SubscribeMessage('sendMessage')
 	async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
 		let result = await this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
+		// this.letClientsUpdateTheirChats()
 		if (result) {
 			client.emit('confirm', true);
 		}
