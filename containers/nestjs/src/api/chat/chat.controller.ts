@@ -58,9 +58,9 @@ export class ChatController {
         : '';
 
     let all_users = []
-    if (dto.visibility === 'PUBLIC')
+    if (dto.visibility === Visibility.PUBLIC)
       all_users = await this.usersService.getAllUsers()
-    else if (dto.visibility === 'PRIVATE')
+    else
       all_users = [await this.usersService.findOne(intra_id)]
 
     return this.chatService.create(intra_id, {

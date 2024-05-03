@@ -12,6 +12,7 @@
     <button 
       :class= "privateButtonClass"
       @click="privateChat"> {{ visibility }}</button>
+      <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @key.enter="createChat" />
     <br />
     <button @click="createChat">Create</button>
     <br /><br />
@@ -54,6 +55,7 @@ const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
 const visibility = ref('PUBLIC')
 const visibilityNum = ref<number>(1)
 const protectedChat = ref<boolean>(false)
+const passwordChat = ref<string>('foo')
 
 async function addUser() {
   console.log("chat id: ", currentChatId.value, "username: ", newUser.value)
@@ -68,9 +70,10 @@ async function createChat() {
   const chat = await post('chat/create', {
     name: chatName.value,
     visibility: visibility.value,
-    password: 'foo'
+    password: passwordChat.value
   })
   console.log('chat', chat)
+  passwordChat.value = 'foo'
   chatName.value = ''
   getMyChats()
 }
