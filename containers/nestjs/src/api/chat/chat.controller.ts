@@ -36,6 +36,7 @@ export class ChatController {
 
   @Post('create')
   create(@Request() req, @Body() dto: CreateDto) {
+
     const intra_id = req.user.intra_id;
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE

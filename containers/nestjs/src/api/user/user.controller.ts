@@ -52,10 +52,10 @@ export class UserController {
     return req.user.intra_id;
   }
 
-  // @Get('myChats')
-  // myChats(@Request() req) {
-  //   return this.usersService.getMyChats(req.user.intra_id);
-  // }
+  @Get('myChats')
+  myChats(@Request() req) {
+    return this.usersService.getMyChats(req.user.intra_id);
+  }
 
   @Get('profilePicture/:intra_id.png')
   @Header('Content-Type', 'image/png')

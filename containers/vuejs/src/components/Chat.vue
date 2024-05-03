@@ -87,7 +87,6 @@ async function getChat(chat: string) {
 }
 
 async function getMyChats() {
-
   myChats.value = await get('user/myChats')
   console.log('myChats', myChats.value)
   let i: number = 0
