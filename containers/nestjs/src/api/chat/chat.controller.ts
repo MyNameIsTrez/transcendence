@@ -121,6 +121,11 @@ export class ChatController {
     return this.chatService.getAdmins(dto.chat_id)
   }
 
+  @Get('getOwner/:chat_id')
+  iAmOwner(@Request() req, @Param() dto: NameDto) {
+    return this.chatService.getOwner(dto.chat_id)
+  }
+
   // @Get('iAmOwner/:chat_id')
   // iAmOwner(@Request() req, @Param() dto: NameDto) {
   //   return this.chatService.getHistory(dto.chat_id)

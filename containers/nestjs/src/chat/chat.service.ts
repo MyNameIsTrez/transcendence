@@ -105,6 +105,16 @@ export class ChatService {
     });
   }
 
+  getOwner(chat_id: string) {
+    return this.chatRepository
+    .findOne({ where: { chat_id } })
+    .then(async (chat) => {
+      if (!chat) { return }
+
+      return chat.owner
+    });
+  }
+
   handleMessage(sender: number, chat_id: string, body: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })

@@ -12,7 +12,7 @@
       :class= "privateButtonClass"
       @click="privateChat"> {{ visibility }}
     </button>
-    <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
+    <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
     <br />
     <button @click="createChat">Create</button>
     <br /><br />
@@ -61,8 +61,8 @@ const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 
 async function addAdmin() {
-  if (isAdmin() == false) {
-    console.log("No admin authorizations")
+  if (iAmAdmin.value == false) {
+    console.log("No admin authorization")
     return 
   }
   console.log("You are admin")
@@ -85,6 +85,14 @@ async function isAdmin() {
       return true
     i++;
   }
+  return false
+}
+
+async function isOwner() {
+  const intraId = await get('user/intraId')
+  const owner = await get('chat/getOwner/' + currentChatId.value)
+  if (intraId == owner)
+    return true
   return false
 }
 
@@ -122,6 +130,11 @@ async function getChat(chat: string) {
       currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
+
+  iAmAdmin.value = isAdmin()
+  iAmOwner.value = isOwner()
+  console.log("i am owner", iAmOwner.value)
+  console.log("i am admin", iAmAdmin.value)
 
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
