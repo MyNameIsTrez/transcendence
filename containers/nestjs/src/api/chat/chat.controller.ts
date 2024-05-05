@@ -51,11 +51,15 @@ export class ChatController {
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
 
+    console.log("password", dto.password)
+
     // TODO: Implement
     const hashed_password =
       dto.visibility === Visibility.PROTECTED
         ? await this.chatService.hashPassword(dto.password)
         : '';
+
+      console.log("hashed password", hashed_password)
 
     let all_users = []
     if (dto.visibility === Visibility.PUBLIC)
@@ -83,6 +87,12 @@ export class ChatController {
     return this.chatService.addUser(dto.chat_id, dto.username);
   }
 
+  @Post('addAdminToChat')
+  AddAdminToChat(@Request() req, @Body() dto: AddUserDto) {
+    console.log("addAdminToChat")
+    return this.chatService.addAdmin(dto.chat_id, dto.username);
+  }
+
   @Get('chats')
   chats(@Request() req) {
     // TODO: Access the chat db
@@ -102,9 +112,19 @@ export class ChatController {
   }
 
   @Get('history/:chat_id')
- history(@Request() req, @Param() dto: NameDto) {
+  history(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getHistory(dto.chat_id)
   }
+
+  @Get('getAdmins/:chat_id')
+  iAmAdmin(@Request() req, @Param() dto: NameDto) {
+    return this.chatService.getAdmins(dto.chat_id)
+  }
+
+  // @Get('iAmOwner/:chat_id')
+  // iAmOwner(@Request() req, @Param() dto: NameDto) {
+  //   return this.chatService.getHistory(dto.chat_id)
+  // }
 
   @Get('visibility')
   visibility(@Request() req) {

@@ -18,7 +18,8 @@
     <br /><br />
     <!-- addToChat -->
     <input v-model="newUser" placeholder="42 student..." @keyup.enter="addUser" />
-    <button @click="addUser">Add</button>
+    <button @click="addUser">Add</button>/<button @click="kickUser">Kick</button>/<button @click="banUser">Ban</button>/<button @click="muteUser">Mute</button>
+    <button @click="addAdmin">/Make admin</button>
     <br /><br />
 
     <!-- joinChat -->
@@ -54,9 +55,38 @@ const chatHistory = ref<string[]>([]);
 const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
 const visibility = ref('PUBLIC')
 const visibilityNum = ref<number>(1)
-const protectedChat = ref<boolean>(true)
+const protectedChat = ref(false)
 const passwordChat = ref<string>('')
+const iAmAdmin = ref(false)
+const iAmOwner = ref(false)
 
+async function addAdmin() {
+  if (isAdmin() == false) {
+    console.log("No admin authorizations")
+    return 
+  }
+  console.log("You are admin")
+  const addAdmin = await post('chat/addAdminToChat', {
+    chat_id: currentChatId.value,
+    username: newUser.value,
+  })
+  newUser.value = ''
+
+}
+
+async function isAdmin() {
+  const intraId = await get('user/intraId')
+  const admins = await get('chat/getAdmins/' + currentChatId.value)
+  
+  let i: number = 0
+  console.log(admins)
+  while (admins[i]) {
+    if (admins[i].intra_id == intraId)
+      return true
+    i++;
+  }
+  return false
+}
 
 async function addUser() {
   console.log("chat id: ", currentChatId.value, "username: ", newUser.value)

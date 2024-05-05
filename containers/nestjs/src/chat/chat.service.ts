@@ -43,6 +43,21 @@ export class ChatService {
       })
   }
 
+  async addAdmin(chat_id: string, username: string) {
+    console.log("chat_id: ", chat_id, "username: ", username)
+    let user = await this.usersService.findOneByUsername(username);
+    if (!user)
+      return
+    console.log("user: ", user)
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { admins: true } })
+      .then(async (my_chat) => {
+        if (!my_chat) { return }
+        my_chat.admins = [...my_chat.admins, user]
+        await this.chatRepository.save(my_chat)
+      })
+  }
+
   public hashPassword(password: string) {
     return bcrypt
       .hash(password, this.configService.get('BCRYPT_SALT_ROUNDS'))
@@ -77,6 +92,16 @@ export class ChatService {
       if (!chat) { return }
 
       return chat.history
+    });
+  }
+
+  getAdmins(chat_id: string) {
+    return this.chatRepository
+    .findOne({ where: { chat_id }, relations: { admins: true } })
+    .then(async (chat) => {
+      if (!chat) { return }
+
+      return chat.admins
     });
   }
 

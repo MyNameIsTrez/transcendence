@@ -33,6 +33,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         DEBUG: Joi.boolean(),
 
         // BCRYPT_SALT_ROUNDS: Joi.number().integer().positive(),
+        // BCRYPT_SALT_ROUNDS: 12,
       }),
       validationOptions: {
         allowUnknown: true,
