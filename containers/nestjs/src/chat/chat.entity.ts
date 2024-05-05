@@ -35,10 +35,8 @@ export class Chat {
   @Column()
   owner: number;
 
-  @ManyToMany(() => User, (admin) => admin.chats)
+  @ManyToMany(() => User, (user) => user.adminChats)
   admins: User[];
-  // @Column('int', { array: true })
-  // admins: number[];
 
   @Column('int', { array: true })
   banned: number[];

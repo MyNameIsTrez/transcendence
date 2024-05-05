@@ -17,7 +17,7 @@
     <button @click="createChat">Create</button>
     <br /><br />
     <!-- addToChat -->
-    <input v-model="newUser" placeholder="42 student..." @keyup.enter="addUser" />
+    <input v-model="newUser" placeholder="42 student..." />
     <button @click="addUser">Add</button>/<button @click="kickUser">Kick</button>/<button @click="banUser">Ban</button>/<button @click="muteUser">Mute</button>
     <button @click="addAdmin">/Make admin</button>
     <br /><br />

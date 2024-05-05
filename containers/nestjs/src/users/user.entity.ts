@@ -20,7 +20,10 @@ export class User {
   twoFactorAuthenticationSecret: string | null;
 
   @ManyToMany(() => Chat, (chat) => chat.users)
-  @ManyToMany(() => Chat, (chat) => chat.admins)
   @JoinTable()
   chats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.admins)
+  @JoinTable()
+  adminChats: Chat[];
 }

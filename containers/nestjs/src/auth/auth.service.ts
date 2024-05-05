@@ -103,6 +103,7 @@ export class AuthService {
             isTwoFactorAuthenticationEnabled: false,
             twoFactorAuthenticationSecret: null,
             chats: [],
+            adminChats: [],
           });
         }
 
