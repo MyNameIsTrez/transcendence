@@ -43,6 +43,7 @@ export class ChatService {
       })
   }
 
+  // check first if the user to make admin is part of the channel
   async addAdmin(chat_id: string, username: string) {
     console.log("chat_id: ", chat_id, "username: ", username)
     let user = await this.usersService.findOneByUsername(username);

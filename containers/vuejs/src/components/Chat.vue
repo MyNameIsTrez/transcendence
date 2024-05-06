@@ -36,8 +36,8 @@
         {{ instance }}
       </div>
     </div>
-    <input v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
-    <button @click="sendMessage">Send</button>
+    <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
+    <button v-if="!iAmMute" @click="sendMessage">Send</button>
   </div>
 </template>
 
@@ -64,11 +64,12 @@ const protectedChat = ref(false)
 const passwordChat = ref<string>('')
 const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
+const iAmMute = ref(false)
 
 async function kickUser() {
+  
   const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
-  console.log('result', result)
-
+  newUser.value = ''
 }
 
 async function addAdmin() {
