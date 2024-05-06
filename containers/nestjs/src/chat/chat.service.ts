@@ -70,6 +70,23 @@ export class ChatService {
       });
   }
 
+  public async kickUser(chat_id: string, username: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true } })
+      .then(async (chat) => {
+        if (!chat) { return false }
+
+        const user = await this.usersService.findOneByUsername(username)
+        if (!user) { return false }
+
+        chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
+
+        let result = await this.chatRepository.save(chat)
+        if (result)
+          return true
+    });
+  }
+
   public async getName(chat_id: string) {
     const chat = await this.getChat(chat_id);
     return chat.name;

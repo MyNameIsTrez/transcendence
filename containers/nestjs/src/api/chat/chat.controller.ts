@@ -100,6 +100,12 @@ export class ChatController {
     return ['uuid1', 'uuid2'];
   }
 
+  @Get('kick/:chat_id/:username')
+  kick(@Request() req, @Param() dto: AddUserDto) {
+    console.log("dto", dto)
+    return this.chatService.kickUser(dto.chat_id, dto.username)
+  }
+
   @Get('name/:chat_id')
   name(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getName(dto.chat_id);

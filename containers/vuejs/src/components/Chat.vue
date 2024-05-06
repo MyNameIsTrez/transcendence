@@ -65,6 +65,12 @@ const passwordChat = ref<string>('')
 const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 
+async function kickUser() {
+  const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
+  console.log('result', result)
+
+}
+
 async function addAdmin() {
   if (iAmAdmin.value == false) {
     console.log("No admin authorization")
