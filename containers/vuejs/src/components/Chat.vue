@@ -13,13 +13,18 @@
       @click="privateChat"> {{ visibility }}
     </button>
     <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
-    <br />
+    <br/>
     <button @click="createChat">Create</button>
-    <br /><br />
+    <div v-if="iAmAdmin">
+      <br/>
+    </div>
     <!-- addToChat -->
-    <input v-model="newUser" placeholder="42 student..." />
-    <button @click="addUser">Add</button>/<button @click="kickUser">Kick</button>/<button @click="banUser">Ban</button>/<button @click="muteUser">Mute</button>
-    <button @click="addAdmin">/Make admin</button>
+    <input v-if="iAmAdmin" v-model="newUser" placeholder="42 student..." />
+    <button v-if="iAmAdmin" @click="addUser">Add</button>
+    <button v-if="iAmAdmin" @click="kickUser">/Kick</button>
+    <button v-if="iAmAdmin" @click="banUser">/Ban</button>
+    <button v-if="iAmAdmin" @click="muteUser">/Mute</button>
+    <button v-if="iAmAdmin" @click="addAdmin">/Make admin</button>
     <br /><br />
 
     <!-- joinChat -->
