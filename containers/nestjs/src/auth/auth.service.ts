@@ -94,7 +94,6 @@ export class AuthService {
           username: j.displayname,
           intra_name: j.login,
           email: j.email,
-		  profile_picture: j.image.link,
           my_chats: [],
           friends: [], // TODO: DONT HARDCODE THIS!!
           incoming_friend_requests: [],

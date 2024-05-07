@@ -1,8 +1,8 @@
 <template>
   <div class="p-6">
     <div class="grid justify-center">
-      <span class="grid grid-cols-2">
-        <div class="text text-lg justify-self-start text-yellow-200">{{ username }}</div>
+      <span class="grid grid-flow-row-dense grid-cols-2">
+        <div class="text text-base justify-self-start self-center text-yellow-200 w-64">{{ username }}</div>
         <!-- The button to open modal -->
         <button class="btn w-24 justify-self-end" onclick="my_modal_7.showModal()">Edit</button>
 

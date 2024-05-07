@@ -119,7 +119,6 @@ export class UsersService {
           const returned = {
             name: friend.username,
             isOnline: true, // TODO: Store this in the user!
-            profilePicture: friend.profile_picture,
             intraId: friend.intra_id,
           };
           console.log('returned', returned);
@@ -140,7 +139,6 @@ export class UsersService {
           console.log('incoming', incoming);
           const returned = {
             name: incoming.username,
-            profilePicture: incoming.profile_picture,
             intraId: incoming.intra_id,
           };
           console.log('returned', returned);

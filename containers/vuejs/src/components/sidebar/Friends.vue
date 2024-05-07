@@ -41,7 +41,9 @@
                 />
                 <button class="btn" @click="addFriend">Add</button>
               </span>
-			  <p class="text-center text-gray-400" style="padding-top: 20px">Press [ESC] to close</p>
+              <p class="text-center text-gray-400" style="padding-top: 20px">
+                Press [ESC] to close
+              </p>
             </div>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>
@@ -52,11 +54,11 @@
     </div>
     <h1 class="text-center">---- Online ----</h1>
     <template v-for="friend in friends">
+        <!-- getFriendPicture(friend.intraId) -->
       <Friend
         v-if="friend.isOnline"
         :name="friend.name"
         :isOnline="friend.isOnline"
-        :image="friend.profilePicture"
         :intraId="friend.intraId"
       />
     </template>
@@ -66,7 +68,6 @@
         v-if="!friend.isOnline"
         :name="friend.name"
         :isOnline="friend.isOnline"
-        :image="friend.profilePicture"
         :intraId="friend.intraId"
       />
     </template>
@@ -74,7 +75,6 @@
     <Incoming
       v-for="request in incomingRequests"
       :name="request.name"
-      :image="request.profilePicture"
       :intraId="request.intraId"
     />
   </div>
@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import Friend from './friends/Friend.vue'
 import Incoming from './friends/Incoming.vue'
-import { get, getImage, post } from '../../httpRequests'
+import { get, post } from '../../httpRequests'
 import { ref } from 'vue'
 
 const friends = await get('user/friends')
@@ -105,7 +105,8 @@ function reloadFriends() {
 async function addFriend() {
   console.log(friendSearch.value)
   const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }) //TODO: waarschijnlijk dit niet meer in een variabele stoppen
-    .then((resp) => { //TODO: waarschijnlijk "resp" weghalen
+    .then((resp) => {
+      //TODO: waarschijnlijk "resp" weghalen
       alertColor.value = 'alert-success'
       alertMessage.value = 'Friend request sent'
       alertVisibility.value = 'visible'
