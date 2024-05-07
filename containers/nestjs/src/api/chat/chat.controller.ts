@@ -60,12 +60,13 @@ export class ChatController {
         : '';
 
       console.log("hashed password", hashed_password)
-
+  
+    const current_user = await this.usersService.findOne(intra_id);
     let all_users = []
     if (dto.visibility === Visibility.PUBLIC)
       all_users = await this.usersService.getAllUsers()
     else
-      all_users = [await this.usersService.findOne(intra_id)]
+      all_users = [current_user]
 
     return this.chatService.create(intra_id, {
       chat_id: uuid(),
@@ -75,7 +76,7 @@ export class ChatController {
       visibility: dto.visibility,
       hashed_password: hashed_password,
       owner: intra_id,
-      admins: [intra_id],
+      admins: [current_user],
       banned: [],
       muted: [],
     });

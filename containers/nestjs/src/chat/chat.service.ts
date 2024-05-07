@@ -73,18 +73,25 @@ export class ChatService {
 
   public async kickUser(chat_id: string, username: string) {
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { users: true } })
+      .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         if (!chat) { return false }
 
         const user = await this.usersService.findOneByUsername(username)
         if (!user) { return false }
-
-        chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
-
-        let result = await this.chatRepository.save(chat)
-        if (result)
-          return true
+        
+        const admins = [...chat.admins]
+        admins.forEach(async admin => {
+          if (admin.intra_id === user.intra_id) {
+            return false
+          }
+          else {
+            chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
+            let result = await this.chatRepository.save(chat)
+            if (result)
+              return true
+          }
+        })
     });
   }
 
