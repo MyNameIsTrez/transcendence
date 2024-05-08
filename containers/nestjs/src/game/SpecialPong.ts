@@ -48,8 +48,7 @@ abstract class Item extends Rect {
 
 // Item Ideas:
 // V Reverse opponent controls for a few rounds
-// - Ball invisible from pickup to first bounce
-// - Split ball into 2 (one back on forward), can only spawn on opponent side and persists until end of round
+// V Ball invisible from pickup to first bounce
 // - Move opponent a little bit forward for a few rounds
 // - Make opponent paddle a bit smaller for a few rounds
 
@@ -113,6 +112,26 @@ class ReverseControlItem extends Item {
   }
 }
 
+class invisibleBallItem extends Item {
+  constructor(x: number, y: number) {
+    super(x, y, 'silver');
+  }
+
+  private static readonly _originalBallColor = 'white';
+
+  onItemPickup(itemOwnerId: number): void {}
+  hookFunction(game: APong): boolean {
+    game._ball._color = 'transparent';
+    return true;
+  }
+  onPaddleHit(game: APong): boolean {
+    return false;
+  }
+  onItemEnd(game: APong): void {
+    game._ball._color = invisibleBallItem._originalBallColor;
+  }
+}
+
 export default class SpecialPong extends APong {
   constructor(winScore: number) {
     super(winScore);
@@ -127,9 +146,6 @@ export default class SpecialPong extends APong {
   private _itemsPickedUp: Array<Item> = [];
 
   update() {
-    this._lastBallDirection._dx = this._ball._vel._dx;
-    this._lastBallDirection._dy = this._ball._vel._dy;
-
     // Update the ball position
     this._ball.updatePos();
 
