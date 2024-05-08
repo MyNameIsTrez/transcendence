@@ -67,6 +67,12 @@ const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 const iAmMute = ref(false)
 const direct = ref(false)
+const otherIntraId = ref<number>(0)
+
+async function getOtherIntraId() {
+  const intraId = await get('user/intraId')
+  return await get('chat/getOtherIntraId/' + currentChatId.value + '/' + intraId)
+}
 
 async function blockUser() {
   const intraId = await get('user/intraId')
@@ -163,7 +169,12 @@ async function getChat(chat: string) {
   iAmAdmin.value = await isAdmin()
   iAmOwner.value = await isOwner()
   direct.value = await isDirect()
+  if (direct.value)
+    otherIntraId.value = await getOtherIntraId()
+  else
+    otherIntraId.value = 0
   console.log("direct", direct.value)
+  console.log("other intra id", otherIntraId.value)
   // console.log("i am owner", iAmOwner.value)
   // console.log("i am admin", iAmAdmin.value)
 

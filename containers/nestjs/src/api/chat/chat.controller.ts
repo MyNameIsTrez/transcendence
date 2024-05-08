@@ -30,6 +30,14 @@ class AddUserDto {
   username: string;
 }
 
+class OtherUserDto {
+  @IsNotEmpty()
+  chat_id: string;
+
+  @IsNotEmpty()
+  intra_id: number;
+}
+
 class JoinDto {
   @IsUUID()
   chat_id: string;
@@ -173,6 +181,11 @@ export class ChatController {
   muted(@Request() req) {
     // TODO: Access the chat db
     return [42, 69];
+  }
+
+  @Get('getOtherIntraId/:chat_id/:intra_id')
+  getOtherIntraId(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id)
   }
 
   @Post('join')

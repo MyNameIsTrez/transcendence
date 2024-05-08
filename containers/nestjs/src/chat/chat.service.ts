@@ -187,6 +187,22 @@ export class ChatService {
           return true
       });
   }
+
+  public async getOtherIntraId(chat_id: string, intra_id: number) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true } })
+      .then(async (chat) => {
+        if (!chat) { return false }
+
+        let user_id = 0
+        const users = [...chat.users]
+        users.forEach(user => {
+          if (user.intra_id != intra_id)
+            user_id = user.intra_id
+        });
+        return user_id
+    })
+  }
   
   public async join(intra_id: number, chat_id: string, password: string) {
     const chat = await this.getChat(chat_id);

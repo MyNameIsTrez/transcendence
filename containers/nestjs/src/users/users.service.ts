@@ -16,7 +16,6 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
-    // private readonly chatService: ChatService,
   ) {}
 
   create(user: User): Promise<User> {
