@@ -67,8 +67,12 @@ const iAmOwner = ref(false)
 const iAmMute = ref(false)
 
 async function kickUser() {
-  
   const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
+  newUser.value = ''
+}
+
+async function banUser() {
+  const result = await get('chat/ban/' + currentChatId.value + '/' + newUser.value)
   newUser.value = ''
 }
 

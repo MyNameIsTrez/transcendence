@@ -104,6 +104,7 @@ export class AuthService {
             twoFactorAuthenticationSecret: null,
             chats: [],
             adminChats: [],
+            bannedChats: [],
           });
         }
 

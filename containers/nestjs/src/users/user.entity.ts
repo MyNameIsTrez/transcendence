@@ -26,4 +26,8 @@ export class User {
   @ManyToMany(() => Chat, (chat) => chat.admins)
   @JoinTable()
   adminChats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.banned)
+  @JoinTable()
+  bannedChats: Chat[];
 }

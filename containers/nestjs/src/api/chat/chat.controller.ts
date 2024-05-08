@@ -103,8 +103,12 @@ export class ChatController {
 
   @Get('kick/:chat_id/:username')
   kick(@Request() req, @Param() dto: AddUserDto) {
-    console.log("dto", dto)
     return this.chatService.kickUser(dto.chat_id, dto.username)
+  }
+
+  @Get('ban/:chat_id/:username')
+  ban(@Request() req, @Param() dto: AddUserDto) {
+    return this.chatService.banUser(dto.chat_id, dto.username)
   }
 
   @Get('name/:chat_id')

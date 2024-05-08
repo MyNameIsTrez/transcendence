@@ -71,27 +71,45 @@ export class ChatService {
       });
   }
 
+  public async banUser(chat_id: string, username: string) {
+    if (await this.kickUser(chat_id, username) == false)
+      return false
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
+      .then(async (chat) => {
+        if (!chat) { return false }
+
+        const user = await this.usersService.findOneByUsername(username)
+        if (!user) { return false }
+
+        chat.banned = [...chat.banned, user]
+        let result = await this.chatRepository.save(chat)
+            if (result)
+              return true
+        });
+    }
+
   public async kickUser(chat_id: string, username: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         if (!chat) { return false }
 
+        let stop = false
+
         const user = await this.usersService.findOneByUsername(username)
         if (!user) { return false }
         
         const admins = [...chat.admins]
-        admins.forEach(async admin => {
-          if (admin.intra_id === user.intra_id) {
-            return false
-          }
-          else {
-            chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
-            let result = await this.chatRepository.save(chat)
-            if (result)
-              return true
-          }
+        admins.forEach(admin => {
+          if (admin.intra_id === user.intra_id) { stop = true }
         })
+        if (stop)
+          return false
+        chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
+        let result = await this.chatRepository.save(chat)
+        if (result)
+          return true
     });
   }
 

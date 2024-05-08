@@ -38,8 +38,8 @@ export class Chat {
   @ManyToMany(() => User, (user) => user.adminChats)
   admins: User[];
 
-  @Column('int', { array: true })
-  banned: number[];
+  @ManyToMany(() => User, (user) => user.bannedChats)
+  banned: User[];
 
   @OneToMany(() => Mute, (mute) => mute.chat)
   muted: Mute[];
