@@ -31,6 +31,7 @@
     <!-- <button @click="joinChat">Join chat</button>
     <br /><br /> -->
     <!-- getChat -->
+    <button v-if="direct" @click="blockUser">Block</button>
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
         {{ instance }}
@@ -66,6 +67,11 @@ const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 const iAmMute = ref(false)
 const direct = ref(false)
+
+async function blockUser() {
+  const intraId = await get('user/intraId')
+  const result = await get('user/block/' + currentChatId.value + '/' + intraId)
+}
 
 async function kickUser() {
   const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
@@ -107,7 +113,6 @@ async function isAdmin() {
 
 async function isDirect() {
   const direct = await get('chat/isDirect/' + currentChatId.value)
-  console.log("direct", direct)
   if (direct == true)
     return true
   return false
@@ -155,12 +160,12 @@ async function getChat(chat: string) {
     i++
   }
 
-  iAmAdmin.value = isAdmin()
-  iAmOwner.value = isOwner()
-  direct.value = isDirect()
-  console.log("is direct", isDirect.value)
-  console.log("i am owner", iAmOwner.value)
-  console.log("i am admin", iAmAdmin.value)
+  iAmAdmin.value = await isAdmin()
+  iAmOwner.value = await isOwner()
+  direct.value = await isDirect()
+  console.log("direct", direct.value)
+  // console.log("i am owner", iAmOwner.value)
+  // console.log("i am admin", iAmAdmin.value)
 
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)

@@ -27,6 +27,14 @@ class SetIntraIdDto {
   intraId: number;
 }
 
+class SetChatAndIntraIdDto {
+  @IsNotEmpty()
+  chatId: number;
+
+  @IsNotEmpty()
+  intraId: number;
+}
+
 @Controller('api/user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
@@ -75,5 +83,10 @@ export class UserController {
     file: Express.Multer.File,
   ) {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
+  }
+
+  @Get('block/:chatId/:intraId')
+  blockUser(@Request() req, @Param() dto: SetChatAndIntraIdDto) {
+    return this.usersService.block(dto.chatId, dto.intraId)
   }
 }

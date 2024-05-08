@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, JoinTable, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, JoinTable, PrimaryColumn } from 'typeorm';
 // import { MyChat } from './mychat.entity';
 import { Chat } from 'src/chat/chat.entity';
 
@@ -30,4 +30,7 @@ export class User {
   @ManyToMany(() => Chat, (chat) => chat.banned)
   @JoinTable()
   bannedChats: Chat[];
+
+  @Column('int', { array: true })
+  blocked: number[];
 }

@@ -9,12 +9,14 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { privateDecrypt } from 'crypto';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
+    // private readonly chatService: ChatService,
   ) {}
 
   create(user: User): Promise<User> {
@@ -135,5 +137,10 @@ export class UsersService {
     // });
 
     return new StreamableFile(stream);
+  }
+
+  async block(chat_id: number, intra_id: number) {
+    // const other_user = await this.ChatService.get_users()
+    return true
   }
 }

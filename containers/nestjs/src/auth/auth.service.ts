@@ -105,6 +105,7 @@ export class AuthService {
             chats: [],
             adminChats: [],
             bannedChats: [],
+            blocked: [],
           });
         }
 
