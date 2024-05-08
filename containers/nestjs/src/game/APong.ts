@@ -83,8 +83,15 @@ export class Velocity {
   set len(value: number) {
     {
       const fact = value / this.len;
-      this._dx *= fact;
-      this._dy *= fact;
+      // The if statement is put here to prevent the ball from gaining too much speed and going through the player paddle
+      if (this._dx * fact <= 25) {
+        this._dx *= fact;
+        this._dy *= fact;
+      } else {
+        const num: number = 25 / this._dx;
+        this._dx *= num;
+        this._dy;
+      }
     }
   }
   adjustAngle(multiplier: number) {
