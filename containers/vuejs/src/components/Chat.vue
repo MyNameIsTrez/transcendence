@@ -65,6 +65,7 @@ const passwordChat = ref<string>('')
 const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 const iAmMute = ref(false)
+const direct = ref(false)
 
 async function kickUser() {
   const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
@@ -104,6 +105,14 @@ async function isAdmin() {
   return false
 }
 
+async function isDirect() {
+  const direct = await get('chat/isDirect/' + currentChatId.value)
+  console.log("direct", direct)
+  if (direct == true)
+    return true
+  return false
+}
+
 async function isOwner() {
   const intraId = await get('user/intraId')
   const owner = await get('chat/getOwner/' + currentChatId.value)
@@ -113,7 +122,6 @@ async function isOwner() {
 }
 
 async function addUser() {
-  console.log("chat id: ", currentChatId.value, "username: ", newUser.value)
   const add_user = await post('chat/addUserToChat', {
     chat_id: currentChatId.value,
     username: newUser.value,
@@ -149,6 +157,8 @@ async function getChat(chat: string) {
 
   iAmAdmin.value = isAdmin()
   iAmOwner.value = isOwner()
+  direct.value = isDirect()
+  console.log("is direct", isDirect.value)
   console.log("i am owner", iAmOwner.value)
   console.log("i am admin", iAmAdmin.value)
 

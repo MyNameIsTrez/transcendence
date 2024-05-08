@@ -140,10 +140,10 @@ export class ChatController {
     return this.chatService.getOwner(dto.chat_id)
   }
 
-  // @Get('iAmOwner/:chat_id')
-  // iAmOwner(@Request() req, @Param() dto: NameDto) {
-  //   return this.chatService.getHistory(dto.chat_id)
-  // }
+  @Get('isDirect/:chat_id')
+  isDirect(@Request() req, @Param() dto: NameDto) {
+    return this.chatService.direct(dto.chat_id)
+  }
 
   @Get('visibility')
   visibility(@Request() req) {

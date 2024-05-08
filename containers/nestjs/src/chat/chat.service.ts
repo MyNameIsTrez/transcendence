@@ -158,6 +158,18 @@ export class ChatService {
     });
   }
 
+  direct(chat_id: string) {
+    return this.chatRepository
+    .findOne({ where: { chat_id } })
+    .then(async (chat) => {
+      if (!chat) { return }
+
+      if (chat.number_of_users === 2)
+        return true
+      return false
+    });
+  }
+
   handleMessage(sender: number, chat_id: string, body: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
