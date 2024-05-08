@@ -42,6 +42,8 @@ abstract class Item extends Rect {
 
   abstract onItemPickup(itemOwnerId: number): void;
   abstract hookFunction(game: APong): boolean;
+  abstract onPaddleHit(game: APong): boolean;
+  abstract onItemEnd(game: APong): void;
 }
 
 // Item Ideas:
@@ -66,13 +68,6 @@ class ReverseControlItem extends Item {
 
   hookFunction(game: APong): boolean {
     if (game._leftPlayer.id === this._affectedPlayerId) {
-      if (game.collidedWithBorder === Sides.LeftPaddle) {
-        this._remainingTurns--;
-        if (this._remainingTurns === 0) {
-          game._leftPlayer.paddle._color = 'white';
-          return false;
-        }
-      }
       game._leftPlayer.paddle._color = 'purple';
       game._leftPlayer.paddle.dyNorth = Math.max(
         game._leftPlayer.paddle.dyNorth * -1,
@@ -83,13 +78,6 @@ class ReverseControlItem extends Item {
         game._leftPlayer.paddle.dySouth,
       );
     } else {
-      if (game.collidedWithBorder === Sides.RightPaddle) {
-        this._remainingTurns--;
-        if (this._remainingTurns === 0) {
-          game._rightPlayer.paddle._color = 'white';
-          return false;
-        }
-      }
       game._rightPlayer.paddle._color = 'purple';
       game._rightPlayer.paddle.dyNorth = Math.max(
         game._rightPlayer.paddle.dyNorth * -1,
@@ -101,6 +89,27 @@ class ReverseControlItem extends Item {
       );
     }
     return true;
+  }
+
+  onPaddleHit(game: APong): boolean {
+    if (game._leftPlayer.id === this._affectedPlayerId) {
+      if (game.collidedWithBorder === Sides.LeftPaddle) {
+        this._remainingTurns--;
+      }
+    } else {
+      if (game.collidedWithBorder === Sides.RightPaddle) {
+        this._remainingTurns--;
+      }
+    }
+    return !!this._remainingTurns;
+  }
+
+  onItemEnd(game: APong): void {
+    if (game._leftPlayer.id === this._affectedPlayerId) {
+      game._leftPlayer.paddle._color = 'white';
+    } else {
+      game._rightPlayer.paddle._color = 'white';
+    }
   }
 }
 
@@ -140,6 +149,7 @@ export default class SpecialPong extends APong {
       const item: Item = this._itemsPickedUp[i];
       const doesItemContinue: boolean = item.hookFunction(this);
       if (!doesItemContinue) {
+        item.onItemEnd(this);
         this._itemsPickedUp.splice(i, i + 1);
         // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
@@ -170,6 +180,17 @@ export default class SpecialPong extends APong {
       this.collidedWithBorder === Sides.LeftPaddle ||
       this.collidedWithBorder === Sides.RightPaddle
     ) {
+      // Apply item onPaddleHit function
+      for (let i: number = 0; i < this._itemsPickedUp.length; i++) {
+        const item: Item = this._itemsPickedUp[i];
+        const doesItemContinue: boolean = item.onPaddleHit(this);
+        if (!doesItemContinue) {
+          item.onItemEnd(this);
+          this._itemsPickedUp.splice(i, i + 1);
+          // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
+          i--;
+        }
+      }
       // 1/4 chance to spawn an item
       if (Math.random() <= 0.25) {
         const pos = Item.generateRandomPos();
