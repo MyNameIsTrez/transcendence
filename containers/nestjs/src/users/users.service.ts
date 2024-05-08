@@ -145,4 +145,14 @@ export class UsersService {
     user.blocked = [...user.blocked, other_intra_id]
     return this.usersRepository.save(user)
   }
+
+  async deblock(my_intra_id: number, other_intra_id: number) {
+    const user = await this.findOne(my_intra_id)
+    if (!user) { return false }
+
+    // user.blocked = [...user.blocked, other_intra_id]
+    // chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
+    user.blocked = user.blocked.filter(u => u != other_intra_id)
+    return this.usersRepository.save(user)
+  }
 }

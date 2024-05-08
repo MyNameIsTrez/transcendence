@@ -31,7 +31,7 @@
     <!-- <button @click="joinChat">Join chat</button>
     <br /><br /> -->
     <!-- getChat -->
-    <button v-if="direct" @click="blockUser">Block</button>
+    <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
     <div>
       == {{ currentChat }} == <div v-for="instance in chatHistory">
         {{ instance }}
@@ -69,6 +69,7 @@ const iAmOwner = ref(false)
 const iAmMute = ref(false)
 const direct = ref(false)
 const otherIntraId = ref(0)
+const blockStatus = ref('Block')
 
 async function getMyIntraId() {
   myIntraId.value = await get('user/intraId')
@@ -78,8 +79,23 @@ async function getOtherIntraId() {
   return await get('chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
 }
 
+async function handleBlock() {
+  if (blockStatus.value == 'Block') {
+    blockUser()
+    blockStatus.value = 'Deblock'
+  }
+  else {
+    deblockUser()
+    blockStatus.value = 'Block'
+  }
+}
+
 async function blockUser() {
   const result = await get('user/block/' + myIntraId.value + '/' + otherIntraId.value)
+}
+
+async function deblockUser() {
+  const result = await get('user/deblock/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function kickUser() {

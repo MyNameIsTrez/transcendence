@@ -89,4 +89,9 @@ export class UserController {
   blockUser(@Request() req, @Param() dto: BlockDto) {
     return this.usersService.block(dto.my_intra_id, dto.other_intra_id)
   }
+
+  @Get('deblock/:my_intra_id/:other_intra_id')
+  deblockUser(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.deblock(dto.my_intra_id, dto.other_intra_id)
+  }
 }
