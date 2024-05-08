@@ -138,8 +138,11 @@ export class UsersService {
     return new StreamableFile(stream);
   }
 
-  async block(chat_id: number, intra_id: number) {
-    // const other_user = await this.ChatService.get_users()
-    return true
+  async block(my_intra_id: number, other_intra_id: number) {
+    const user = await this.findOne(my_intra_id)
+    if (!user) { return false }
+
+    user.blocked = [...user.blocked, other_intra_id]
+    return this.usersRepository.save(user)
   }
 }

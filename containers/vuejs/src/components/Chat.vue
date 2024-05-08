@@ -48,6 +48,7 @@ import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 
 // VARIABLES
+const myIntraId = ref('')
 const allChats = ref('')
 const myChats = ref('')
 const chatName = ref('')
@@ -60,23 +61,25 @@ const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
 const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
 const visibility = ref('PUBLIC')
-const visibilityNum = ref<number>(1)
+const visibilityNum = ref(1)
 const protectedChat = ref(false)
-const passwordChat = ref<string>('')
+const passwordChat = ref('')
 const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 const iAmMute = ref(false)
 const direct = ref(false)
-const otherIntraId = ref<number>(0)
+const otherIntraId = ref(0)
+
+async function getMyIntraId() {
+  myIntraId.value = await get('user/intraId')
+}
 
 async function getOtherIntraId() {
-  const intraId = await get('user/intraId')
-  return await get('chat/getOtherIntraId/' + currentChatId.value + '/' + intraId)
+  return await get('chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
 }
 
 async function blockUser() {
-  const intraId = await get('user/intraId')
-  const result = await get('user/block/' + currentChatId.value + '/' + intraId)
+  const result = await get('user/block/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function kickUser() {
@@ -104,13 +107,12 @@ async function addAdmin() {
 }
 
 async function isAdmin() {
-  const intraId = await get('user/intraId')
   const admins = await get('chat/getAdmins/' + currentChatId.value)
   
   let i: number = 0
   console.log(admins)
   while (admins[i]) {
-    if (admins[i].intra_id == intraId)
+    if (admins[i].intra_id == myIntraId.value)
       return true
     i++;
   }
@@ -125,9 +127,8 @@ async function isDirect() {
 }
 
 async function isOwner() {
-  const intraId = await get('user/intraId')
   const owner = await get('chat/getOwner/' + currentChatId.value)
-  if (intraId == owner)
+  if (myIntraId.value == owner)
     return true
   return false
 }
@@ -249,6 +250,7 @@ function privateChat() {
   }
 }
 
+getMyIntraId()
 getMyChats()
 </script>
 

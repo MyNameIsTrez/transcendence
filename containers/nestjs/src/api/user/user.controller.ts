@@ -27,12 +27,12 @@ class SetIntraIdDto {
   intraId: number;
 }
 
-class SetChatAndIntraIdDto {
+class BlockDto {
   @IsNotEmpty()
-  chatId: number;
+  my_intra_id: number;
 
   @IsNotEmpty()
-  intraId: number;
+  other_intra_id: number;
 }
 
 @Controller('api/user')
@@ -85,8 +85,8 @@ export class UserController {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
 
-  @Get('block/:chatId/:intraId')
-  blockUser(@Request() req, @Param() dto: SetChatAndIntraIdDto) {
-    return this.usersService.block(dto.chatId, dto.intraId)
+  @Get('block/:my_intra_id/:other_intra_id')
+  blockUser(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.block(dto.my_intra_id, dto.other_intra_id)
   }
 }
