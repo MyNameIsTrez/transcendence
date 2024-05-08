@@ -106,7 +106,7 @@ class ReverseControlItem extends Item {
   }
 }
 
-class invisibleBallItem extends Item {
+class InvisibleBallItem extends Item {
   constructor(x: number, y: number) {
     super(x, y, 'silver');
   }
@@ -125,11 +125,11 @@ class invisibleBallItem extends Item {
   }
 
   onItemEnd(game: APong): void {
-    game._ball._color = invisibleBallItem._originalBallColor;
+    game._ball._color = InvisibleBallItem._originalBallColor;
   }
 }
 
-class smallerPaddleItem extends Item {
+class SmallerPaddleItem extends Item {
   constructor(x: number, y: number) {
     super(x, y, 'pink');
   }
@@ -180,8 +180,8 @@ export default class SpecialPong extends APong {
 
   private readonly _availableItems: Array<Function> = [
     (x: number, y: number) => new ReverseControlItem(x, y),
-    (x: number, y: number) => new invisibleBallItem(x, y),
-    (x: number, y: number) => new smallerPaddleItem(x, y),
+    (x: number, y: number) => new InvisibleBallItem(x, y),
+    (x: number, y: number) => new SmallerPaddleItem(x, y),
   ];
   private _itemsOnMap: Array<Item> = [];
   private _itemsPickedUp: Array<Item> = [];
