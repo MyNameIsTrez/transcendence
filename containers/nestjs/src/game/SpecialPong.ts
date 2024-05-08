@@ -31,8 +31,10 @@ abstract class Item extends Rect {
   static standardSize: Size = { w: 35, h: 35 };
 
   static generateRandomPos(): Pos {
-    const xMinCeiled = Math.ceil((WINDOW_WIDTH / 3) * 2 - WINDOW_WIDTH / 3);
-    const xMaxFloored = Math.floor(WINDOW_WIDTH / 3 - Item.standardSize.w);
+    const xMinCeiled = Math.ceil(WINDOW_WIDTH / 3);
+    const xMaxFloored = Math.floor(
+      (WINDOW_WIDTH / 3) * 2 - Item.standardSize.w,
+    );
     const x = Math.random() * (xMaxFloored - xMinCeiled) + xMinCeiled;
     const y = Math.random() * (WINDOW_HEIGHT - Item.standardSize.h);
     return { x, y };
