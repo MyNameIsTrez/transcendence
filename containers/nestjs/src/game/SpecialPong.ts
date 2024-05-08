@@ -46,12 +46,6 @@ abstract class Item extends Rect {
   abstract onItemEnd(game: APong): void;
 }
 
-// Item Ideas:
-// V Reverse opponent controls for a few rounds
-// V Ball invisible from pickup to first bounce
-// - Move opponent a little bit forward for a few rounds
-// V Make opponent paddle a bit smaller for a few rounds
-
 class ReverseControlItem extends Item {
   constructor(x: number, y: number) {
     super(x, y, 'purple');
