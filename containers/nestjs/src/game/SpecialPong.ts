@@ -119,7 +119,10 @@ export default class SpecialPong extends APong {
     this.type = 'special';
   }
 
-  private _lastBallDirection: Velocity = new Velocity(0, 0);
+  private readonly _availableItems: Array<Function> = [
+    (x: number, y: number) => new ReverseControlItem(x, y),
+    (x: number, y: number) => new invisibleBallItem(x, y),
+  ];
   private _itemsOnMap: Array<Item> = [];
   private _itemsPickedUp: Array<Item> = [];
 
@@ -194,7 +197,11 @@ export default class SpecialPong extends APong {
       // 1/4 chance to spawn an item
       if (Math.random() <= 0.25) {
         const pos = Item.generateRandomPos();
-        this._itemsOnMap.push(new ReverseControlItem(pos.x, pos.y));
+        this._itemsOnMap.push(
+          this._availableItems[
+            Math.floor(Math.random() * this._availableItems.length)
+          ](pos.x, pos.y),
+        );
       }
     }
   }
@@ -233,11 +240,12 @@ export default class SpecialPong extends APong {
   }
 
   reset(): void {
-    this._ball.reset();
-    this._lastBallDirection._dx = 0;
-    this._lastBallDirection._dy = 0;
-    this._itemsOnMap = [];
+    for (const item of this._itemsPickedUp) {
+      item.onItemEnd(this);
+    }
     this._itemsPickedUp = [];
+    this._itemsOnMap = [];
+    this._ball.reset();
     this.collidedWithBorder = Sides.None;
   }
 }
