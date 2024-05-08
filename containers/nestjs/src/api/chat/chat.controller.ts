@@ -68,9 +68,12 @@ export class ChatController {
     else
       all_users = [current_user]
 
+    const num_of_users = all_users.length
+
     return this.chatService.create(intra_id, {
       chat_id: uuid(),
       name: dto.name,
+      number_of_users: num_of_users,
       users: [...all_users],
       history: [],
       visibility: dto.visibility,
