@@ -50,7 +50,7 @@ abstract class Item extends Rect {
 // V Reverse opponent controls for a few rounds
 // V Ball invisible from pickup to first bounce
 // - Move opponent a little bit forward for a few rounds
-// - Make opponent paddle a bit smaller for a few rounds
+// V Make opponent paddle a bit smaller for a few rounds
 
 class ReverseControlItem extends Item {
   constructor(x: number, y: number) {
@@ -129,9 +129,52 @@ class invisibleBallItem extends Item {
   onPaddleHit(game: APong): boolean {
     return false;
   }
-  
+
   onItemEnd(game: APong): void {
     game._ball._color = invisibleBallItem._originalBallColor;
+  }
+}
+
+class smallerPaddleItem extends Item {
+  constructor(x: number, y: number) {
+    super(x, y, 'pink');
+  }
+
+  private _affectedPlayerId: number;
+  private _remainingTurns: number = 3;
+
+  onItemPickup(itemOwnerId: number): void {
+    this._affectedPlayerId = 1 - itemOwnerId;
+  }
+
+  hookFunction(game: APong): boolean {
+    if (game._leftPlayer.id === this._affectedPlayerId) {
+      game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
+    } else {
+      game._rightPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
+    }
+    return true;
+  }
+
+  onPaddleHit(game: APong): boolean {
+    if (game._leftPlayer.id === this._affectedPlayerId) {
+      if (game.collidedWithBorder === Sides.LeftPaddle) {
+        this._remainingTurns--;
+      }
+    } else {
+      if (game.collidedWithBorder === Sides.RightPaddle) {
+        this._remainingTurns--;
+      }
+    }
+    return !!this._remainingTurns;
+  }
+
+  onItemEnd(game: APong): void {
+    if (game._leftPlayer.id === this._affectedPlayerId) {
+      game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.2;
+    } else {
+      game._rightPlayer.paddle._size.h = WINDOW_HEIGHT * 0.2;
+    }
   }
 }
 
@@ -144,6 +187,7 @@ export default class SpecialPong extends APong {
   private readonly _availableItems: Array<Function> = [
     (x: number, y: number) => new ReverseControlItem(x, y),
     (x: number, y: number) => new invisibleBallItem(x, y),
+    (x: number, y: number) => new smallerPaddleItem(x, y),
   ];
   private _itemsOnMap: Array<Item> = [];
   private _itemsPickedUp: Array<Item> = [];
