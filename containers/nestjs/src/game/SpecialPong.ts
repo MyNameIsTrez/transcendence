@@ -163,16 +163,10 @@ export default class SpecialPong extends APong {
       return;
     }
 
-    // TODO: Comment
     // If ball hits paddle
-    // console.log(
-    //   'this._lastBallDirection.dx > 0 ? 0 : 1',
-    //   this._lastBallDirection.dx,
-    // );
-    // console.log('==> this._ball._vel.dx > 0 ? 0 : 1', this._ball._vel.dx);
     if (
-      (this._lastBallDirection.dx > 0 ? 0 : 1) !=
-      (this._ball._vel.dx > 0 ? 0 : 1)
+      this.collidedWithBorder === Sides.LeftPaddle ||
+      this.collidedWithBorder === Sides.RightPaddle
     ) {
       // 1/4 chance to spawn an item
       if (Math.random() <= 0.25) {
