@@ -66,4 +66,14 @@ export class UserController {
   ) {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
+
+  @Get('wins')
+  wins(@Request() req) {
+    return this.usersService.getWins(req.user.intra_id);
+  }
+
+  @Get('losses')
+  losses(@Request() req) {
+    return this.usersService.getLosses(req.user.intra_id);
+  }
 }

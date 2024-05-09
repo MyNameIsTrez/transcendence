@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
+import { UsersService } from 'src/users/users.service';
 import { WsException } from '@nestjs/websockets';
 import { ConfigService } from '@nestjs/config';
 
@@ -11,6 +12,7 @@ export default class LobbyManager {
   constructor(
     private readonly server: Server,
     private configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
   public queue(client: Socket, mode: string) {
@@ -49,7 +51,12 @@ export default class LobbyManager {
       return notFullLobby;
     }
 
-    const newLobby = new Lobby(mode, this.server, this.configService);
+    const newLobby = new Lobby(
+      mode,
+      this.server,
+      this.configService,
+      this.usersService,
+    );
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
@@ -62,10 +69,16 @@ export default class LobbyManager {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
+      this.usersService.addLoss(client.data.intra_id);
+
       lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
+
+      lobby.clients.forEach((otherClient) => {
+        this.usersService.addWin(otherClient.data.intra_id);
+      });
 
       this.removeLobby(lobby);
     }

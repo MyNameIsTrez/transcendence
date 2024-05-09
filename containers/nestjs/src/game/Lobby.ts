@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
+import { UsersService } from 'src/users/users.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
@@ -10,7 +11,7 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  private readonly clients = new Map<string, Socket>();
+  public readonly clients = new Map<string, Socket>();
 
   private pong: APong;
 
@@ -25,6 +26,7 @@ export default class Lobby {
     readonly mode: string,
     private readonly server: Server,
     private configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {
     console.log('Initializing lobby with mode:', mode);
     console.log('gamemodes', this.gamemodes);
@@ -86,6 +88,7 @@ export default class Lobby {
       const winnerIndex = this.pong.getWinnerIndex();
 
       this.clients.forEach((client) => {
+        this.updatePlayerScore(client);
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
       });
     }
@@ -114,6 +117,14 @@ export default class Lobby {
     }
 
     this.pong.movePaddle(playerIndex, keydown, north);
+  }
+
+  public updatePlayerScore(client: Socket) {
+    if (client.data.playerIndex === this.pong.getWinnerIndex()) {
+      this.usersService.addWin(client.data.intra_id);
+    } else {
+      this.usersService.addLoss(client.data.intra_id);
+    }
   }
 
   public getPong(): APong {

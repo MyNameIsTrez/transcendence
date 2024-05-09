@@ -8,6 +8,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from 'src/users/users.service';
 import LobbyManager from './LobbyManager';
 
 // The cors setting prevents this error:
@@ -17,6 +18,7 @@ export class GameGateway {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
   @WebSocketServer()
@@ -65,7 +67,11 @@ export class GameGateway {
   }
 
   afterInit() {
-    this.lobbyManager = new LobbyManager(this.server, this.configService);
+    this.lobbyManager = new LobbyManager(
+      this.server,
+      this.configService,
+      this.usersService,
+    );
     this.lobbyManager.updateLoop();
   }
 

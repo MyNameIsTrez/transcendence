@@ -102,6 +102,8 @@ export class AuthService {
             isTwoFactorAuthenticationEnabled: false,
             twoFactorAuthenticationSecret: null,
             my_chats: [],
+            wins: 0,
+            losses: 0,
           });
         }
 

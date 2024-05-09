@@ -20,4 +20,10 @@ export class User {
 
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
+
+  @Column('int', { default: 0 })
+  wins: number = 0;
+
+  @Column('int')
+  losses: number = 0;
 }

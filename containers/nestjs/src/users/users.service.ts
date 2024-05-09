@@ -127,4 +127,24 @@ export class UsersService {
 
     return new StreamableFile(stream);
   }
+
+  async addWin(intra_id: number) {
+    await this.usersRepository.increment({ intra_id }, 'wins', 1);
+  }
+
+  async addLoss(intra_id: number) {
+    await this.usersRepository.increment({ intra_id }, 'losses', 1);
+  }
+
+  getWins(intra_id: number) {
+    return this.findOne(intra_id).then((user) => {
+      return user.wins;
+    });
+  }
+
+  getLosses(intra_id: number) {
+    return this.findOne(intra_id).then((user) => {
+      return user.losses;
+    });
+  }
 }
