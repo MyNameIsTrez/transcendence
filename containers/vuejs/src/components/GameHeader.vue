@@ -20,7 +20,7 @@ const startOfGame = ref(false)
 
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  gameSocket.emit('joinGame')
+  gameSocket.emit('joinGame', { mode: 'normal' })
 }
 const reset = () => {
   buttonText.value = 'PLAY'

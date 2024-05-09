@@ -1,7 +1,17 @@
-const WINDOW_WIDTH = 1920;
-const WINDOW_HEIGHT = 1080;
+export const WINDOW_WIDTH = 1920;
+export const WINDOW_HEIGHT = 1080;
 
-class Pos {
+export enum Sides {
+  None,
+  Top,
+  Right,
+  Bottom,
+  Left,
+  LeftPaddle,
+  RightPaddle,
+}
+
+export class Pos {
   x: number;
   y: number;
   constructor(x: number, y: number) {
@@ -10,7 +20,7 @@ class Pos {
   }
 }
 
-class Size {
+export class Size {
   w: number;
   h: number;
   constructor(w: number, h: number) {
@@ -19,12 +29,14 @@ class Size {
   }
 }
 
-class Rect {
+export class Rect {
   _pos: Pos;
   _size: Size;
-  constructor(w: number, h: number, x: number, y: number) {
+  _color: string;
+  constructor(w: number, h: number, x: number, y: number, c: string) {
     this._pos = new Pos(x, y);
     this._size = new Size(w, h);
+    this._color = c;
   }
   get left() {
     return this._pos.x;
@@ -40,7 +52,7 @@ class Rect {
   }
 }
 
-class Velocity {
+export class Velocity {
   _dx: number;
   _dy: number;
   constructor(dx: number = 0, dy: number = 0) {
@@ -70,9 +82,16 @@ class Velocity {
   }
   set len(value: number) {
     {
-      const fact = value / this.len;
-      this._dx *= fact;
-      this._dy *= fact;
+      let fact = value / this.len;
+      // The if statement is put here to prevent the ball from gaining too much speed and going through the player paddle
+      if (this._dx * fact <= 25) {
+        this._dx *= fact;
+        this._dy *= fact;
+      } else {
+        fact = 25 / this._dx;
+        this._dx *= fact;
+        this._dy *= fact;
+      }
     }
   }
   adjustAngle(multiplier: number) {
@@ -124,8 +143,8 @@ class Paddle extends Rect {
   dyNorth: number;
   dySouth: number;
 
-  constructor(w: number, h: number, x: number, y: number) {
-    super(w, h, x, y);
+  constructor(w: number, h: number, x: number, y: number, c: string) {
+    super(w, h, x, y, c);
     this.dyNorth = 0;
     this.dySouth = 0;
   }
@@ -155,10 +174,12 @@ class Paddle extends Rect {
   }
 }
 
-class Player {
+export class Player {
+  readonly id: number;
   _score: number;
   paddle: Paddle;
-  constructor(x: number) {
+  constructor(id: number, x: number) {
+    this.id = id;
     this._score = 0;
 
     this.paddle = new Paddle(
@@ -166,6 +187,7 @@ class Player {
       WINDOW_HEIGHT * 0.2,
       x,
       WINDOW_HEIGHT / 2 - WINDOW_HEIGHT * 0.1,
+      'white',
     );
   }
 
@@ -183,12 +205,12 @@ class Player {
   }
 }
 
-class Ball extends Rect {
+export class Ball extends Rect {
   _speed: number;
   _vel: Velocity;
   _hidden: boolean;
   constructor(size = 30, x = WINDOW_WIDTH / 2, y = WINDOW_HEIGHT / 2) {
-    super(size, size, x - size / 2, y - size / 2);
+    super(size, size, x - size / 2, y - size / 2, 'white');
     this._speed = 10;
     this._vel = new Velocity();
     this._vel.setRandomVelocity(this._speed);
@@ -200,29 +222,41 @@ class Ball extends Rect {
   }
 
   // TODO: Maybe don't pass this method the players?
-  collide(leftPlayer: Player, rightPlayer: Player) {
-    this.collideWithPaddle(leftPlayer.paddle);
-    this.collideWithPaddle(rightPlayer.paddle);
+  collide(leftPlayer: Player, rightPlayer: Player): Sides {
+    const paddleColide: Sides = this.collideWithPaddle(leftPlayer.paddle)
+      ? Sides.LeftPaddle
+      : this.collideWithPaddle(rightPlayer.paddle)
+        ? Sides.RightPaddle
+        : Sides.None;
 
-    this.collideWithBorder(leftPlayer, rightPlayer);
+    const borderCollide: Sides = this.collideWithBorder(
+      leftPlayer,
+      rightPlayer,
+    );
+    return paddleColide != Sides.None ? paddleColide : borderCollide;
   }
 
-  collideWithBorder(leftPlayer: Player, rightPlayer: Player) {
+  collideWithBorder(leftPlayer: Player, rightPlayer: Player): Sides {
+    if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
+      if (this.left <= 0) {
+        return Sides.Left;
+      } else {
+        return Sides.Right;
+      }
+    }
+
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
       this._vel.invertdY();
-    }
-    if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
-      if (this.left <= 0) {
-        rightPlayer.addPoint();
+      if (this.top <= 0) {
+        return Sides.Top;
       } else {
-        leftPlayer.addPoint();
+        return Sides.Bottom;
       }
-      this._vel.invertdY();
-      this.reset();
     }
+    return Sides.None;
   }
-  collideWithPaddle(paddle: Paddle) {
+  collideWithPaddle(paddle: Paddle): boolean {
     const SPEED_MULTIPLIER = 1.05;
     if (
       this.left <= paddle.right &&
@@ -246,7 +280,9 @@ class Ball extends Rect {
       }
 
       this._vel.len *= SPEED_MULTIPLIER;
+      return true;
     }
+    return false;
   }
 
   reset() {
@@ -264,11 +300,13 @@ class Ball extends Rect {
   // }
 }
 
-export default class Pong {
+export abstract class APong {
   _winScore: number;
   _ball: Ball;
   _leftPlayer: Player;
   _rightPlayer: Player;
+  type: string = 'APong';
+  collidedWithBorder: Sides = Sides.None;
 
   constructor(winScore: number) {
     this._winScore = winScore;
@@ -278,16 +316,8 @@ export default class Pong {
 
     this._ball = new Ball();
 
-    this._leftPlayer = new Player(PADDLE_LEFT_X);
-    this._rightPlayer = new Player(PADDLE_RIGHT_X);
-  }
-
-  update() {
-    this._leftPlayer.update();
-    this._rightPlayer.update();
-
-    this._ball.updatePos();
-    this._ball.collide(this._leftPlayer, this._rightPlayer);
+    this._leftPlayer = new Player(0, PADDLE_LEFT_X);
+    this._rightPlayer = new Player(1, PADDLE_RIGHT_X);
   }
 
   didSomeoneWin(): boolean {
@@ -306,45 +336,12 @@ export default class Pong {
     return this.didLeftWin() ? 0 : 1;
   }
 
-  // TODO: Use?
-  // resetGame() {
-  //   this._ball._hidden = false;
-  //   this._ball.reset();
-  //   this._leftPlayer._score = 0;
-  //   this._rightPlayer._score = 0;
-  // }
-
-  getData() {
-    return {
-      ball: {
-        pos: this._ball._pos,
-        size: this._ball._size,
-      },
-      leftPlayer: {
-        score: this._leftPlayer._score,
-        paddle: {
-          pos: this._leftPlayer.paddle._pos,
-          size: this._leftPlayer.paddle._size,
-        },
-      },
-      rightPlayer: {
-        score: this._rightPlayer._score,
-        paddle: {
-          pos: this._rightPlayer.paddle._pos,
-          size: this._rightPlayer.paddle._size,
-        },
-      },
-    };
-  }
-
   movePaddle(playerIndex: number, keydown: boolean, north: boolean) {
     const paddle = this.getPlayer(playerIndex)?.paddle;
     if (paddle) {
       if (north) {
-        console.log('Moving north');
         paddle.dyNorth = keydown ? -10 : 0;
       } else {
-        console.log('Moving south');
         paddle.dySouth = keydown ? 10 : 0;
       }
     }
@@ -356,4 +353,8 @@ export default class Pong {
     }
     return playerIndex == 0 ? this._leftPlayer : this._rightPlayer;
   }
+
+  abstract update(): void;
+  abstract getData(): any;
+  abstract reset(): void;
 }

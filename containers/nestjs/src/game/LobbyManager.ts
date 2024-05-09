@@ -13,7 +13,7 @@ export default class LobbyManager {
     private configService: ConfigService,
   ) {}
 
-  public queue(client: Socket) {
+  public queue(client: Socket, mode: string) {
     if (
       this.isUserAlreadyInLobby(client.data) &&
       this.configService.get('DEBUG') == 0
@@ -22,7 +22,7 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
-    const lobby = this.getLobby();
+    const lobby = this.getLobby(mode);
     lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
@@ -39,16 +39,17 @@ export default class LobbyManager {
   // and checking if the last lobby only has 1 player.
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
-  private getLobby(): Lobby {
+  private getLobby(mode: string): Lobby {
+    // TODO: Update this to look for corrrect gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => !lobby.isFull(),
+      (lobby) => lobby.getPong().type === mode && !lobby.isFull(),
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
       return notFullLobby;
     }
 
-    const newLobby = new Lobby(this.server, this.configService);
+    const newLobby = new Lobby(mode, this.server, this.configService);
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;

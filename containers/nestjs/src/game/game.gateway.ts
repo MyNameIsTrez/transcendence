@@ -70,8 +70,11 @@ export class GameGateway {
   }
 
   @SubscribeMessage('joinGame')
-  async joinGame(@ConnectedSocket() client: Socket) {
-    this.lobbyManager.queue(client);
+  async joinGame(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('mode') mode: string,
+  ) {
+    this.lobbyManager.queue(client, mode);
   }
 
   @SubscribeMessage('movePaddle')
