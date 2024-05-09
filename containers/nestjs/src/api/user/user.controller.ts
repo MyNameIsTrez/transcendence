@@ -94,4 +94,9 @@ export class UserController {
   deblockUser(@Request() req, @Param() dto: BlockDto) {
     return this.usersService.deblock(dto.my_intra_id, dto.other_intra_id)
   }
+
+  @Get('blockStatus/:my_intra_id/:other_intra_id')
+  iAmBlocked(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.iAmBlocked(dto.my_intra_id, dto.other_intra_id)
+  }
 }

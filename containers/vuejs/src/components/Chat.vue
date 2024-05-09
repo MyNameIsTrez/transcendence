@@ -70,6 +70,15 @@ const iAmMute = ref(false)
 const direct = ref(false)
 const otherIntraId = ref(0)
 const blockStatus = ref('Block')
+const iAmBlocked = ref(false)
+
+async function muteUser() {
+
+}
+
+async function getBlockStatus() {
+  return await get('user/blockStatus/' + myIntraId.value + '/' + otherIntraId.value)
+}
 
 async function getMyIntraId() {
   myIntraId.value = await get('user/intraId')
@@ -192,6 +201,9 @@ async function getChat(chat: string) {
     otherIntraId.value = 0
   console.log("direct", direct.value)
   console.log("other intra id", otherIntraId.value)
+
+  iAmBlocked.value = getBlockStatus()
+  console.log("i am blocked", iAmBlocked.value)
   // console.log("i am owner", iAmOwner.value)
   // console.log("i am admin", iAmAdmin.value)
 
