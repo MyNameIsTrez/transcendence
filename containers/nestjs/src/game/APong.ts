@@ -238,7 +238,6 @@ export class Ball extends Rect {
 
   collideWithBorder(leftPlayer: Player, rightPlayer: Player): Sides {
     if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
-      // TODO: Make return value retrieval better
       if (this.left <= 0) {
         return Sides.Left;
       } else {
@@ -249,7 +248,6 @@ export class Ball extends Rect {
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
       this._vel.invertdY();
-      // TODO: Make return value retrieval better
       if (this.top <= 0) {
         return Sides.Top;
       } else {
