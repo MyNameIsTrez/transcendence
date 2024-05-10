@@ -39,5 +39,6 @@ gameSocket.on('pong', (data: any) => {
   transform: translateX(-50%);
   font-size: 2vw;
   color: white;
+  pointer-events: none;
 }
 </style>
