@@ -56,9 +56,11 @@ gameSocket.on('gameStart', () => {
   align-items: center;
   justify-content: center;
 }
+
 .game-title {
   font-size: 4vw;
   margin: 1vw;
   padding: 1vw;
+  user-select: none; /* Disables cursor selection */
 }
 </style>

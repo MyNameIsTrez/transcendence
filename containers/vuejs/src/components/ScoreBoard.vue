@@ -39,6 +39,6 @@ gameSocket.on('pong', (data: any) => {
   transform: translateX(-50%);
   font-size: 2vw;
   color: white;
-  pointer-events: none;
+  pointer-events: none; /* Makes the cursor select the canvas behind it */
 }
 </style>
