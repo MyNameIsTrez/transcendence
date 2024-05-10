@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    port: 2424, // TODO: Try reading from an environment variable
+    port: 2424,
     host: '0.0.0.0' // This could be substituted with the host's IP
   },
   plugins: [vue()],
