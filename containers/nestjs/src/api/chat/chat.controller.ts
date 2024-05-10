@@ -51,7 +51,7 @@ class MuteDto {
   chat_id: string;
 
   @IsNotEmpty()
-  intra_id: number;
+  username: string;
 
   @IsNotEmpty()
   days: number;
@@ -204,8 +204,8 @@ export class ChatController {
     return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
   }
 
-  @Post()
+  @Post('mute')
   async mute(@Request() req, @Body() dto: MuteDto) {
-    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days)
+    return await this.chatService.mute(dto.chat_id, dto.username, dto.days)
   }
 }

@@ -224,7 +224,10 @@ export class ChatService {
     });
   }
 
-  public async mute(chat_id: string, intra_id: number, days: number) {
-
+  public async mute(chat_id: string, username: string, days: number) {
+    console.log("chat_id", chat_id)
+    console.log("username", username)
+    console.log("days", days)
+    return true
   }
 }

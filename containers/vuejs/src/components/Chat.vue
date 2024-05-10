@@ -19,7 +19,7 @@
       <br/>
     </div>
     <!-- admin operations -->
-    <input v-if="iAmAdmin" v-model="newUser" placeholder="42 student..." />
+    <input v-if="iAmAdmin" v-model="otherUser" placeholder="42 student..." />
     <button v-if="iAmAdmin" @click="addUser">Add</button>
     <button v-if="iAmAdmin" @click="kickUser">/Kick</button>
     <button v-if="iAmAdmin" @click="banUser">/Ban</button>
@@ -53,7 +53,7 @@ const myIntraId = ref('')
 const allChats = ref('')
 const myChats = ref('')
 const chatName = ref('')
-const newUser = ref('')
+const otherUser = ref('')
 const currentChat = ref('Select a chat')
 const currentChatId = ref('')
 const typedMessage = ref('')
@@ -75,7 +75,12 @@ const iAmBlocked = ref(false)
 const daysToMute = ref(0)
 
 async function muteUser() {
-  
+  const mute = await post('chat/mute', {
+    chat_id: currentChatId.value,
+    username: otherUser.value,
+    days: daysToMute.value
+  })
+  console.log("mute", mute)
 }
 
 async function getBlockStatus() {
@@ -110,13 +115,13 @@ async function deblockUser() {
 }
 
 async function kickUser() {
-  const result = await get('chat/kick/' + currentChatId.value + '/' + newUser.value)
-  newUser.value = ''
+  const result = await get('chat/kick/' + currentChatId.value + '/' + otherUser.value)
+  otherUser.value = ''
 }
 
 async function banUser() {
-  const result = await get('chat/ban/' + currentChatId.value + '/' + newUser.value)
-  newUser.value = ''
+  const result = await get('chat/ban/' + currentChatId.value + '/' + otherUser.value)
+  otherUser.value = ''
 }
 
 async function addAdmin() {
@@ -127,9 +132,9 @@ async function addAdmin() {
   console.log("You are admin")
   const addAdmin = await post('chat/addAdminToChat', {
     chat_id: currentChatId.value,
-    username: newUser.value,
+    username: otherUser.value,
   })
-  newUser.value = ''
+  otherUser.value = ''
 
 }
 
@@ -163,9 +168,9 @@ async function isOwner() {
 async function addUser() {
   const add_user = await post('chat/addUserToChat', {
     chat_id: currentChatId.value,
-    username: newUser.value,
+    username: otherUser.value,
   })
-  newUser.value = ''
+  otherUser.value = ''
 }
 
 async function createChat() {
