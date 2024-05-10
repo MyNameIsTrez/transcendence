@@ -46,6 +46,17 @@ class JoinDto {
   password: string;
 }
 
+class MuteDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsNotEmpty()
+  intra_id: number;
+
+  @IsNotEmpty()
+  days: number;
+}
+
 @Controller('api/chat')
 export class ChatController {
   constructor(
@@ -191,5 +202,10 @@ export class ChatController {
   @Post('join')
   join(@Request() req, @Body() dto: JoinDto) {
     return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
+  }
+
+  @Post()
+  async mute(@Request() req, @Body() dto: MuteDto) {
+    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days)
   }
 }

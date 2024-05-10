@@ -5,7 +5,7 @@
     <div v-for="chat in chatsOnIndex">
       <button @click="getChat(chat)">{{ chat }}</button>
     </div>
-    <br />
+    <br/>
     <!-- createChat -->
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
     <button 
@@ -18,14 +18,15 @@
     <div v-if="iAmAdmin">
       <br/>
     </div>
-    <!-- addToChat -->
+    <!-- admin operations -->
     <input v-if="iAmAdmin" v-model="newUser" placeholder="42 student..." />
     <button v-if="iAmAdmin" @click="addUser">Add</button>
     <button v-if="iAmAdmin" @click="kickUser">/Kick</button>
     <button v-if="iAmAdmin" @click="banUser">/Ban</button>
-    <button v-if="iAmAdmin" @click="muteUser">/Mute</button>
     <button v-if="iAmAdmin" @click="addAdmin">/Make admin</button>
-    <br /><br />
+    <button v-if="iAmAdmin" @click="muteUser">/Mute</button>
+    <input v-if="iAmAdmin" v-model="daysToMute" placeholder="days to mute..." />
+    <br/><br/>
 
     <!-- joinChat -->
     <!-- <button @click="joinChat">Join chat</button>
@@ -71,9 +72,10 @@ const direct = ref(false)
 const otherIntraId = ref(0)
 const blockStatus = ref('Block')
 const iAmBlocked = ref(false)
+const daysToMute = ref(0)
 
 async function muteUser() {
-
+  
 }
 
 async function getBlockStatus() {
@@ -199,11 +201,10 @@ async function getChat(chat: string) {
     otherIntraId.value = await getOtherIntraId()
   else
     otherIntraId.value = 0
-  console.log("direct", direct.value)
-  console.log("other intra id", otherIntraId.value)
-
+  // console.log("direct", direct.value)
+  // console.log("other intra id", otherIntraId.value)
   iAmBlocked.value = await getBlockStatus()
-  console.log("i am blocked", iAmBlocked.value)
+  // console.log("i am blocked", iAmBlocked.value)
   // console.log("i am owner", iAmOwner.value)
   // console.log("i am admin", iAmAdmin.value)
 

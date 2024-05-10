@@ -223,4 +223,8 @@ export class ChatService {
       return res;
     });
   }
+
+  public async mute(chat_id: string, intra_id: number, days: number) {
+
+  }
 }
