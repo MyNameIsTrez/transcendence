@@ -37,7 +37,7 @@ export class Chat {
   @Column('int', { array: true })
   admins: number[];
 
-  @Column('int', { array: true })
+  @Column('int', { array: true, default: [] })
   banned: number[];
 
   @OneToMany(() => Mute, (mute) => mute.chat)

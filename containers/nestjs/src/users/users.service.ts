@@ -17,8 +17,12 @@ export class UsersService {
     private readonly myChatRepository: Repository<MyChat>,
   ) {}
 
-  create(user: User): Promise<User> {
-    return this.usersRepository.save(user);
+  create(intra_id: number, username: string, email: string): Promise<User> {
+    return this.usersRepository.save({
+      intra_id,
+      username,
+      email,
+    });
   }
 
   // TODO: Remove?
@@ -78,11 +82,11 @@ export class UsersService {
   }
 
   async addToChat(intra_id: number, chat_id: string, name: string) {
-    const myChat = new MyChat();
-    myChat.chat_id = chat_id;
-    myChat.name = name;
-    myChat.user = await this.findOne(intra_id);
-    await this.myChatRepository.save(myChat);
+    await this.myChatRepository.save({
+      chat_id,
+      name,
+      user: await this.findOne(intra_id),
+    });
   }
 
   getMyChats(intra_id: number): Promise<MyChat[]> {
