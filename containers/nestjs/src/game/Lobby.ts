@@ -29,7 +29,7 @@ export default class Lobby {
     private readonly usersService: UsersService,
   ) {
     console.log('Initializing lobby with mode:', mode);
-    console.log('gamemodes', this.gamemodes);
+    // console.log('gamemodes', this.gamemodes);
     this.pong = this.gamemodes.get(mode)(10);
   }
 

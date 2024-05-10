@@ -12,7 +12,7 @@ export class User {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean;
 
   @Column({ nullable: true })
@@ -22,8 +22,8 @@ export class User {
   my_chats: MyChat[];
 
   @Column('int', { default: 0 })
-  wins: number = 0;
+  wins: number;
 
-  @Column('int')
-  losses: number = 0;
+  @Column('int', { default: 0 })
+  losses: number;
 }

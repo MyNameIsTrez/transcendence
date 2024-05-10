@@ -95,16 +95,7 @@ export class AuthService {
             console.log('Saved profile picture');
           });
 
-          this.usersService.create({
-            intra_id: intra_id,
-            username: j.displayname,
-            email: j.email,
-            isTwoFactorAuthenticationEnabled: false,
-            twoFactorAuthenticationSecret: null,
-            my_chats: [],
-            wins: 0,
-            losses: 0,
-          });
+          this.usersService.create(intra_id, j.displayname, j.email);
         }
 
         const payload = { sub: intra_id };

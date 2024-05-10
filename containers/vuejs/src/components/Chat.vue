@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 
 const chatName = ref('')

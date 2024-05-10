@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
-import { v4 as uuid } from 'uuid';
 import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
@@ -34,29 +33,13 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('create')
-  async create(@Request() req, @Body() dto: CreateDto) {
-    const intra_id = req.user.intra_id;
-
-    // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
-
-    // TODO: Implement
-    const hashed_password =
-      dto.visibility === Visibility.PROTECTED
-        ? await this.chatService.hashPassword(dto.password)
-        : '';
-
-    return this.chatService.create(intra_id, {
-      chat_id: uuid(),
-      name: dto.name,
-      users: [intra_id],
-      history: [],
-      visibility: dto.visibility,
-      hashed_password: hashed_password,
-      owner: intra_id,
-      admins: [intra_id],
-      banned: [],
-      muted: [],
-    });
+  create(@Request() req, @Body() dto: CreateDto) {
+    return this.chatService.create(
+      req.user.intra_id,
+      dto.name,
+      dto.visibility,
+      dto.password,
+    );
   }
 
   @Get('chats')
