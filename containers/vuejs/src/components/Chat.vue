@@ -10,7 +10,7 @@
     <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
     <button 
       :class= "privateButtonClass"
-      @click="privateChat"> {{ visibility }}
+      @click="chatVisibility"> {{ visibility }}
     </button>
     <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
     <br/>
@@ -202,7 +202,7 @@ async function getChat(chat: string) {
   console.log("direct", direct.value)
   console.log("other intra id", otherIntraId.value)
 
-  iAmBlocked.value = getBlockStatus()
+  iAmBlocked.value = await getBlockStatus()
   console.log("i am blocked", iAmBlocked.value)
   // console.log("i am owner", iAmOwner.value)
   // console.log("i am admin", iAmAdmin.value)
@@ -250,6 +250,10 @@ chatSocket.on('confirm', result => {
 })
 
 async function sendMessage() {
+  if (direct.value && iAmBlocked.value) {
+    typedMessage.value = ''
+    return
+  }
   const message = {
     chatId: currentChatId.value,
     body: typedMessage.value
@@ -258,7 +262,7 @@ async function sendMessage() {
   chatSocket.emit('sendMessage', message)
 }
 
-function privateChat() {
+function chatVisibility() {
   protectedChat.value = false
   visibilityNum.value += 1
   if (visibilityNum.value > 3)

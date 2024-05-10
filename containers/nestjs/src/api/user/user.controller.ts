@@ -96,7 +96,7 @@ export class UserController {
   }
 
   @Get('blockStatus/:my_intra_id/:other_intra_id')
-  iAmBlocked(@Request() req, @Param() dto: BlockDto) {
-    return this.usersService.iAmBlocked(dto.my_intra_id, dto.other_intra_id)
+  async iAmBlocked(@Request() req, @Param() dto: BlockDto) {
+    return await this.usersService.iAmBlocked(dto.my_intra_id, dto.other_intra_id)
   }
 }
