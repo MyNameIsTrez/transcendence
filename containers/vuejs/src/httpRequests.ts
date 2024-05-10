@@ -12,11 +12,6 @@ export async function get(path: string) {
   return await axios.get(`http://localhost:4242/api/${path}`, options).then((response) => {
     return response.data
   })
-  // TODO: Put this back! This should be easy if this is turned into a .vue file
-  // .catch(() => {
-  //   localStorage.removeItem('jwt')
-  //   router.replace({ path: '/login' })
-  // })
 }
 
 export async function post(path: string, body: any) {
@@ -29,11 +24,6 @@ export async function post(path: string, body: any) {
     .then((response) => {
       return response.data
     })
-  // TODO: Put this back! This should be easy if this is turned into a .vue file
-  // .catch(() => {
-  //   localStorage.removeItem('jwt')
-  //   router.replace({ path: '/login' })
-  // })
 }
 
 export async function getImage(path: string) {
