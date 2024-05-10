@@ -59,7 +59,12 @@ export class ChatService {
   public async join(intra_id: number, chat_id: string, password: string) {
     const chat = await this.getChat(chat_id);
 
-    // TODO: Add tests for these in test/public.e2e-spec.ts
+    // If the user is already in this chat, they can't join it again
+    if (chat.users.includes(intra_id)) {
+      return false;
+    }
+
+    // If this is not a protected chat, skip checking the password
     if (chat.visibility !== Visibility.PROTECTED) {
       return true;
     }

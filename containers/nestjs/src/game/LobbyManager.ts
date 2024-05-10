@@ -62,9 +62,6 @@ export default class LobbyManager {
     return newLobby;
   }
 
-  // TODO: Use this to join private lobbies
-  // public join(lobby_id: string) {}
-
   public removeClient(client: Socket) {
     const lobby: Lobby | undefined = client.data.lobby;
 
