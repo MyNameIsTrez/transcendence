@@ -43,7 +43,7 @@ const myChats = ref('')
 
 async function getMyChats() {
   myChats.value = await get('user/myChats')
-  console.log('myChats', typeof myChats.value, myChats.value)
+  // console.log('myChats', typeof myChats.value, myChats.value)
 }
 
 getMyChats()
