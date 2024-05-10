@@ -9,8 +9,10 @@
 
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { gameSocket } from '../getSocket'
 import { ref } from 'vue'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')

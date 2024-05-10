@@ -8,7 +8,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { gameSocket } from '../getSocket'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 const leftPlayerScore = ref(0)
 const rightPlayerScore = ref(0)

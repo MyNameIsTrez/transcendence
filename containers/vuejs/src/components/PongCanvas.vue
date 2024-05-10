@@ -1,14 +1,16 @@
 <template>
   <div class="pong-container" ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
-    <ScoreBoard />
+    <ScoreBoard :game-socket="gameSocket" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ScoreBoard from './ScoreBoard.vue'
-import { gameSocket } from '../getSocket'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 gameSocket.on('pong', (data: any) => {
   render(data)

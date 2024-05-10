@@ -6,13 +6,13 @@
       <Sidebar />
     </div>
     <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
-      <PongCanvas />
+      <PongCanvas :game-socket="gameSocket" />
     </div>
     <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
       <Chat />
     </div>
   </div>
-  <GameHeader />
+  <GameHeader :game-socket="gameSocket" />
 </template>
 
 <script setup lang="ts">
@@ -23,7 +23,7 @@ import Sidebar from './Sidebar.vue'
 
 import { useRouter } from 'vue-router'
 import { onUnmounted } from 'vue'
-import { gameSocket, initGameSocket } from '../getSocket'
+import { io } from 'socket.io-client'
 
 const router = useRouter()
 
@@ -39,6 +39,11 @@ const retrieveJwt = () => {
   return jwt
 }
 
+const getSocket = (namespace: string, opts: any) => {
+  const url = import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_BACKEND_PORT
+  return io(url + namespace, opts)
+}
+
 const jwt = retrieveJwt()
 
 const authorization_string = `Bearer ${jwt}`
@@ -48,7 +53,7 @@ const opts = {
   }
 }
 
-initGameSocket(opts)
+const gameSocket = getSocket('/game', opts)
 
 gameSocket.on('exception', (error) => {
   console.log('In gameSocket exception handler')
