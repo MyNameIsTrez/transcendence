@@ -20,16 +20,6 @@ function extractJwtFromUrl() {
 
 const router = useRouter()
 
-/* TODO:
-The commented line their purpose was to automatically redirect us away from
-the login page if you were already logged in, but this would break our implementation of 2fa.
-
-A solution would be to have the 2fa callback page be on a different
-route but that would require another front-end page.
-
-If more questions, please contact back-end or leave a voicemail :)
-*/
-// if (localStorage.getItem('jwt') || extractJwtFromUrl()) {
 if (extractJwtFromUrl()) {
   router.replace({ path: '/' })
 }
