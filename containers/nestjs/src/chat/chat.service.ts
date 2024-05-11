@@ -224,10 +224,36 @@ export class ChatService {
     });
   }
 
+  public getTimeOfUnmute(days: number) {
+    let date = new Date()
+    const current_time = date.getTime()
+    const new_time = current_time + (days * 24 * 60 * 60 * 1000)
+    date.setTime(new_time)
+    return date
+  }
+
+
+
   public async mute(chat_id: string, username: string, days: number) {
     console.log("chat_id", chat_id)
     console.log("username", username)
     console.log("days", days)
-    return true
+
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { muted: true } })
+      .then(async (chat) => {
+        if (!chat) { return false }
+
+        const user = await this.usersService.findOneByUsername(username)
+        if (!user) { return false }
+
+        const mute = new Mute()
+        mute.intra_id = user.intra_id
+        mute.time_of_unmute = this.getTimeOfUnmute(days)
+        chat.muted = [...chat.muted, mute]
+        console.log("muted", chat.muted)
+        console.log("mute", mute)
+        return this.chatRepository.save(chat)
+      })
   }
 }
