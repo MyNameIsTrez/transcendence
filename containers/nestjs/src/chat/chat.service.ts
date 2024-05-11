@@ -267,9 +267,9 @@ export class ChatService {
         const mute = new Mute()
         mute.intra_id = user.intra_id
         mute.time_of_unmute = this.getTimeOfUnmute(days)
+        await this.muteRepository.save(mute)
         chat.muted = [...chat.muted, mute]
-        this.muteRepository.save(mute)
-        return this.chatRepository.save(chat)
+        return await this.chatRepository.save(chat)
       })
   }
 }

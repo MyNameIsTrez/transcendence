@@ -211,7 +211,6 @@ export class ChatController {
 
   @Get('iAmMute/:chat_id/:intra_id')
   async iAmMute(@Request() req, @Param() dto: OtherUserDto) {
-    console.log("dto", dto)
     return await this.chatService.isMute(dto.chat_id, dto.intra_id)
   }
 }

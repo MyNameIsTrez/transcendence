@@ -210,16 +210,8 @@ async function getChat(chat: string) {
     otherIntraId.value = await getOtherIntraId()
   else
     otherIntraId.value = 0
-  // console.log("direct", direct.value)
-  // console.log("other intra id", otherIntraId.value)
   iAmBlocked.value = await getBlockStatus()
-  // console.log("i am blocked", iAmBlocked.value)
-  // console.log("i am owner", iAmOwner.value)
-  // console.log("i am admin", iAmAdmin.value)
   iAmMute.value = await isMuted(myIntraId.value)
-  console.log("I am mute", iAmMute.value)
-  console.log("4321 is muted", await isMuted('4321'))
-
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
   i = 0
@@ -263,7 +255,7 @@ chatSocket.on('confirm', result => {
 })
 
 async function sendMessage() {
-  if (direct.value && iAmBlocked.value) {
+  if ((direct.value && iAmBlocked.value) || iAmMute.value) {
     typedMessage.value = ''
     return
   }
