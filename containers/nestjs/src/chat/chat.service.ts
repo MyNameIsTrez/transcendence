@@ -232,14 +232,30 @@ export class ChatService {
     return date
   }
 
-  
+  public timeIsPassed(date: Date) {
+    let current_date = new Date()
+    return date < current_date
+  }
 
+  public async isMute(chat_id: string, intra_id: number) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { muted: true } })
+      .then(async (chat) => {
+        if (!chat) { return false }
+
+        let is_mute = false
+        const muted = [...chat.muted]
+        muted.forEach(mute => {
+          if (mute.intra_id == intra_id) {
+            if (!this.timeIsPassed(mute.time_of_unmute))
+              is_mute = true
+            }
+        })
+        return is_mute
+      })
+  }
 
   public async mute(chat_id: string, username: string, days: number) {
-    console.log("chat_id", chat_id)
-    console.log("username", username)
-    console.log("days", days)
-
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
@@ -253,8 +269,6 @@ export class ChatService {
         mute.time_of_unmute = this.getTimeOfUnmute(days)
         chat.muted = [...chat.muted, mute]
         this.muteRepository.save(mute)
-        console.log("muted", chat.muted)
-        console.log("mute", mute)
         return this.chatRepository.save(chat)
       })
   }

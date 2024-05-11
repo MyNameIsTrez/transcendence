@@ -74,6 +74,10 @@ const blockStatus = ref('Block')
 const iAmBlocked = ref(false)
 const daysToMute = ref(0)
 
+async function isMuted(intra_id: string) {
+  return await get('chat/iAmMute/' + currentChatId.value + '/' + intra_id)
+}
+
 async function muteUser() {
   const mute = await post('chat/mute', {
     chat_id: currentChatId.value,
@@ -212,6 +216,9 @@ async function getChat(chat: string) {
   // console.log("i am blocked", iAmBlocked.value)
   // console.log("i am owner", iAmOwner.value)
   // console.log("i am admin", iAmAdmin.value)
+  iAmMute.value = await isMuted(myIntraId.value)
+  console.log("I am mute", iAmMute.value)
+  console.log("4321 is muted", await isMuted('4321'))
 
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
