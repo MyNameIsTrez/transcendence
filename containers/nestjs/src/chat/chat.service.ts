@@ -232,6 +232,7 @@ export class ChatService {
     return date
   }
 
+  
 
 
   public async mute(chat_id: string, username: string, days: number) {
@@ -251,6 +252,7 @@ export class ChatService {
         mute.intra_id = user.intra_id
         mute.time_of_unmute = this.getTimeOfUnmute(days)
         chat.muted = [...chat.muted, mute]
+        this.muteRepository.save(mute)
         console.log("muted", chat.muted)
         console.log("mute", mute)
         return this.chatRepository.save(chat)
