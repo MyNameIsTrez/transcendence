@@ -57,9 +57,9 @@ export class UsersService {
     if (receiver.intra_id == sender_id) {
       throw new BadRequestException('You cannot add yourself as a friend');
     }
-	if (receiver.incoming_friend_requests.includes(sender_id)) {
-		throw new BadRequestException('Friend request already sent');
-	}
+    if (receiver.incoming_friend_requests.includes(sender_id)) {
+      throw new BadRequestException('Friend request already sent');
+    }
     //TODO: misschien een mooiere manier vinden om dit te doen
     receiver.incoming_friend_requests.push(sender_id);
     this.updateIncomingFriendRequests(
@@ -177,9 +177,12 @@ export class UsersService {
       }),
     );
 
+    console.log('MILAN INCOMING: ', receiver.incoming_friend_requests);
     receiver.incoming_friend_requests.splice(
       receiver.incoming_friend_requests.indexOf(sender_id),
+      1,
     );
+    console.log('MILAN INCOMING: ', receiver.incoming_friend_requests);
     this.updateIncomingFriendRequests(
       sender_id,
       receiver.intra_id,
@@ -199,6 +202,7 @@ export class UsersService {
 
     receiver.incoming_friend_requests.splice(
       receiver.incoming_friend_requests.indexOf(sender_id),
+      1,
     );
     this.updateIncomingFriendRequests(
       sender_id,
@@ -217,7 +221,7 @@ export class UsersService {
     console.log('rF user: ', user);
     console.log('rF friend: ', friend);
 
-    user.friends.splice(user.friends.indexOf(friend_id));
+    user.friends.splice(user.friends.indexOf(friend_id), 1);
     this.updateFriends(
       user.intra_id,
       user.friends.filter(function (elem, index, self) {
@@ -225,7 +229,7 @@ export class UsersService {
       }),
     );
 
-    friend.friends.splice(friend.friends.indexOf(user_id));
+    friend.friends.splice(friend.friends.indexOf(user_id), 1);
     this.updateFriends(
       friend.intra_id,
       friend.friends.filter(function (elem, index, self) {
