@@ -2,7 +2,9 @@
   <div class="p-6">
     <div class="grid justify-center">
       <span class="grid grid-flow-row-dense grid-cols-2">
-        <div class="text text-base justify-self-start self-center text-yellow-200 w-64">{{ username }}</div>
+        <div class="text text-base justify-self-start self-center text-yellow-200 w-64">
+          {{ username }}
+        </div>
         <!-- The button to open modal -->
         <button class="btn w-24 justify-self-end" onclick="my_modal_7.showModal()">Edit</button>
 
@@ -19,7 +21,7 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
             <span>{{ alertMessage }}</span>
@@ -44,7 +46,7 @@
               accept="image/*"
               @change="uploadProfilePicture"
             />
-			<p class="text-center text-gray-400" style="padding-top: 20px">Press [ESC] to close</p>
+            <p class="text-center text-gray-400" style="padding-top: 20px">Press [ESC] to close</p>
           </div>
           <form method="dialog" class="modal-backdrop">
             <button>close</button>
@@ -126,36 +128,17 @@ const alertVisibility = ref('invisible')
 
 const alertMessage = ref('Name change failed')
 
-function checkName() {
-  if (newUsername.value != '') {
-    const checking = newUsername.value
-    for (let i = 0; i < checking.length; i++) {
-      if (i >= 16) {
-        alertMessage.value = 'Name exceeds character limit of 16'
-        return false
-      }
-      if (checking.charCodeAt(i) < 32 || checking.charCodeAt(i) > 122) {
-        alertMessage.value = 'Name contains an illegal character'
-        return false
-      }
-      console.log(checking.charAt(i), checking.charCodeAt(i))
-    }
-  }
-  return true
-}
-
 function changeUsername() {
-  if (newUsername.value != '') {
-    if (checkName()) {
-      post('user/username', { username: newUsername.value }).then(() => location.reload())
-    } else {
-      console.log('invalid username')
+  post('user/setUsername', { username: newUsername.value })
+    .then(() => location.reload())
+    .catch((err) => {
+      console.log('catch test', err.response.data.message)
+      alertMessage.value = err.response.data.message[0]
       alertVisibility.value = 'visible'
       setTimeout(() => {
         alertVisibility.value = 'invisible'
       }, 3500)
-    }
-  }
+    })
 }
 </script>
 

@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, JoinTable, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { MyChat } from './mychat.entity';
 
 @Entity()
@@ -24,11 +24,16 @@ export class User {
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
 
-  @Column('int', { array: true })
-  friends: number[];
+  @ManyToMany(() => User, friend => friend.friends)
+  @JoinTable()
+  friends: User[];
 
-  @Column('int', { array: true })
-  incoming_friend_requests: number[];
+  @ManyToMany(() => User, incoming => incoming.outgoing_friend_requests)
+  @JoinTable()
+  incoming_friend_requests: User[];
+
+  @ManyToMany(() => User, outgoing => outgoing.incoming_friend_requests)
+  outgoing_friend_requests: User[];
 
   @Column('int', { default: 0 })
   wins: number;

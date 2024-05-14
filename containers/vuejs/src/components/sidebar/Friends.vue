@@ -25,7 +25,7 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  :d="`${ isError ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }`"
                 />
               </svg>
               <span>{{ alertMessage }}</span>
@@ -54,7 +54,7 @@
     </div>
     <h1 class="text-center">---- Online ----</h1>
     <template v-for="friend in friends">
-        <!-- getFriendPicture(friend.intraId) -->
+      <!-- getFriendPicture(friend.intraId) -->
       <Friend
         v-if="friend.isOnline"
         :name="friend.name"
@@ -72,11 +72,7 @@
       />
     </template>
     <h1 class="text-center">---- Incoming ----</h1>
-    <Incoming
-      v-for="request in incomingRequests"
-      :name="request.name"
-      :intraId="request.intraId"
-    />
+    <Incoming v-for="request in incomingRequests" :name="request.name" :intraId="request.intraId" />
   </div>
 </template>
 
@@ -97,6 +93,8 @@ const alertColor = ref('alert-success')
 
 const alertMessage = ref('Friend request sent')
 
+const isError = ref(true)
+
 function reloadFriends() {
   console.log('reloaded')
   location.reload()
@@ -105,11 +103,11 @@ function reloadFriends() {
 async function addFriend() {
   console.log(friendSearch.value)
   const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }) //TODO: waarschijnlijk dit niet meer in een variabele stoppen
-    .then((resp) => {
-      //TODO: waarschijnlijk "resp" weghalen
+    .then(() => {
       alertColor.value = 'alert-success'
       alertMessage.value = 'Friend request sent'
       alertVisibility.value = 'visible'
+      isError.value = false
       setTimeout(() => {
         alertVisibility.value = 'invisible'
       }, 3500)
@@ -119,6 +117,7 @@ async function addFriend() {
       alertColor.value = 'alert-warning'
       alertMessage.value = err.response.data.message
       alertVisibility.value = 'visible'
+      isError.value = true
       setTimeout(() => {
         alertVisibility.value = 'invisible'
       }, 3500)
