@@ -16,6 +16,10 @@
           class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
         >
           <li><router-link to="FriendProfile">View profile</router-link></li>
+          <!-- <li><router-link :to="{ name: 'friendprofile', params: { id: intraId, intraId: intraId, name: name }}">View profile</router-link></li> -->
+		  <!-- <li><router-link v-slot="{ FriendProfile }">
+			<component :is="FriendProfile"></component>
+		</router-link></li> -->
           <li><a>Invite to game</a></li>
           <li><a>Open chat</a></li>
           <li><a @click="removeFriend">Remove friend</a></li>
@@ -28,6 +32,7 @@
 
 <script setup lang="ts">
 import { post, getImage } from '../../../httpRequests'
+import FriendProfile from '../FriendProfile.vue'
 
 const props = defineProps({
   name: String,

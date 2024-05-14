@@ -105,7 +105,6 @@
 
 <script setup lang="ts">
 import MatchReport from './profile/MatchReport.vue'
-// import Achievements from './profile/Achievements.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
