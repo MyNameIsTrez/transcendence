@@ -1,10 +1,3 @@
-<script setup lang="ts">
-import Chat from './Chat.vue'
-import GameHeader from './GameHeader.vue'
-import PongCanvas from './PongCanvas.vue'
-import Sidebar from './Sidebar.vue'
-</script>
-
 <template>
   <div class="flex flex-col overflow-hidden w-full lg:flex-row">
     <div
@@ -13,11 +6,65 @@ import Sidebar from './Sidebar.vue'
       <Sidebar />
     </div>
     <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
-      <PongCanvas />
+      <PongCanvas :game-socket="gameSocket" />
     </div>
     <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
       <Chat />
     </div>
   </div>
-  <GameHeader />
+  <GameHeader :game-socket="gameSocket" />
 </template>
+
+<script setup lang="ts">
+import Chat from './Chat.vue'
+import GameHeader from './GameHeader.vue'
+import PongCanvas from './PongCanvas.vue'
+import Sidebar from './Sidebar.vue'
+
+import { useRouter } from 'vue-router'
+import { onUnmounted } from 'vue'
+import { io } from 'socket.io-client'
+
+const router = useRouter()
+
+const retrieveJwt = () => {
+  const jwt = localStorage.getItem('jwt')
+  console.log('In retrieveJwt with jwt ', jwt)
+  if (!jwt) {
+    console.error(
+      "Expected a jwt in the localstorage, and the url doesn't start with /login, so redirecting to the login page"
+    )
+    router.replace({ path: '/login' })
+  }
+  return jwt
+}
+
+const getSocket = (namespace: string, opts: any) => {
+  const url = import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_BACKEND_PORT
+  return io(url + namespace, opts)
+}
+
+const jwt = retrieveJwt()
+
+const authorization_string = `Bearer ${jwt}`
+const opts = {
+  extraHeaders: {
+    Authorization: authorization_string
+  }
+}
+
+const gameSocket = getSocket('/game', opts)
+
+gameSocket.on('exception', (error) => {
+  console.log('In gameSocket exception handler')
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    console.log('Redirecting to /login')
+    router.replace({ path: '/login' })
+  }
+})
+
+onUnmounted(() => {
+  gameSocket.disconnect()
+})
+</script>

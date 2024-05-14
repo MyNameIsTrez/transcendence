@@ -9,8 +9,10 @@
 
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { gameSocket } from '../getSocket'
 import { ref } from 'vue'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
@@ -20,7 +22,7 @@ const startOfGame = ref(false)
 
 const joinGame = () => {
   buttonText.value = 'Seeking game...'
-  gameSocket.emit('joinGame')
+  gameSocket.emit('joinGame', { mode: 'normal' })
 }
 const reset = () => {
   buttonText.value = 'PLAY'
@@ -54,9 +56,11 @@ gameSocket.on('gameStart', () => {
   align-items: center;
   justify-content: center;
 }
+
 .game-title {
   font-size: 4vw;
   margin: 1vw;
   padding: 1vw;
+  user-select: none; /* Disables cursor selection */
 }
 </style>

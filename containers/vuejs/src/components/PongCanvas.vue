@@ -1,14 +1,16 @@
 <template>
   <div class="pong-container" ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
-    <ScoreBoard />
+    <ScoreBoard :game-socket="gameSocket" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ScoreBoard from './ScoreBoard.vue'
-import { gameSocket } from '../getSocket'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 gameSocket.on('pong', (data: any) => {
   render(data)
@@ -53,15 +55,11 @@ const drawObject = (
   }
 }
 // TODO: Replace "any" with Data struct typedef?
-const render = (data: {
-  ball: any
-  leftPlayer: { paddle: any; score: number }
-  rightPlayer: { paddle: any; score: number }
-}) => {
+const render = (data: { rects: Array<any>; score: any }) => {
   drawCanvas()
-  drawObject('white', data.ball)
-  drawObject('white', data.leftPlayer.paddle)
-  drawObject('white', data.rightPlayer.paddle)
+  for (const rect of data.rects) {
+    drawObject(rect.color, rect)
+  }
 }
 
 onMounted(() => {

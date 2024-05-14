@@ -2,6 +2,12 @@ import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 
+export enum Visibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED',
+}
+
 @Entity()
 export class Chat {
   @PrimaryColumn('uuid')
@@ -16,7 +22,11 @@ export class Chat {
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
 
-  visibility: string;
+  @Column({
+    type: 'enum',
+    enum: Visibility,
+  })
+  visibility: Visibility;
 
   @Column()
   hashed_password: string;
@@ -27,7 +37,7 @@ export class Chat {
   @Column('int', { array: true })
   admins: number[];
 
-  @Column('int', { array: true })
+  @Column('int', { array: true, default: [] })
   banned: number[];
 
   @OneToMany(() => Mute, (mute) => mute.chat)

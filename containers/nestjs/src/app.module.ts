@@ -12,21 +12,27 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        POSTGRES_PORT: Joi.number().integer(),
+        POSTGRES_PORT: Joi.number().integer().positive(),
         POSTGRES_USER: Joi.string(),
         POSTGRES_PASSWORD: Joi.string(),
         POSTGRES_DB: Joi.string(),
 
-        FRONTEND_PORT: Joi.number().integer(),
-        BACKEND_PORT: Joi.number().integer(),
+        FRONTEND_PORT: Joi.number().integer().positive(),
+        BACKEND_PORT: Joi.number().integer().positive(),
 
         VITE_ADDRESS: Joi.string().uri(),
-        VITE_BACKEND_PORT: Joi.number().integer(),
+        VITE_BACKEND_PORT: Joi.number().integer().positive(),
         VITE_INTRA_REDIRECT_URL: Joi.string().uri(),
 
         INTRA_CLIENT_ID: Joi.string(),
         INTRA_CLIENT_SECRET: Joi.string(),
         JWT_SECRET: Joi.string(),
+
+        APP_NAME: Joi.string(),
+
+        DEBUG: Joi.boolean(),
+
+        BCRYPT_SALT_ROUNDS: Joi.number().integer().positive(),
       }),
       validationOptions: {
         allowUnknown: true,
@@ -50,7 +56,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         database: configService.get<string>('POSTGRES_DB'),
         autoLoadEntities: true,
         synchronize: true, // TODO: Remove, as it's unsafe in production according to the docs!
-        logging: true, // TODO: Remove?
+        logging: false,
+        retryAttempts: 420, // The default of 10 was too low with our Docker containers
+        dropSchema: false, // TODO: Set this back to false for production!!!s
       }),
       inject: [ConfigService],
     }),

@@ -8,7 +8,10 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { existsSync, mkdirSync, writeFile } from 'fs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
+import { authenticator } from 'otplib';
+import { User } from '../users/user.entity';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -69,58 +72,80 @@ export class AuthService {
       .then(async (j) => {
         const intra_id = j.id;
 
-        console.log(`Saving user with intra_id ${intra_id}`);
+        if (await this.usersService.hasUser(intra_id)) {
+          console.log('Only updating intra name');
+          // TODO: Only update intra name
+        } else {
+          console.log(`Saving user with intra_id ${intra_id}`);
 
-        const url = j.image.versions.medium;
+          const url = j.image.versions.medium;
 
-        const { data } = await firstValueFrom(
-          this.httpService.get(url, {
-            responseType: 'arraybuffer',
-          }),
-        );
+          const { data } = await firstValueFrom(
+            this.httpService.get(url, {
+              responseType: 'arraybuffer',
+            }),
+          );
 
-        if (!existsSync('profile_pictures')) {
-          mkdirSync('profile_pictures');
+          if (!existsSync('profile_pictures')) {
+            mkdirSync('profile_pictures');
+          }
+
+          writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
+            if (err) throw err;
+            console.log('Saved profile picture');
+          });
+          this.usersService.create(intra_id, j.displayname, j.login, j.email);
         }
-
-        writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
-          if (err) throw err;
-          console.log('Saved profile picture');
-        });
-
-		// console.log(j);
-        this.usersService.create({
-          intra_id: intra_id,
-          username: j.displayname,
-          intra_name: j.login,
-          email: j.email,
-          my_chats: [],
-          friends: [], // TODO: DONT HARDCODE THIS!!
-          incoming_friend_requests: [],
-        });
-
-        // TODO: REMOVE! WE SHOULD BE ADDING USERS VIA HTTP ENDPOINTS!!
-        // this.usersService.create({
-        //   intra_id: 88874,
-        //   username: 'Sander',
-        //   intra_name: 'sbos',
-        //   email: 'foo',
-        //   my_chats: [],
-        //   friends: [],
-        //   incoming_friend_requests: [],
-        // });
-        // this.usersService.create({
-        //   intra_id: 76657,
-        //   username: 'Victor',
-        //   intra_name: 'vbenneko',
-        //   email: 'bar',
-        //   my_chats: [],
-        //   friends: [],
-        //   incoming_friend_requests: [],
-        // });
 
         const payload = { sub: intra_id };
         return this.jwtService.sign(payload);
       });
+  }
+
+  async generateTwoFactorAuthenticationSecret(user: User) {
+    console.log('In generateTwoFactorAuthenticationSecret()');
+    const secret = authenticator.generateSecret();
+
+    const otpAuthUrl = authenticator.keyuri(
+      user.intra_id.toString(),
+      this.configService.get('APP_NAME'),
+      secret,
+    );
+
+    await this.usersService.setTwoFactorAuthenticationSecret(
+      secret,
+      user.intra_id,
+    );
+
+    return {
+      secret,
+      otpAuthUrl,
+    };
+  }
+
+  async generateQrCodeDataURL(otpAuthUrl: string) {
+    return toDataURL(otpAuthUrl);
+  }
+
+  isTwoFactorAuthenticationCodeValid(
+    twoFactorAuthenticationCode: string,
+    twoFactorAuthenticationSecret: string,
+  ) {
+    console.log('token', twoFactorAuthenticationCode);
+    console.log('secret', twoFactorAuthenticationSecret);
+    return authenticator.verify({
+      token: twoFactorAuthenticationCode,
+      secret: twoFactorAuthenticationSecret,
+    });
+  }
+
+  async loginWith2fa(intra_id: number) {
+    const payload = {
+      sub: intra_id,
+      isTwoFactorAuthenticationEnabled: true,
+      isTwoFactorAuthenticated: true,
+    };
+
+    return this.jwtService.sign(payload);
   }
 }

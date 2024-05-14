@@ -15,6 +15,12 @@ export class User {
   @Column()
   email: string;
 
+  @Column({ default: false })
+  isTwoFactorAuthenticationEnabled: boolean;
+
+  @Column({ nullable: true })
+  twoFactorAuthenticationSecret: string | null;
+
   @OneToMany(() => MyChat, (my_chat) => my_chat.user)
   my_chats: MyChat[];
 
@@ -23,4 +29,10 @@ export class User {
 
   @Column('int', { array: true })
   incoming_friend_requests: number[];
+
+  @Column('int', { default: 0 })
+  wins: number;
+
+  @Column('int', { default: 0 })
+  losses: number;
 }
