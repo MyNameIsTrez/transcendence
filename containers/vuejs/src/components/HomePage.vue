@@ -59,13 +59,12 @@ gameSocket.on('exception', (error) => {
   console.log('In gameSocket exception handler')
   console.error('exception', error)
   if (error.redirectToLoginPage) {
-    console.log('In gameSocket, redirecting to /login')
+    console.log('Redirecting to /login')
     router.replace({ path: '/login' })
   }
 })
 
 onUnmounted(() => {
-  console.log('In onUnmounted()')
   gameSocket.disconnect()
 })
 </script>
