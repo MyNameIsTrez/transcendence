@@ -94,8 +94,7 @@ export class AuthService {
             if (err) throw err;
             console.log('Saved profile picture');
           });
-
-          this.usersService.create(intra_id, j.displayname, j.email);
+          this.usersService.create(intra_id, j.displayname, j.login, j.email);
         }
 
         const payload = { sub: intra_id };

@@ -17,10 +17,16 @@ export class UsersService {
     private readonly myChatRepository: Repository<MyChat>,
   ) {}
 
-  create(intra_id: number, username: string, email: string): Promise<User> {
+  create(
+    intra_id: number,
+    username: string,
+    intra_name: string,
+    email: string,
+  ): Promise<User> {
     return this.usersRepository.save({
       intra_id,
       username,
+      intra_name,
       email,
     });
   }
@@ -37,11 +43,6 @@ export class UsersService {
     }
     return user;
   }
-
-  // TODO: Remove?
-  // async remove(intra_id: number): Promise<void> {
-  //   await this.usersRepository.delete(intra_id);
-  // }
 
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
@@ -150,5 +151,169 @@ export class UsersService {
     return this.findOne(intra_id).then((user) => {
       return user.losses;
     });
+  }
+
+  findOneByName(intra_name: string): Promise<User | null> {
+    console.log('intra_name: ', intra_name);
+    return this.usersRepository.findOneBy({ intra_name: intra_name });
+  }
+
+  async sendFriendRequest(
+    sender_id: number,
+    receiver_name: string,
+  ): Promise<boolean> {
+    const sender = await this.usersRepository.findOne({
+      where: { intra_id: sender_id },
+      relations: {
+        friends: true,
+        incoming_friend_requests: true,
+      },
+    });
+    const receiver = await this.usersRepository.findOne({
+      where: { intra_name: receiver_name },
+      relations: {
+        friends: true,
+        incoming_friend_requests: true,
+      },
+    });
+    if (!receiver) {
+      throw new BadRequestException('User does not exist');
+    }
+    if (
+      sender.friends.some((friend) => friend.intra_id === receiver.intra_id)
+    ) {
+      throw new BadRequestException('You are already friends with this user');
+    }
+    if (receiver.intra_id == sender_id) {
+      throw new BadRequestException('You cannot add yourself as a friend');
+    }
+    if (
+      receiver.incoming_friend_requests.some(
+        (friendRequest) => friendRequest.intra_id === sender_id,
+      )
+    ) {
+      throw new BadRequestException('Friend request already sent');
+    }
+    if (
+      sender.incoming_friend_requests.some(
+        (friendRequest) => friendRequest.intra_id === receiver.intra_id,
+      )
+    ) {
+      sender.friends.push(receiver);
+      receiver.friends.push(sender);
+      sender.incoming_friend_requests.splice(
+        sender.incoming_friend_requests.indexOf(receiver),
+        1,
+      );
+      this.usersRepository.save([sender, receiver]);
+    } else {
+      receiver.incoming_friend_requests.push(sender);
+      this.usersRepository.save(receiver);
+    }
+    return true;
+  }
+
+  async getFriends(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        friends: true,
+      },
+    });
+    console.log('user', user);
+    if (user) {
+      const friends = await Promise.all(
+        user.friends.map(async (friend) => {
+          const returned = {
+            name: friend.username,
+            isOnline: true, // TODO: Store this in the user!
+            intraId: friend.intra_id,
+          };
+          return returned;
+        }),
+      );
+      return friends;
+    }
+  }
+
+  async getIncomingFriendRequests(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        incoming_friend_requests: true,
+      },
+    });
+    if (user) {
+      const incomingRequests = await Promise.all(
+        user.incoming_friend_requests.map(async (incoming) => {
+          console.log('incoming', incoming);
+          const returned = {
+            name: incoming.username,
+            intraId: incoming.intra_id,
+          };
+          console.log('returned', returned);
+          return returned;
+        }),
+      );
+      console.log(incomingRequests);
+      return incomingRequests;
+    }
+  }
+
+  async acceptFriendRequest(receiver_id: number, sender_id: number) {
+    const receiver = await this.usersRepository.findOne({
+      where: { intra_id: receiver_id },
+      relations: {
+        incoming_friend_requests: true,
+        friends: true,
+      },
+    });
+    const sender = await this.usersRepository.findOne({
+      where: { intra_id: sender_id },
+      relations: {
+        friends: true,
+      },
+    });
+    sender.friends.push(receiver);
+    receiver.friends.push(sender);
+    receiver.incoming_friend_requests.splice(
+      receiver.incoming_friend_requests.indexOf(sender),
+      1,
+    );
+    this.usersRepository.save([sender, receiver]);
+  }
+
+  async declineFriendRequest(receiver_id: number, sender_id: number) {
+    const receiver = await this.usersRepository.findOne({
+      where: { intra_id: receiver_id },
+      relations: {
+        incoming_friend_requests: true,
+      },
+    });
+    const sender = await this.findOne(sender_id);
+    receiver.incoming_friend_requests.splice(
+      receiver.incoming_friend_requests.indexOf(sender),
+      1,
+    );
+    this.usersRepository.save(receiver);
+  }
+
+  async removeFriend(user_id: number, friend_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id: user_id },
+      relations: {
+        friends: true,
+      },
+    });
+    const friend = await this.usersRepository.findOne({
+      where: { intra_id: friend_id },
+      relations: {
+        friends: true,
+      },
+    });
+    user.friends.splice(user.friends.indexOf(friend), 1);
+    friend.friends.splice(friend.friends.indexOf(user), 1);
+    this.usersRepository.save(user);
+    this.usersRepository.save(friend);
   }
 }

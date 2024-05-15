@@ -34,6 +34,10 @@ Connect to the `postgres` database:
 
 `\c postgres`
 
+Show current users in database:
+
+`SELECT * from "user";`
+
 Getting all users from the database:
 
 `curl localhost:4242/api/users`
