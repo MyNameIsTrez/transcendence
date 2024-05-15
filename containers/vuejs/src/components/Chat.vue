@@ -1,45 +1,51 @@
 <template>
   <div>
-    <!-- My chats -->
-    <div>== MY CHATS ==</div>
-    <div v-for="chat in chatsOnIndex">
-      <button @click="getChat(chat)">{{ chat }}</button>
-    </div>
-    <br/>
-    <!-- createChat -->
-    <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
-    <button 
-      :class= "privateButtonClass"
-      @click="chatVisibility"> {{ visibility }}
-    </button>
-    <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
-    <br/>
-    <button @click="createChat">Create</button>
-    <div v-if="iAmAdmin">
-      <br/>
-    </div>
-    <!-- admin operations -->
-    <input v-if="iAmAdmin" v-model="otherUser" placeholder="42 student..." />
-    <button v-if="iAmAdmin" @click="addUser">Add</button>
-    <button v-if="iAmAdmin" @click="kickUser">/Kick</button>
-    <button v-if="iAmAdmin" @click="banUser">/Ban</button>
-    <button v-if="iAmAdmin" @click="addAdmin">/Make admin</button>
-    <button v-if="iAmAdmin" @click="muteUser">/Mute</button>
-    <input v-if="iAmAdmin" v-model="daysToMute" placeholder="days to mute..." />
-    <br/><br/>
-
-    <!-- joinChat -->
-    <!-- <button @click="joinChat">Join chat</button>
-    <br /><br /> -->
-    <!-- getChat -->
-    <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
-    <div>
-      == {{ currentChat }} == <div v-for="instance in chatHistory">
-        {{ instance }}
+    <!-- Chats -->
+    <button @click="changeChatButton"> {{ chatButtonText }} </button>
+    <div v-if="chatButton">
+      <div v-for="chat in chatsOnIndex">
+        <button @click="getChat(chat)">{{ chat }}</button>
       </div>
+      <br/>
+      <!-- createChat -->
+      <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
+      <button 
+        :class= "privateButtonClass"
+        @click="chatVisibility"> {{ visibility }}
+      </button>
+      <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
+      <br/>
+      <button @click="createChat">Create</button>
     </div>
-    <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
-    <button v-if="!iAmMute" @click="sendMessage">Send</button>
+
+    <div v-if="!chatButton && openChat">
+      <br/>
+      <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
+      <br/><br/>
+      <div v-if="iAmAdmin && optionsButton">
+      <input v-model="otherUser" placeholder="42 student..." />
+      <button @click="addUser">Add</button>
+      <button @click="kickUser">/Kick</button>
+      <button @click="banUser">/Ban</button>
+      <button @click="addAdmin">/Make admin</button>
+      <button @click="muteUser">/Mute</button>
+      <input v-model="daysToMute" placeholder="days to mute..." />
+      <br/><br/>
+      </div>
+      <!-- admin operations -->
+      <!-- joinChat -->
+      <!-- <button @click="joinChat">Join chat</button>
+      <br /><br /> -->
+      <!-- getChat -->
+      <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
+      <div>
+        == {{ currentChat }} == <div v-for="instance in chatHistory">
+          {{ instance }}
+        </div>
+      </div>
+      <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
+      <button v-if="!iAmMute" @click="sendMessage">Send</button>
+    </div>
   </div>
 </template>
 
@@ -72,7 +78,33 @@ const direct = ref(false)
 const otherIntraId = ref(0)
 const blockStatus = ref('Block')
 const iAmBlocked = ref(false)
-const daysToMute = ref(0)
+const daysToMute = ref('')
+const chatButtonText = ref('== OPEN CHATS ==')
+const chatButton = ref(false)
+const optionsButtonText = ref('~ open options ~')
+const optionsButton = ref(false)
+const openChat = ref(false)
+
+function changeOpenChat() {
+  openChat.value = !openChat.value
+}
+
+function changeOptionsButton() {
+  optionsButton.value = !optionsButton.value
+  if (optionsButton.value == false)
+    optionsButtonText.value = "~ open options ~"
+  else
+    optionsButtonText.value = "~ close options ~"  
+}
+
+function changeChatButton() {
+  changeOpenChat()
+  chatButton.value = !chatButton.value
+  if (chatButton.value == false)
+    chatButtonText.value = "== OPEN CHATS =="
+  else
+    chatButtonText.value = "== CLOSE CHATS =="  
+}
 
 async function isMuted(intra_id: string) {
   return await get('chat/iAmMute/' + currentChatId.value + '/' + intra_id)
@@ -85,6 +117,7 @@ async function muteUser() {
     days: daysToMute.value
   })
   console.log("mute", mute)
+  daysToMute.value = ''
 }
 
 async function getBlockStatus() {
@@ -121,6 +154,7 @@ async function deblockUser() {
 async function kickUser() {
   const result = await get('chat/kick/' + currentChatId.value + '/' + otherUser.value)
   otherUser.value = ''
+  getChat(currentChat.value)
 }
 
 async function banUser() {
@@ -175,6 +209,7 @@ async function addUser() {
     username: otherUser.value,
   })
   otherUser.value = ''
+  getChat(currentChat.value)
 }
 
 async function createChat() {
@@ -196,6 +231,8 @@ async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
   let history: string[] = []
+  changeChatButton()
+  changeOpenChat()
 
   while (chatsOnIndex.value[i]) {
     if (chatsOnIndex.value[i] == chat)

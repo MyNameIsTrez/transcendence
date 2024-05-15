@@ -36,10 +36,11 @@ export class ChatService {
     console.log("user: ", user)
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
-      .then(async (my_chat) => {
-        if (!my_chat) { return }
-        my_chat.users = [...my_chat.users, user]
-        await this.chatRepository.save(my_chat)
+      .then(async (chat) => {
+        if (!chat) { return }
+        chat.users = [...chat.users, user]
+        chat.number_of_users += 1
+        await this.chatRepository.save(chat)
       })
   }
 
@@ -52,10 +53,10 @@ export class ChatService {
     console.log("user: ", user)
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { admins: true } })
-      .then(async (my_chat) => {
-        if (!my_chat) { return }
-        my_chat.admins = [...my_chat.admins, user]
-        await this.chatRepository.save(my_chat)
+      .then(async (chat) => {
+        if (!chat) { return }
+        chat.admins = [...chat.admins, user]
+        await this.chatRepository.save(chat)
       })
   }
 
@@ -107,6 +108,7 @@ export class ChatService {
         if (stop)
           return false
         chat.users = chat.users.filter(u => u.intra_id !== user.intra_id);
+        chat.number_of_users -= 1
         let result = await this.chatRepository.save(chat)
         if (result)
           return true
@@ -218,7 +220,7 @@ export class ChatService {
       console.log('res', res);
 
       // TODO: Add user instance to chat's 'users' db field
-      // TODO: Add chat instance to user's 'my_chats' db field
+      // TODO: Add chat instance to user's 'chats' db field
 
       return res;
     });
