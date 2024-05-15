@@ -161,7 +161,7 @@ export class UsersService {
   async sendFriendRequest(
     sender_id: number,
     receiver_name: string,
-  ): Promise<Boolean> {
+  ): Promise<boolean> {
     const sender = await this.usersRepository.findOne({
       where: { intra_id: sender_id },
       relations: {
@@ -172,7 +172,7 @@ export class UsersService {
     const receiver = await this.usersRepository.findOne({
       where: { intra_name: receiver_name },
       relations: {
-		friends: true,
+        friends: true,
         incoming_friend_requests: true,
       },
     });
