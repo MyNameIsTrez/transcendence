@@ -13,38 +13,42 @@
           <button class="btn btn-primary btn-square self-auto" onclick="my_modal_2.showModal()">
             <span class="material-symbols-outlined">person_add</span>
           </button>
-          <dialog id="my_modal_2" class="modal place-content-center">
-            <div role="alert" :class="`alert ${alertColor} ${alertVisibility}`">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="stroke-current shrink-0 h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  :d="`${ isError ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' }`"
-                />
-              </svg>
-              <span>{{ alertMessage }}</span>
-            </div>
-            <div class="modal-box w-auto">
-              <p class="py-4">Add a friend</p>
-              <span class="flex justify-center">
-                <input
-                  type="text"
-                  v-model="friendSearch"
-                  placeholder="Type here"
-                  class="input input-bordered w-full max-w-xs"
-                />
-                <button class="btn" @click="addFriend">Add</button>
-              </span>
-              <p class="text-center text-gray-400" style="padding-top: 20px">
-                Press [ESC] to close
-              </p>
-            </div>
+          <dialog id="my_modal_2" class="modal">
+            <span class="place-content-center" style="grid-column-start: 1; grid-row-start: 1">
+              <div class="modal-box w-auto">
+                <!-- Adds a little close button in the top-right corner -->
+                <form method="dialog">
+                  <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+                </form>
+
+                <p class="py-4">Add a friend</p>
+                <span class="flex justify-center">
+                  <input
+                    type="text"
+                    v-model="friendSearch"
+                    placeholder="Type here"
+                    class="input input-bordered w-full max-w-xs"
+                  />
+                  <button class="btn" @click="addFriend">Add</button>
+                </span>
+              </div>
+              <div role="alert" :class="`alert ${alertColor} ${alertVisibility}`">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="stroke-current shrink-0 h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    :d="`${isError ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}`"
+                  />
+                </svg>
+                <span>{{ alertMessage }}</span>
+              </div>
+            </span>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>
             </form>
