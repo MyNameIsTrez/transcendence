@@ -202,7 +202,7 @@ export class UsersService {
       sender.friends.push(receiver);
       receiver.friends.push(sender);
       sender.incoming_friend_requests.splice(
-        sender.incoming_friend_requests.indexOf(receiver),
+        sender.incoming_friend_requests.findIndex(user => user.intra_id === receiver.intra_id),
         1,
       );
       this.usersRepository.save([sender, receiver]);
@@ -274,10 +274,12 @@ export class UsersService {
         friends: true,
       },
     });
+	console.log('incoming_fr', receiver.incoming_friend_requests);
+    console.log('index: ', receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id));
     sender.friends.push(receiver);
     receiver.friends.push(sender);
     receiver.incoming_friend_requests.splice(
-      receiver.incoming_friend_requests.indexOf(sender),
+      receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id),
       1,
     );
     this.usersRepository.save([sender, receiver]);
@@ -290,9 +292,8 @@ export class UsersService {
         incoming_friend_requests: true,
       },
     });
-    const sender = await this.findOne(sender_id);
     receiver.incoming_friend_requests.splice(
-      receiver.incoming_friend_requests.indexOf(sender),
+      receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id),
       1,
     );
     this.usersRepository.save(receiver);
@@ -311,8 +312,8 @@ export class UsersService {
         friends: true,
       },
     });
-    user.friends.splice(user.friends.indexOf(friend), 1);
-    friend.friends.splice(friend.friends.indexOf(user), 1);
+    user.friends.splice(user.friends.findIndex(user => user.intra_id === friend_id), 1);
+    friend.friends.splice(friend.friends.findIndex(user => user.intra_id === user_id), 1);
     this.usersRepository.save(user);
     this.usersRepository.save(friend);
   }
