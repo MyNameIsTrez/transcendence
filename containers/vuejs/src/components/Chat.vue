@@ -62,7 +62,7 @@ const allChats = ref('')
 const myChats = ref('')
 const chatName = ref('')
 const otherUser = ref('')
-const currentChat = ref('Select a chat')
+const currentChat = ref('')
 const currentChatId = ref('')
 const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
@@ -87,10 +87,6 @@ const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const openChat = ref(false)
 
-function changeOpenChat() {
-  openChat.value = !openChat.value
-}
-
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
   if (optionsButton.value == false)
@@ -100,12 +96,15 @@ function changeOptionsButton() {
 }
 
 function changeChatButton() {
-  changeOpenChat()
   chatButton.value = !chatButton.value
-  if (chatButton.value == false)
+  if (chatButton.value == false) {
     chatButtonText.value = "== OPEN CHATS =="
-  else
+    openChat.value = true
+  }
+  else {
     chatButtonText.value = "== CLOSE CHATS =="  
+    openChat.value = false
+  }
 }
 
 async function isMuted(intra_id: string) {
@@ -229,16 +228,15 @@ async function createChat() {
   getMyChats()
 }
 
-async functoin getInformation() {
+// async functoin getInformation() {
 
-}
+// }
 
 async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
   let history: string[] = []
   changeChatButton()
-  changeOpenChat()
 
   while (chatsOnIndex.value[i]) {
     if (chatsOnIndex.value[i] == chat)
