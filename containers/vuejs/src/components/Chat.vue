@@ -13,24 +13,26 @@
         :class= "privateButtonClass"
         @click="chatVisibility"> {{ visibility }}
       </button>
-      <input v-if="protectedChat && isOwner" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
+      <input v-if="protectedChat && iAmAdmin" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
       <br/>
       <button @click="createChat">Create</button>
     </div>
 
     <div v-if="!chatButton && openChat">
-      <br/>
-      <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
-      <br/><br/>
-      <div v-if="iAmAdmin && optionsButton">
-      <input v-model="otherUser" placeholder="42 student..." />
-      <button @click="addUser">Add</button>
-      <button @click="kickUser">/Kick</button>
-      <button @click="banUser">/Ban</button>
-      <button @click="addAdmin">/Make admin</button>
-      <button @click="muteUser">/Mute</button>
-      <input v-model="daysToMute" placeholder="days to mute..." />
-      <br/><br/>
+      <div v-if="iAmAdmin">
+        <br/>
+        <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
+        <br/><br/>
+        <div v-if="optionsButton">
+          <input v-model="otherUser" placeholder="42 student..." />
+          <button @click="addUser">Add</button>
+          <button @click="kickUser">/Kick</button>
+          <button @click="banUser">/Ban</button>
+          <button @click="addAdmin">/Make admin</button>
+          <button @click="muteUser">/Mute</button>
+          <input v-model="daysToMute" placeholder="days to mute..." />
+          <br/><br/>
+        </div>
       </div>
       <!-- admin operations -->
       <!-- joinChat -->
@@ -75,7 +77,7 @@ const iAmAdmin = ref(false)
 const iAmOwner = ref(false)
 const iAmMute = ref(false)
 const direct = ref(false)
-const otherIntraId = ref(0)
+const otherIntraId = ref('')
 const blockStatus = ref('Block')
 const iAmBlocked = ref(false)
 const daysToMute = ref('')
@@ -227,6 +229,10 @@ async function createChat() {
   getMyChats()
 }
 
+async functoin getInformation() {
+
+}
+
 async function getChat(chat: string) {
   currentChat.value = chat
   let i: number = 0
@@ -240,15 +246,27 @@ async function getChat(chat: string) {
     i++
   }
 
+  // get information
+  // - isAdmin
+  // - isOwner
+  // - isDirect
+  // - if isDirect get otherIntraId
+  // - iAmBlocked
+  // - iAmMute
   iAmAdmin.value = await isAdmin()
   iAmOwner.value = await isOwner()
   direct.value = await isDirect()
-  if (direct.value)
+  if (direct.value) {
     otherIntraId.value = await getOtherIntraId()
-  else
-    otherIntraId.value = 0
-  iAmBlocked.value = await getBlockStatus()
+    iAmBlocked.value = await getBlockStatus()
+  }
+  else {
+    otherIntraId.value = ''
+    iAmBlocked.value = false
+  }
   iAmMute.value = await isMuted(myIntraId.value)
+  //
+  
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
   i = 0
@@ -274,7 +292,7 @@ async function getChat(chat: string) {
 
 async function getMyChats() {
   myChats.value = await get('user/myChats')
-  console.log('myChats', myChats.value)
+  // console.log('myChats', myChats.value)
   let i: number = 0
   chatsOnIndex.value = []
   chatIdsOnIndex.value = []
@@ -300,7 +318,7 @@ async function sendMessage() {
     chatId: currentChatId.value,
     body: typedMessage.value
   }
-  console.log('message', message)
+  // console.log('message', message)
   chatSocket.emit('sendMessage', message)
 }
 
