@@ -13,7 +13,7 @@
         :class= "privateButtonClass"
         @click="chatVisibility"> {{ visibility }}
       </button>
-      <input v-if="protectedChat && iAmAdmin" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
+      <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
       <br/>
       <button @click="createChat">Create</button>
     </div>
@@ -40,6 +40,7 @@
       <br /><br /> -->
       <!-- getChat -->
       <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
+      <br/>
       <div>
         == {{ currentChat }} == <div v-for="instance in chatHistory">
           {{ instance }}
@@ -222,7 +223,10 @@ async function createChat() {
 
 async function getInfo() {
   const info = await get('chat/info/' + currentChatId.value + '/' + myIntraId.value)
-  return info
+  iAmAdmin.value = info.isAdmin
+  direct.value = info.isDirect
+  iAmMute.value = info.isMute
+  iAmOwner.value = info.isOwner
 }
 
 async function getChat(chat: string) {
@@ -237,11 +241,7 @@ async function getChat(chat: string) {
     i++
   }
 
-  const info = getInfo()
-  iAmAdmin.value = info.isAdmin
-  direct.value = info.isDirect
-  iAmMute.value = info.isMute
-  iAmOwner.value = info.isOwner
+  await getInfo()
   if (direct.value) {
     otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
@@ -328,6 +328,7 @@ function chatVisibility() {
 
 getMyIntraId()
 getMyChats()
+// getInfo()
 </script>
 
 <style scoped>
