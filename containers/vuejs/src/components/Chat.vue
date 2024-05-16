@@ -41,10 +41,21 @@
       <!-- getChat -->
       <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
       <br/>
+      
       <div>
-        == {{ currentChat }} == <div v-for="instance in chatHistory">
+        == {{ currentChat }} == 
+        <div class="textarea-container">
+        <textarea
+          class="textarea"
+          v-model="text"
+          rows="20"
+          placeholder="~ CHAT CONTENT ~">
+        </textarea>
+      </div>
+
+        <!-- <div v-for="instance in chatHistory">
           {{ instance }}
-        </div>
+        </div> -->
       </div>
       <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
       
@@ -88,6 +99,7 @@ const chatButton = ref(false)
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const openChat = ref(false)
+const text = ref('')
 
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
@@ -231,6 +243,7 @@ async function getInfo() {
 
 async function getChat(chat: string) {
   currentChat.value = chat
+  text.value = ''
   let i: number = 0
   let history: string[] = []
   changeChatButton()
@@ -255,16 +268,12 @@ async function getChat(chat: string) {
   history = await get('chat/history/' + currentChatId.value)
   
   i = 0
-  const history_len = history.length
-  console.log("history len", history_len)
-  const number_of_messages = 20
-  if (history_len > number_of_messages)
-    i = history_len - number_of_messages
   while (history[i]) {
     let intraId = history[i].sender;
     let user = await get('user/usernameOnIntraId/' + intraId)
     if (user) {
-      chatHistory.value[i] = user + ': ' + history[i].body
+      chatHistory.value[i] = user + ': ' + history[i].body + '\n'
+      text.value += chatHistory.value[i]
       i++
     }
   }
@@ -337,5 +346,15 @@ getMyChats()
 .chat-container {
   flex-grow: 1;
   position: relative;
+}
+.textarea-container {
+  width: 100%;
+}
+.custom-textarea {
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  resize: vertical; /* Allow vertical resizing */
+  overflow-y: auto; /* Enable vertical scrollbar */
 }
 </style>
