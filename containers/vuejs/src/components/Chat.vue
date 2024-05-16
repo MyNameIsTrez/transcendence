@@ -47,6 +47,7 @@
         </div>
       </div>
       <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
+      
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
   </div>
@@ -107,7 +108,6 @@ function changeChatButton() {
     openChat.value = false
   }
 }
-
 
 async function muteUser() {
   const mute = await post('chat/mute', {
@@ -253,8 +253,13 @@ async function getChat(chat: string) {
   
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)
+  
   i = 0
-
+  const history_len = history.length
+  console.log("history len", history_len)
+  const number_of_messages = 20
+  if (history_len > number_of_messages)
+    i = history_len - number_of_messages
   while (history[i]) {
     let intraId = history[i].sender;
     let user = await get('user/usernameOnIntraId/' + intraId)
@@ -276,7 +281,6 @@ async function getChat(chat: string) {
 
 async function getMyChats() {
   myChats.value = await get('user/myChats')
-  // console.log('myChats', myChats.value)
   let i: number = 0
   chatsOnIndex.value = []
   chatIdsOnIndex.value = []
@@ -302,7 +306,6 @@ async function sendMessage() {
     chatId: currentChatId.value,
     body: typedMessage.value
   }
-  // console.log('message', message)
   chatSocket.emit('sendMessage', message)
 }
 
@@ -328,7 +331,6 @@ function chatVisibility() {
 
 getMyIntraId()
 getMyChats()
-// getInfo()
 </script>
 
 <style scoped>

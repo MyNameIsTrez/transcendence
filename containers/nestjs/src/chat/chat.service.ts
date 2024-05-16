@@ -68,13 +68,14 @@ export class ChatService {
   }
 
   public hashPassword(password: string) {
+    const rounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS'))
     return bcrypt
-      .hash(password, this.configService.get('BCRYPT_SALT_ROUNDS'))
+      .hash(password, rounds)
       .then((hash) => {
         return hash;
       })
       .catch((err) => {
-        console.error(err.message);
+        console.error(err);
         throw new InternalServerErrorException('Hashing the password failed');
       });
   }
