@@ -149,49 +149,25 @@ export class ChatController {
     return this.chatService.getHistory(dto.chat_id)
   }
 
-  @Get('getAdmins/:chat_id')
-  iAmAdmin(@Request() req, @Param() dto: NameDto) {
-    return this.chatService.getAdmins(dto.chat_id)
+  @Get('isAdmin/:chat_id/:intra_id')
+  isAdmin(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.isAdmin(dto.chat_id, dto.intra_id)
   }
 
-  @Get('getOwner/:chat_id')
-  iAmOwner(@Request() req, @Param() dto: NameDto) {
-    return this.chatService.getOwner(dto.chat_id)
+  @Get('isOwner/:chat_id/:intra_id')
+  isOwner(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.isOwner(dto.chat_id, dto.intra_id)
   }
 
   @Get('isDirect/:chat_id')
   isDirect(@Request() req, @Param() dto: NameDto) {
-    return this.chatService.direct(dto.chat_id)
+    return this.chatService.isDirect(dto.chat_id)
   }
 
   @Get('visibility')
   visibility(@Request() req) {
     // TODO: Access the chat db
     return Visibility.PUBLIC;
-  }
-
-  @Get('owner')
-  owner(@Request() req) {
-    // TODO: Access the chat db
-    return 42;
-  }
-
-  @Get('admins')
-  admins(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69];
-  }
-
-  @Get('banned')
-  banned(@Request() req) {
-    // TODO: Access the chat db
-    return [7, 666];
-  }
-
-  @Get('muted')
-  muted(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69];
   }
 
   @Get('getOtherIntraId/:chat_id/:intra_id')
@@ -209,8 +185,13 @@ export class ChatController {
     return await this.chatService.mute(dto.chat_id, dto.username, dto.days)
   }
 
-  @Get('iAmMute/:chat_id/:intra_id')
-  async iAmMute(@Request() req, @Param() dto: OtherUserDto) {
+  @Get('isMute/:chat_id/:intra_id')
+  async isMute(@Request() req, @Param() dto: OtherUserDto) {
     return await this.chatService.isMute(dto.chat_id, dto.intra_id)
+  }
+
+  @Get('info/:chat_id/:intra_id')
+  async getInfo(@Request() req, @Param() dto: OtherUserDto) {
+    return await this.chatService.getInfo(dto.chat_id, dto.intra_id)
   }
 }

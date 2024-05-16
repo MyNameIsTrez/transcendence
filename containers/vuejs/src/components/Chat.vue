@@ -107,9 +107,6 @@ function changeChatButton() {
   }
 }
 
-async function isMuted(intra_id: string) {
-  return await get('chat/iAmMute/' + currentChatId.value + '/' + intra_id)
-}
 
 async function muteUser() {
   const mute = await post('chat/mute', {
@@ -174,34 +171,29 @@ async function addAdmin() {
     username: otherUser.value,
   })
   otherUser.value = ''
-
+  
 }
 
 async function isAdmin() {
-  const admins = await get('chat/getAdmins/' + currentChatId.value)
-  
-  let i: number = 0
-  console.log(admins)
-  while (admins[i]) {
-    if (admins[i].intra_id == myIntraId.value)
-      return true
-    i++;
-  }
-  return false
+  const result = await get('chat/isAdmin/' + currentChatId.value + '/' + myIntraId.value)
+  console.log("admin res", result)
+  return result
 }
 
 async function isDirect() {
   const direct = await get('chat/isDirect/' + currentChatId.value)
   if (direct == true)
-    return true
-  return false
+  return true
+return false
 }
 
+async function isMuted(intra_id: string) {
+  return await get('chat/isMute/' + currentChatId.value + '/' + intra_id)
+}
 async function isOwner() {
-  const owner = await get('chat/getOwner/' + currentChatId.value)
-  if (myIntraId.value == owner)
-    return true
-  return false
+  const result = await get('chat/isOwner/' + currentChatId.value + '/' + myIntraId.value)
+  console.log("owner res", result)
+  return result
 }
 
 async function addUser() {
@@ -228,9 +220,10 @@ async function createChat() {
   getMyChats()
 }
 
-// async functoin getInformation() {
-
-// }
+async function getInfo() {
+  const info = await get('chat/info/' + currentChatId.value + '/' + myIntraId.value)
+  return info
+}
 
 async function getChat(chat: string) {
   currentChat.value = chat
@@ -244,16 +237,11 @@ async function getChat(chat: string) {
     i++
   }
 
-  // get information
-  // - isAdmin
-  // - isOwner
-  // - isDirect
-  // - if isDirect get otherIntraId
-  // - iAmBlocked
-  // - iAmMute
-  iAmAdmin.value = await isAdmin()
-  iAmOwner.value = await isOwner()
-  direct.value = await isDirect()
+  const info = getInfo()
+  iAmAdmin.value = info.isAdmin
+  direct.value = info.isDirect
+  iAmMute.value = info.isMute
+  iAmOwner.value = info.isOwner
   if (direct.value) {
     otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
@@ -262,8 +250,6 @@ async function getChat(chat: string) {
     otherIntraId.value = ''
     iAmBlocked.value = false
   }
-  iAmMute.value = await isMuted(myIntraId.value)
-  //
   
   chatHistory.value = []
   history = await get('chat/history/' + currentChatId.value)

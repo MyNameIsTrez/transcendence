@@ -12,6 +12,13 @@ import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
+class Info {
+  isAdmin: boolean;
+  isDirect: boolean;
+  isMute: boolean;
+  isOwner: boolean;
+}
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -140,27 +147,37 @@ export class ChatService {
     });
   }
 
-  getAdmins(chat_id: string) {
+  isAdmin(chat_id: string, intra_id: number) {
     return this.chatRepository
     .findOne({ where: { chat_id }, relations: { admins: true } })
     .then(async (chat) => {
       if (!chat) { return }
 
-      return chat.admins
+      let isAdmin = false
+
+      const admins = chat.admins
+      admins.forEach(admin => {
+        if (admin.intra_id == intra_id)
+          isAdmin = true
+      })
+
+      return isAdmin
     });
   }
 
-  getOwner(chat_id: string) {
+  isOwner(chat_id: string, intra_id: number) {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
       if (!chat) { return }
 
-      return chat.owner
+      if (chat.owner == intra_id)
+        return true
+      return false
     });
   }
 
-  direct(chat_id: string) {
+  isDirect(chat_id: string) {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
@@ -273,5 +290,14 @@ export class ChatService {
         chat.muted = [...chat.muted, mute]
         return await this.chatRepository.save(chat)
       })
+  }
+
+  public async getInfo(chat_id: string, intra_id: number) {
+    const info = new Info()
+    info.isAdmin = await this.isAdmin(chat_id, intra_id);
+    info.isDirect = await this.isDirect(chat_id);
+    info.isMute = await this.isMute(chat_id, intra_id);
+    info.isOwner = await this.isOwner(chat_id, intra_id);
+    return info
   }
 }
