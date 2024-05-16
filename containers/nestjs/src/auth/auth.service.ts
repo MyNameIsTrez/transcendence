@@ -72,10 +72,7 @@ export class AuthService {
       .then(async (j) => {
         const intra_id = j.id;
 
-        if (await this.usersService.hasUser(intra_id)) {
-          console.log('Only updating intra name');
-          // TODO: Only update intra name
-        } else {
+        if (!(await this.usersService.hasUser(intra_id))) {
           console.log(`Saving user with intra_id ${intra_id}`);
 
           const url = j.image.versions.medium;
