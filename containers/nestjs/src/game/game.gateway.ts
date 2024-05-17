@@ -91,4 +91,14 @@ export class GameGateway {
   ) {
     client.data.lobby?.movePaddle(client.data.playerIndex, keydown, north);
   }
+
+  // This assumes a ChatGateway connection is always present,
+  // so it might be worth it to make a new socket connection
+  // just for checking if the user is online
+  // TODO: Move this to the ChatGateway?
+  @SubscribeMessage('heartbeat')
+  heartbeat(client: Socket) {
+    // console.log(`Got heartbeat from client ${client.data.intra_id}`);
+    this.usersService.updateLastOnline(client.data.intra_id);
+  }
 }

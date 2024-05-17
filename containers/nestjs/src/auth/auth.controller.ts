@@ -48,6 +48,8 @@ export class AuthController {
 
   @Post('2fa/generate')
   async generate(@Response() response, @Request() request) {
+    // TODO: Throw if the user already enabled 2fa
+
     const { otpAuthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
         request.user,
@@ -60,6 +62,8 @@ export class AuthController {
 
   @Post('2fa/turn-on')
   async turnOn(@Request() request, @Body() body) {
+    // TODO: Throw if the user already enabled 2fa
+
     console.log(
       'body.twoFactorAuthenticationCode',
       body.twoFactorAuthenticationCode,
@@ -82,6 +86,8 @@ export class AuthController {
   @Public()
   @UseGuards(JwtAuthGuard)
   async authenticate(@Request() request, @Body() body) {
+    // TODO: Throw if the user's JWT already says 2fa is enabled
+
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       body.twoFactorAuthenticationCode,
       request.user.twoFactorAuthenticationSecret,

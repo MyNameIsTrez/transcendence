@@ -19,6 +19,10 @@ gameSocket.on('gameOver', () => {
   drawCanvas()
 })
 
+setInterval(() => {
+  gameSocket.emit('heartbeat')
+}, 1000)
+
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined
   if (code === 'KeyW' || code === 'ArrowUp') {

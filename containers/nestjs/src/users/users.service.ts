@@ -28,6 +28,7 @@ export class UsersService {
       username,
       intra_name,
       email,
+      lastOnline: new Date(),
     });
   }
 
@@ -214,26 +215,30 @@ export class UsersService {
   }
 
   async getFriends(intra_id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { intra_id },
-      relations: {
-        friends: true,
-      },
-    });
-    console.log('user', user);
-    if (user) {
-      const friends = await Promise.all(
-        user.friends.map(async (friend) => {
-          const returned = {
-            name: friend.username,
-            isOnline: true, // TODO: Store this in the user!
-            intraId: friend.intra_id,
-          };
-          return returned;
-        }),
-      );
-      return friends;
-    }
+    return await this.usersRepository
+      .findOne({
+        where: { intra_id },
+        relations: {
+          friends: true,
+        },
+      })
+      .then(async (user) => {
+        return await Promise.all(
+          user.friends.map(async (friend) => {
+            const nowMs = Date.now();
+            const lastOnlineMs = (
+              await this.getLastOnline(friend.intra_id)
+            ).getTime();
+            const isOnline = nowMs - lastOnlineMs < 10000;
+
+            return {
+              name: friend.username,
+              isOnline,
+              intraId: friend.intra_id,
+            };
+          }),
+        );
+      });
   }
 
   async getIncomingFriendRequests(intra_id: number) {
@@ -315,5 +320,15 @@ export class UsersService {
     friend.friends.splice(friend.friends.indexOf(user), 1);
     this.usersRepository.save(user);
     this.usersRepository.save(friend);
+  }
+
+  updateLastOnline(intra_id: number) {
+    this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
+  }
+
+  getLastOnline(intra_id: number) {
+    return this.findOne(intra_id).then((user) => {
+      return user.lastOnline;
+    });
   }
 }
