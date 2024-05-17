@@ -106,6 +106,10 @@
       </div>
       <br />
       <Achievements />
+
+      <!-- TODO: I (Sander) couldn't figure out how to left-align the text in this button -->
+      <br />
+      <button class="btn w-96 text-xl text-left" @click="logout">Logout</button>
     </div>
   </div>
 </template>
@@ -144,6 +148,11 @@ function changeUsername() {
         alertVisibility.value = 'invisible'
       }, 3500)
     })
+}
+
+function logout() {
+  localStorage.removeItem('jwt')
+  window.location.href = '/'
 }
 </script>
 
