@@ -81,7 +81,6 @@ export class ChatGateway {
 	@SubscribeMessage('sendMessage')
 	async handleMessage(@ConnectedSocket() client: Socket, @MessageBody() dto: HandleMessageDto) {
 		let result = await this.chatService.handleMessage(client.data.intra_id, dto.chatId, dto.body)
-		this.letClientsUpdateTheirChats()
 		if (result) {
 			this.letClientsUpdateTheirChats()
 		}

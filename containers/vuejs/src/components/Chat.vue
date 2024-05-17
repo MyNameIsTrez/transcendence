@@ -49,7 +49,8 @@
           class="textarea"
           v-model="text"
           rows="20"
-          placeholder="~ CHAT CONTENT ~">
+          placeholder="~ CHAT CONTENT ~"
+          readonly>
         </textarea>
       </div>
 
@@ -246,7 +247,8 @@ async function getChat(chat: string) {
   text.value = ''
   let i: number = 0
   let history: string[] = []
-  changeChatButton()
+  if (openChat.value == false)
+    changeChatButton()
 
   while (chatsOnIndex.value[i]) {
     if (chatsOnIndex.value[i] == chat)
@@ -302,11 +304,11 @@ async function getMyChats() {
 }
 
 chatSocket.on('confirm', result => {
-      typedMessage.value = ''
-      getChat(currentChat.value)
+  typedMessage.value = ''
+  getChat(currentChat.value)
 })
 
-async function sendMessage() {
+function sendMessage() {
   if ((direct.value && iAmBlocked.value) || iAmMute.value) {
     typedMessage.value = ''
     return
