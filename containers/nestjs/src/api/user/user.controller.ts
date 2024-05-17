@@ -36,7 +36,7 @@ export class UserController {
     return this.usersService.getUser(req.user.intra_id);
   }
 
-  @Get(':intra_id')
+  @Get('other/:intra_id')
   user(@Param('intra_id') intra_id) {
     return this.usersService.getUser(intra_id);
   }
