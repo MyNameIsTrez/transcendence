@@ -82,7 +82,6 @@ export class UserController {
     return this.usersService.getIncomingFriendRequests(req.user.intra_id);
   }
 
-  //TODO: misschien verplaatsen
   @Post('sendFriendRequest')
   sendFriendRequest(@Request() req, @Body() body) {
     return this.usersService.sendFriendRequest(
@@ -114,5 +113,10 @@ export class UserController {
   @Get('losses')
   losses(@Request() req) {
     return this.usersService.getLosses(req.user.intra_id);
+  }
+
+  @Get('lastOnline/:intra_id')
+  isOnline(@Param('intra_id') intra_id) {
+    return this.usersService.getLastOnline(intra_id);
   }
 }
