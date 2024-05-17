@@ -194,17 +194,21 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
 
-        const message = new Message();
-        message.sender = sender;
-        message.body = body;
-        await this.messageRepository.save(message);
+        this.usersService.findOne(sender)
+          .then(async(user) => {
+            
+            const message = new Message();
+            message.sender_name = user.username
+            message.sender = sender;
+            message.body = body;
+            await this.messageRepository.save(message);
+    
+            chat.history = [...chat.history, message]
+            await this.chatRepository.save(chat)
 
-        chat.history = [...chat.history, message]
-        let result = await this.chatRepository.save(chat)
-        if (result)
-          return true
+          })
+
       });
   }
 

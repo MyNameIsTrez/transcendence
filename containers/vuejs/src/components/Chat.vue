@@ -3,9 +3,20 @@
     <!-- Chats -->
     <button @click="changeChatButton"> {{ chatButtonText }} </button>
     <div v-if="chatButton">
-      <div v-for="chat in chatsOnIndex">
-        <button @click="getChat(chat)">{{ chat }}</button>
+      <div class="scrollable-container">
+        <div
+          v-for="(chat, index) in chatsOnIndex"
+          :key="index"
+          class="line"
+          @click="getChat(chat)"
+          >
+          {{ chat }}
+        </div>
       </div>
+
+      <!-- <div v-for="(chat) in chatsOnIndex">
+        <button @click="getChat(chat)">{{ chat }}</button>
+      </div> -->
       <br/>
       <!-- createChat -->
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
@@ -24,7 +35,7 @@
         <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
         <br/><br/>
         <div v-if="optionsButton">
-          <input v-model="otherUser" placeholder="42 student..." />
+          <input v-model="otherUser" placeholder="42 student..." /><br/>
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
           <button @click="banUser">/Ban</button>
@@ -42,16 +53,15 @@
       <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
       <br/>
       
-      <div>
-        == {{ currentChat }} == 
-        <div class="textarea-container">
-        <textarea
-          class="textarea"
-          v-model="text"
-          rows="20"
-          placeholder="~ CHAT CONTENT ~"
-          readonly>
-        </textarea>
+      <div ref="chat" class="scrollable-container">
+        <div
+          v-for="(line, index) in chatHistory"
+          :key="index"
+          class="line"
+          @click="handleLineClick(line)"
+          >
+          {{ line }}
+        </div>
       </div>
 
         <!-- <div v-for="instance in chatHistory">
@@ -62,11 +72,11 @@
       
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
-  </div>
+  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 
@@ -101,6 +111,11 @@ const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const openChat = ref(false)
 const text = ref('')
+const chat = ref()
+
+function handleLineClick(line: string) {
+  console.log("line in handleLineClick:", line)
+}
 
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
@@ -242,8 +257,8 @@ async function getInfo() {
   iAmOwner.value = info.isOwner
 }
 
-async function getChat(chat: string) {
-  currentChat.value = chat
+async function getChat(chat_str: string) {
+  currentChat.value = chat_str
   text.value = ''
   let i: number = 0
   let history: string[] = []
@@ -251,7 +266,7 @@ async function getChat(chat: string) {
     changeChatButton()
 
   while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] == chat)
+    if (chatsOnIndex.value[i] == chat_str)
       currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
@@ -271,15 +286,16 @@ async function getChat(chat: string) {
   
   i = 0
   while (history[i]) {
-    let intraId = history[i].sender;
-    let user = await get('user/usernameOnIntraId/' + intraId)
-    if (user) {
-      chatHistory.value[i] = user + ': ' + history[i].body + '\n'
-      text.value += chatHistory.value[i]
-      i++
-    }
+    chatHistory.value[i] = history[i].sender_name + ': ' + history[i].body + '\n'
+    const tempy = await get('chat/history/' + currentChatId.value)
+    i++
   }
 }
+
+// onMounted(() => {
+//   console.log("onMounted") // <div>
+//   chat.value.scrollTop = chat.value.scrollHeight
+// })
 
 // async function joinChat() {
 //   // TODO: Replace this hardcoded chat_id and password
@@ -303,9 +319,9 @@ async function getMyChats() {
   }
 }
 
-chatSocket.on('confirm', result => {
+chatSocket.on('confirm', async result => {
   typedMessage.value = ''
-  getChat(currentChat.value)
+  await getChat(currentChat.value)
 })
 
 function sendMessage() {
@@ -345,18 +361,24 @@ getMyChats()
 </script>
 
 <style scoped>
-.chat-container {
-  flex-grow: 1;
-  position: relative;
-}
-.textarea-container {
+.scrollable-container {
   width: 100%;
+  height: 1000px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  overflow-y: auto;
+  word-break: break-all;
 }
-.custom-textarea {
+
+.line {
   width: 100%;
-  height: 100%;
-  color: #ffffff;
-  resize: vertical; /* Allow vertical resizing */
-  overflow-y: auto; /* Enable vertical scrollbar */
+  padding: 5px;
+  cursor: pointer;
+  user-select: none; /* Prevent text selection */
+}
+
+.line:hover {
+  background-color: hsl(0, 0%, 30%); /* Highlight on hover */
 }
 </style>
