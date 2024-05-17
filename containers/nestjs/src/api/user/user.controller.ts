@@ -31,20 +31,20 @@ class SetUsernameDto {
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('username')
-  getUsername(@Request() req) {
-    return this.usersService.getUsername(req.user.intra_id);
+  @Get('me')
+  me(@Request() req) {
+    return this.usersService.getUser(req.user.intra_id);
+  }
+
+  @Get(':intra_id')
+  user(@Param('intra_id') intra_id) {
+    return this.usersService.getUser(intra_id);
   }
 
   @Post('setUsername')
   @HttpCode(204)
   async setUsername(@Request() req, @Body() dto: SetUsernameDto) {
     await this.usersService.setUsername(req.user.intra_id, dto.username);
-  }
-
-  @Get('intraId')
-  intraId(@Request() req) {
-    return req.user.intra_id;
   }
 
   @Get('myChats')
@@ -103,20 +103,5 @@ export class UserController {
   @Post('removeFriend')
   removeFriend(@Request() req, @Body() body) {
     this.usersService.removeFriend(req.user.intra_id, body.friend_id);
-  }
-
-  @Get('wins')
-  wins(@Request() req) {
-    return this.usersService.getWins(req.user.intra_id);
-  }
-
-  @Get('losses')
-  losses(@Request() req) {
-    return this.usersService.getLosses(req.user.intra_id);
-  }
-
-  @Get('lastOnline/:intra_id')
-  isOnline(@Param('intra_id') intra_id) {
-    return this.usersService.getLastOnline(intra_id);
   }
 }

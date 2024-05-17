@@ -32,6 +32,14 @@ export class UsersService {
     });
   }
 
+  getUser(intra_id: number) {
+    return this.findOne(intra_id).then(
+      ({ intra_id, username, wins, losses, lastOnline }) => {
+        return { intra_id, username, wins, losses, lastOnline };
+      },
+    );
+  }
+
   // TODO: Remove?
   // findAll(): Promise<User[]> {
   //   return this.usersRepository.find();
@@ -47,12 +55,6 @@ export class UsersService {
 
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
-  }
-
-  getUsername(intra_id: number): Promise<string> {
-    return this.findOne(intra_id).then((user) => {
-      return user.username;
-    });
   }
 
   async setUsername(intra_id: number, username: string) {
@@ -140,18 +142,6 @@ export class UsersService {
 
   async addLoss(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'losses', 1);
-  }
-
-  getWins(intra_id: number) {
-    return this.findOne(intra_id).then((user) => {
-      return user.wins;
-    });
-  }
-
-  getLosses(intra_id: number) {
-    return this.findOne(intra_id).then((user) => {
-      return user.losses;
-    });
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
