@@ -29,7 +29,6 @@ const router = useRouter()
 
 const retrieveJwt = () => {
   const jwt = localStorage.getItem('jwt')
-  console.log('In retrieveJwt with jwt ', jwt)
   if (!jwt) {
     console.error(
       "Expected a jwt in the localstorage, and the url doesn't start with /login, so redirecting to the login page"

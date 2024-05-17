@@ -66,9 +66,8 @@
           </div>
         </div>
         <div class="text">
-          W/L ratio: <span class="text text-green-500">121</span>/<span class="text text-red-600"
-            >1</span
-          >
+          W/L ratio: <span class="text text-green-500">{{ wins }}</span
+          >/<span class="text text-red-600">{{ losses }} </span>
         </div>
       </div>
 
@@ -120,9 +119,11 @@ import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
 
-const username = await get('user/username')
-const intraId = await get('user/intraId')
-const profilePicture = await getImage(`user/profilePicture/${intraId}.png`)
+const me = await get(`user/me`)
+const username = me.username
+const wins = me.wins
+const losses = me.losses
+const profilePicture = await getImage(`user/profilePicture/${me.intra_id}.png`)
 
 const newUsername = ref('')
 
