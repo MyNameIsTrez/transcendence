@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const api_url = import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_BACKEND_PORT + '/api/'
+const api_url = import.meta.env.VITE_ADDRESS + ':' + import.meta.env.VITE_BACKEND_PORT + '/'
 
 export async function get(path: string) {
   const jwt = localStorage.getItem('jwt')

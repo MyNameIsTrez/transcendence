@@ -20,7 +20,7 @@ import { get, post } from '../httpRequests'
 const chatName = ref('')
 
 async function createChat() {
-  const chat = await post('chat/create', {
+  const chat = await post('api/chat/create', {
     name: chatName.value,
     visibility: 'PROTECTED',
     password: 'foo'
@@ -34,14 +34,14 @@ async function joinChat() {
   const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
   const password = 'foo'
 
-  const joined = await post('chat/join', { chat_id, password })
+  const joined = await post('api/chat/join', { chat_id, password })
   console.log('joined', joined)
 }
 
 const myChats = ref('')
 
 async function getMyChats() {
-  myChats.value = await get('user/myChats')
+  myChats.value = await get('api/user/myChats')
   // console.log('myChats', typeof myChats.value, myChats.value)
 }
 

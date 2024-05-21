@@ -6,7 +6,7 @@
           {{ username }}
         </div>
         <!-- The button to open modal -->
-        <button class="btn w-24 justify-self-end" onclick="my_modal_7.showModal()">Settings</button>
+        <button class="btn w-32 justify-self-end" onclick="my_modal_7.showModal()">Settings</button>
 
         <dialog id="my_modal_7" class="modal">
           <span class="place-content-center" style="grid-column-start: 1; grid-row-start: 1">
@@ -35,6 +35,11 @@
                 accept="image/*"
                 @change="uploadProfilePicture"
               />
+              <div class="pt-5 grid">
+                <router-link to="twofactor" class="btn place-self-center"
+                  >{{ isTwoFactorAuthenticationEnabled ? 'Disable' : 'Enable' }} 2fa</router-link
+                >
+              </div>
             </div>
             <div role="alert" :class="`alert alert-warning ${alertVisibility}`">
               <svg
@@ -73,9 +78,9 @@
 
       <div style="clear: both; padding-top: 50px">
         <!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
-        <div class="collapse w-96 bg-base-200">
+        <div class="collapse w-auto bg-base-200">
           <input type="checkbox" />
-          <div class="collapse-title text-xl text-left">Match history</div>
+          <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
             <MatchReport
               player="mforstho"
@@ -106,9 +111,8 @@
       <br />
       <Achievements />
 
-      <!-- TODO: I (Sander) couldn't figure out how to left-align the text in this button -->
       <br />
-      <button class="btn w-96 text-xl text-left" @click="logout">Logout</button>
+      <button class="btn w-auto text-xl" @click="logout">Logout</button>
     </div>
   </div>
 </template>
@@ -119,11 +123,13 @@ import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
 
-const me = await get(`user/me`)
+const me = await get(`api/user/me`)
+// console.log('me', me)
 const username = me.username
 const wins = me.wins
 const losses = me.losses
-const profilePicture = await getImage(`user/profilePicture/${me.intra_id}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${me.intra_id}.png`)
+const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
 
@@ -131,7 +137,7 @@ function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
-  post('user/profilePicture', data).then(() => location.reload())
+  post('api/user/profilePicture', data).then(() => location.reload())
 }
 
 const alertVisibility = ref('invisible')
@@ -139,7 +145,7 @@ const alertVisibility = ref('invisible')
 const alertMessage = ref('Name change failed')
 
 function changeUsername() {
-  post('user/setUsername', { username: newUsername.value })
+  post('api/user/setUsername', { username: newUsername.value })
     .then(() => location.reload())
     .catch((err) => {
       console.log('catch test', err.response.data.message)

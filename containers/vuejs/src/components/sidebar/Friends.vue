@@ -86,8 +86,8 @@ import Incoming from './friends/Incoming.vue'
 import { get, post } from '../../httpRequests'
 import { ref } from 'vue'
 
-const friends = await get('user/friends')
-const incomingRequests = await get('user/incomingFriendRequests')
+const friends = await get('api/user/friends')
+const incomingRequests = await get('api/user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
@@ -106,7 +106,7 @@ function reloadFriends() {
 
 async function addFriend() {
   console.log(friendSearch.value)
-  const foundUser = await post('user/sendFriendRequest', { intra_name: friendSearch.value }) //TODO: waarschijnlijk dit niet meer in een variabele stoppen
+  const foundUser = await post('api/user/sendFriendRequest', { intra_name: friendSearch.value }) //TODO: waarschijnlijk dit niet meer in een variabele stoppen
     .then(() => {
       alertColor.value = 'alert-success'
       alertMessage.value = 'Friend request sent'

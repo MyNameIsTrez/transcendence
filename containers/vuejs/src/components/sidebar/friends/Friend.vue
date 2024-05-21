@@ -40,11 +40,11 @@ const props = defineProps({
   intraId: Number
 })
 
-const profilePicture = await getImage(`user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 
 async function removeFriend() {
   console.log('friend_id: ', props.intraId)
-  post('user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
+  post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
 }
 </script>
 

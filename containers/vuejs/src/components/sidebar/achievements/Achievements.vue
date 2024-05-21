@@ -1,7 +1,7 @@
 <template>
-  <div class="collapse w-96 bg-base-200">
+  <div class="collapse w-auto bg-base-200">
     <input type="checkbox" />
-    <div class="collapse-title text-xl font-medium">Achievements</div>
+    <div class="collapse-title text-xl text-center font-bold px-0">Achievements</div>
     <div class="collapse-content">
       <div class="card w-[352px] bg-base-100 shadow-xl">
         <div class="card-body">
