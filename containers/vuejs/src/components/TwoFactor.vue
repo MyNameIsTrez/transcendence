@@ -8,6 +8,7 @@
         v-model="authCode"
         placeholder="Code"
         class="input input-bordered w-full max-w-xs"
+        @keyup.enter="sendAuthCode"
       />
       <button class="btn" @click="sendAuthCode">Send</button>
     </span>

@@ -23,6 +23,7 @@
                   v-model="newUsername"
                   placeholder="New name"
                   class="input input-bordered w-full max-w-xs"
+                  @keyup.enter="changeUsername"
                 />
                 <button class="btn" @click="changeUsername">Save</button>
               </span>

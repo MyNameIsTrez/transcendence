@@ -28,6 +28,7 @@
                     v-model="friendSearch"
                     placeholder="Type here"
                     class="input input-bordered w-full max-w-xs"
+                    @keyup.enter="addFriend"
                   />
                   <button class="btn" @click="addFriend">Add</button>
                 </span>
