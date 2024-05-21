@@ -48,17 +48,28 @@ If you want to allow someone else to play with you, you'll need to change the `V
 
 ## 2fa commands
 
+### user me
+```
+curl localhost:4242/api/user/me -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpc1R3b0ZhY3RvckF1dGhlbnRpY2F0aW9uRW5hYmxlZCI6dHJ1ZSwiaXNUd29GYWN0b3JBdXRoZW50aWNhdGVkIjp0cnVlLCJpYXQiOjE3MTYyOTM4ODQsImV4cCI6MTcxODg4NTg4NH0.LUZDhMxi5z1Q6GUA8tMJsSuT9dh1z-MhaR_hjwC38vc'
+```
+
 ### /2fa/generate
 
-`curl localhost:4242/2fa/generate -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU'`
+```
+curl localhost:4242/2fa/generate -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpc1R3b0ZhY3RvckF1dGhlbnRpY2F0aW9uRW5hYmxlZCI6dHJ1ZSwiaXNUd29GYWN0b3JBdXRoZW50aWNhdGVkIjp0cnVlLCJpYXQiOjE3MTYyOTM4ODQsImV4cCI6MTcxODg4NTg4NH0.LUZDhMxi5z1Q6GUA8tMJsSuT9dh1z-MhaR_hjwC38vc'
+```
 
 ### /2fa/turn-on
 
-`curl localhost:4242/2fa/turn-on -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'`
+```
+curl localhost:4242/2fa/turn-on -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpc1R3b0ZhY3RvckF1dGhlbnRpY2F0aW9uRW5hYmxlZCI6dHJ1ZSwiaXNUd29GYWN0b3JBdXRoZW50aWNhdGVkIjp0cnVlLCJpYXQiOjE3MTYyOTM4ODQsImV4cCI6MTcxODg4NTg4NH0.LUZDhMxi5z1Q6GUA8tMJsSuT9dh1z-MhaR_hjwC38vc' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'
+```
 
 ### /2fa/authenticate
 
-`curl localhost:4242/2fa/authenticate -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'`
+```
+curl localhost:4242/2fa/authenticate -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpc1R3b0ZhY3RvckF1dGhlbnRpY2F0aW9uRW5hYmxlZCI6dHJ1ZSwiaXNUd29GYWN0b3JBdXRoZW50aWNhdGVkIjp0cnVlLCJpYXQiOjE3MTYyOTM4ODQsImV4cCI6MTcxODg4NTg4NH0.LUZDhMxi5z1Q6GUA8tMJsSuT9dh1z-MhaR_hjwC38vc' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'
+```
 
 ## Without entering psql
 
