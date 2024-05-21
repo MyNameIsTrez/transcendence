@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -19,6 +20,7 @@ import { User } from 'src/users/user.entity';
 @Controller()
 export class AuthController {
   constructor(
+    private jwtService: JwtService,
     private authService: AuthService,
     private readonly usersService: UsersService,
   ) {}
@@ -36,13 +38,19 @@ export class AuthController {
 
     const access_token = await this.authService.getAccessToken(code);
 
-    const jwt = await this.authService.login(access_token);
+    const jwtPayload = await this.authService.getJwtPayload(access_token);
+    const jwt = this.jwtService.sign(jwtPayload);
+
+    const user: User = await this.usersService.findOne(jwtPayload.sub);
+
     return {
       url:
         process.env.VITE_ADDRESS +
         ':' +
         process.env.FRONTEND_PORT +
-        `/login?jwt=${jwt}`,
+        '/' +
+        (user.isTwoFactorAuthenticationEnabled ? 'twofactor' : 'login') +
+        `?jwt=${jwt}`,
       statusCode: 302,
     };
   }
@@ -78,8 +86,6 @@ export class AuthController {
       );
     }
 
-    console.log('body', body);
-    console.log('request.user', request.user);
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       body.twoFactorAuthenticationCode,
       request.user.twoFactorAuthenticationSecret,
@@ -90,6 +96,39 @@ export class AuthController {
     await this.usersService.turnOnTwoFactorAuthentication(
       request.user.intra_id,
     );
+  }
+
+  @Post('2fa/turn-off')
+  async turnOff(@Request() request, @Body() body) {
+    const user: User = await this.usersService.findOne(request.user.intra_id);
+
+    if (!user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't turn off 2fa when it is already disabled",
+      );
+    }
+
+    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+      body.twoFactorAuthenticationCode,
+      request.user.twoFactorAuthenticationSecret,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+    await this.usersService.turnOffTwoFactorAuthentication(
+      request.user.intra_id,
+    );
+    return this.jwtService.sign({ sub: request.user.intra_id });
+  }
+
+  @Get('2fa/isEnabled')
+  @HttpCode(200)
+  @Public()
+  @UseGuards(JwtAuthGuard)
+  async isEnabled(@Request() request) {
+    const user: User = await this.usersService.findOne(request.user.intra_id);
+
+    return user.isTwoFactorAuthenticationEnabled;
   }
 
   @Post('2fa/authenticate')
@@ -117,3 +156,5 @@ export class AuthController {
 
   // TODO: Add 2fa/turn-off, which needs to set twoFactorAuthenticationSecret in the user's database to null
 }
+
+// K57XU5QKJFVFCOLC

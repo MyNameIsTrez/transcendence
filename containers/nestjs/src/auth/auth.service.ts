@@ -62,7 +62,7 @@ export class AuthService {
       });
   }
 
-  async login(access_token: string) {
+  async getJwtPayload(access_token: string) {
     const requestHeaders = new Headers();
     requestHeaders.set('Authorization', `Bearer ` + access_token);
     return fetch('https://api.intra.42.fr/v2/me', {
@@ -91,17 +91,24 @@ export class AuthService {
             if (err) throw err;
             console.log('Saved profile picture');
           });
-          this.usersService.create(intra_id, j.displayname, j.login, j.email);
+
+          await this.usersService.create(
+            intra_id,
+            j.displayname,
+            j.login,
+            j.email,
+          );
         }
 
-        const payload = { sub: intra_id };
-        return this.jwtService.sign(payload);
+        return { sub: intra_id };
       });
   }
 
   async generateTwoFactorAuthenticationSecret(intra_id: number, user: User) {
     console.log('In generateTwoFactorAuthenticationSecret()');
-    const secret = user.twoFactorAuthenticationSecret ? user.twoFactorAuthenticationSecret : authenticator.generateSecret();
+    const secret = user.twoFactorAuthenticationSecret
+      ? user.twoFactorAuthenticationSecret
+      : authenticator.generateSecret();
 
     const otpAuthUrl = authenticator.keyuri(
       intra_id.toString(),
@@ -109,10 +116,7 @@ export class AuthService {
       secret,
     );
 
-    await this.usersService.setTwoFactorAuthenticationSecret(
-      secret,
-      intra_id,
-    );
+    await this.usersService.setTwoFactorAuthenticationSecret(secret, intra_id);
 
     return {
       secret,

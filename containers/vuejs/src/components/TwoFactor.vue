@@ -24,35 +24,56 @@ const router = useRouter()
 
 const authCode = ref('')
 
-const me = await get(`api/user/me`)
-const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
+const urlParams = new URLSearchParams(window.location.search)
+const jwt = urlParams.get('jwt')
+if (jwt) {
+  localStorage.setItem('jwt', jwt)
+}
+
+const isTwoFactorAuthenticationEnabled = await get(`2fa/isEnabled`)
 
 const qr = ref('')
 if (!isTwoFactorAuthenticationEnabled) {
   qr.value = await post('2fa/generate', '')
 }
 
-function sendAuthCode() {
-  post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value })
-    .then(() => {
-      console.log('success')
-      return post('2fa/authenticate', { twoFactorAuthenticationCode: authCode.value })
+async function sendAuthCode() {
+  if (!jwt && isTwoFactorAuthenticationEnabled) {
+    turn2faOff()
+  } else {
+    if (!isTwoFactorAuthenticationEnabled) {
+      turn2faOn()
+    }
+    authenticateWith2fa()
+  }
+}
+
+async function turn2faOff() {
+  await post('2fa/turn-off', { twoFactorAuthenticationCode: authCode.value })
+    .then((newJWT) => {
+      localStorage.setItem('jwt', newJWT)
+      router.replace({ path: '/' })
     })
+    .catch(() => {
+      console.error('failed') // TODO: popup alert maken voor failed
+    })
+}
+
+async function turn2faOn() {
+  await post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value }).catch(() => {
+    console.error('failed') // TODO: popup alert maken voor failed
+  })
+}
+
+async function authenticateWith2fa() {
+  await post('2fa/authenticate', { twoFactorAuthenticationCode: authCode.value })
     .then((newJWT) => {
       console.log('authentication success')
       localStorage.setItem('jwt', newJWT)
       router.replace({ path: '/' })
     })
     .catch(() => {
-      console.log('failed') //TODO: popup alert maken voor failed
+      console.error('failed') // TODO: popup alert maken voor failed
     })
-}
-
-const urlParams = new URLSearchParams(window.location.search)
-const jwt = urlParams.get('jwt')
-if (jwt) {
-  localStorage.setItem('jwt', jwt)
-} else {
-  router.replace({ path: '/' })
 }
 </script>

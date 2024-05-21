@@ -88,14 +88,21 @@ export class UsersService {
     );
   }
 
-  set2faState(intra_id: number, state: boolean, secret: string) {
+  set2faState(intra_id: number, state: boolean, secret?: string) {
     // State doens't HAVE to be checked but it is nice to have this just in case someone locks themselfs out of their account some way
-    if (state == false && !secret) {
+    if (state === true && !secret) {
       throw new BadRequestException("Can't enable 2fa without a secret");
     }
     this.usersRepository.update(
       { intra_id },
-      { isTwoFactorAuthenticationEnabled: state },
+      {
+        isTwoFactorAuthenticationEnabled: state,
+        ...(state
+          ? {}
+          : {
+              twoFactorAuthenticationSecret: null,
+            }),
+      },
     );
   }
 
@@ -124,6 +131,13 @@ export class UsersService {
     const user = await this.findOne(intra_id);
     if (user) {
       this.set2faState(intra_id, true, user.twoFactorAuthenticationSecret);
+    }
+  }
+
+  async turnOffTwoFactorAuthentication(intra_id: number) {
+    const user = await this.findOne(intra_id);
+    if (user) {
+      this.set2faState(intra_id, false);
     }
   }
 
