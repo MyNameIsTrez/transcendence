@@ -47,4 +47,12 @@ function sendAuthCode() {
       console.log('failed') //TODO: popup alert maken voor failed
     })
 }
+
+const urlParams = new URLSearchParams(window.location.search)
+const jwt = urlParams.get('jwt')
+if (jwt) {
+  localStorage.setItem('jwt', jwt)
+} else {
+  router.replace({ path: '/' })
+}
 </script>
