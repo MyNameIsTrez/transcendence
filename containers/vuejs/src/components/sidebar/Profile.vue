@@ -6,7 +6,7 @@
           {{ username }}
         </div>
         <!-- The button to open modal -->
-        <button class="btn w-24 justify-self-end" onclick="my_modal_7.showModal()">Settings</button>
+        <button class="btn w-32 justify-self-end" onclick="my_modal_7.showModal()">Settings</button>
 
         <dialog id="my_modal_7" class="modal">
           <span class="place-content-center" style="grid-column-start: 1; grid-row-start: 1">
@@ -73,9 +73,9 @@
 
       <div style="clear: both; padding-top: 50px">
         <!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
-        <div class="collapse w-96 bg-base-200">
+        <div class="collapse w-auto bg-base-200">
           <input type="checkbox" />
-          <div class="collapse-title text-xl text-left">Match history</div>
+          <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
             <MatchReport
               player="mforstho"
@@ -106,9 +106,8 @@
       <br />
       <Achievements />
 
-      <!-- TODO: I (Sander) couldn't figure out how to left-align the text in this button -->
       <br />
-      <button class="btn w-96 text-xl text-left" @click="logout">Logout</button>
+      <button class="btn w-auto text-xl" @click="logout">Logout</button>
     </div>
   </div>
 </template>
