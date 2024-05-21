@@ -64,10 +64,7 @@ export class AuthController {
   async turnOn(@Request() request, @Body() body) {
     // TODO: Throw if the user already enabled 2fa
 
-    console.log(
-      'body.twoFactorAuthenticationCode',
-      body.twoFactorAuthenticationCode,
-    );
+    console.log('body', body);
     console.log('request.user', request.user);
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       body.twoFactorAuthenticationCode,

@@ -46,6 +46,20 @@ Authorize with intra.
 If you want to allow someone else to play with you, you'll need to change the `VITE_ADDRESS` in the .env file and the `redirect_uri` parameter in this URL to the address of your computer.
 `https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-687341ddad62ca71f252d1088176c46c196e91ce842a42462761637728776f8a&redirect_uri=http%3A%2F%2Flocalhost%3A2424&response_type=code`
 
+## 2fa commands
+
+### /2fa/generate
+
+`curl localhost:4242/2fa/generate -X POST -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU'`
+
+### /2fa/turn-on
+
+`curl localhost:4242/2fa/turn-on -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'`
+
+### /2fa/authenticate
+
+`curl localhost:4242/2fa/authenticate -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpYXQiOjE3MTYyODgxNjcsImV4cCI6MTcxODg4MDE2N30.xt8x7hsxGD9Y2swzEMyisNO3s0MpTk8GuNfT9VI2VPU' -H 'Content-Type: application/json' -d '{"twoFactorAuthenticationCode": ""}'`
+
 ## Without entering psql
 
 Print all databases:
