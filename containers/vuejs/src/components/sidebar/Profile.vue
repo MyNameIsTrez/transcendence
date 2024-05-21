@@ -35,6 +35,11 @@
                 accept="image/*"
                 @change="uploadProfilePicture"
               />
+              <div class="pt-5 grid">
+                <router-link to="twofactor" class="btn place-self-center"
+                  >{{ isTwoFactorAuthenticationEnabled ? 'Disable' : 'Enable' }} 2fa</router-link
+                >
+              </div>
             </div>
             <div role="alert" :class="`alert alert-warning ${alertVisibility}`">
               <svg
@@ -118,11 +123,13 @@ import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
 
-const me = await get(`user/me`)
+const me = await get(`api/user/me`)
+// console.log('me', me)
 const username = me.username
 const wins = me.wins
 const losses = me.losses
-const profilePicture = await getImage(`user/profilePicture/${me.intra_id}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${me.intra_id}.png`)
+const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
 
@@ -130,7 +137,7 @@ function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
-  post('user/profilePicture', data).then(() => location.reload())
+  post('api/user/profilePicture', data).then(() => location.reload())
 }
 
 const alertVisibility = ref('invisible')
@@ -138,7 +145,7 @@ const alertVisibility = ref('invisible')
 const alertMessage = ref('Name change failed')
 
 function changeUsername() {
-  post('user/setUsername', { username: newUsername.value })
+  post('api/user/setUsername', { username: newUsername.value })
     .then(() => location.reload())
     .catch((err) => {
       console.log('catch test', err.response.data.message)

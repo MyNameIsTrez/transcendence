@@ -5,6 +5,7 @@ import Profile from '../components/sidebar/Profile.vue'
 import Friends from '../components/sidebar/Friends.vue'
 import FriendProfile from '../components/sidebar/FriendProfile.vue'
 import Leaderboard from '../components/sidebar/Leaderboard.vue'
+import TwoFactor from '../components/TwoFactor.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -36,7 +37,11 @@ const router = createRouter({
     {
       path: '/login',
       component: LoginPage
-    }
+    },
+	{
+		path: '/twofactor',
+		component: TwoFactor
+	}
   ]
 })
 
