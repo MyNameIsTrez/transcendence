@@ -59,7 +59,8 @@ export class AuthController {
 
     const { otpAuthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
-        request.user,
+        request.user.intra_id,
+        user,
       );
 
     return response.json(
@@ -113,4 +114,6 @@ export class AuthController {
 
     return this.authService.loginWith2fa(request.user.intra_id);
   }
+
+  // TODO: Add 2fa/turn-off, which needs to set twoFactorAuthenticationSecret in the user's database to null
 }

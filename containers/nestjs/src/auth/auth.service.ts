@@ -99,19 +99,19 @@ export class AuthService {
       });
   }
 
-  async generateTwoFactorAuthenticationSecret(user: User) {
+  async generateTwoFactorAuthenticationSecret(intra_id: number, user: User) {
     console.log('In generateTwoFactorAuthenticationSecret()');
-    const secret = authenticator.generateSecret();
+    const secret = user.twoFactorAuthenticationSecret ? user.twoFactorAuthenticationSecret : authenticator.generateSecret();
 
     const otpAuthUrl = authenticator.keyuri(
-      user.intra_id.toString(),
+      intra_id.toString(),
       this.configService.get('APP_NAME'),
       secret,
     );
 
     await this.usersService.setTwoFactorAuthenticationSecret(
       secret,
-      user.intra_id,
+      intra_id,
     );
 
     return {
