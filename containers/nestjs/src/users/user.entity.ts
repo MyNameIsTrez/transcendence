@@ -47,4 +47,7 @@ export class User {
 
   @Column('int', { default: 0 })
   losses: number;
+
+  @Column()
+  lastOnline: Date;
 }
