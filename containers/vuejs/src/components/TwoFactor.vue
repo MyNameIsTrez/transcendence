@@ -18,6 +18,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { get, post } from '../httpRequests'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const authCode = ref('')
 
@@ -33,12 +36,12 @@ function sendAuthCode() {
   post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value })
     .then(() => {
       console.log('success')
-	  post('2fa/authenticate', { twoFactorAuthenticationCode: authCode.value }).then((newJWT) => {
-		console.log('authentication success')
-		localStorage.setItem('jwt', newJWT)
-	  }).catch(() => {
-		console.log('authentication failed')
-	  })
+      return post('2fa/authenticate', { twoFactorAuthenticationCode: authCode.value })
+    })
+    .then((newJWT) => {
+      console.log('authentication success')
+      localStorage.setItem('jwt', newJWT)
+      router.replace({ path: '/' })
     })
     .catch(() => {
       console.log('failed') //TODO: popup alert maken voor failed
