@@ -6,7 +6,7 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt-2fa') {
-  constructor(private readonly userService: UsersService) {
+  constructor(private readonly usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -15,7 +15,7 @@ export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt-2fa') {
   }
 
   async validate(payload: any) {
-    const user: User = await this.userService.findOne(payload.sub);
+    const user: User = await this.usersService.findOne(payload.sub);
 
     if (!user) {
       throw new BadRequestException('Failed to find user in database');

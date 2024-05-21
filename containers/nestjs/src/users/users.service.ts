@@ -34,8 +34,22 @@ export class UsersService {
 
   getUser(intra_id: number) {
     return this.findOne(intra_id).then(
-      ({ intra_id, username, wins, losses, lastOnline }) => {
-        return { intra_id, username, wins, losses, lastOnline };
+      ({
+        intra_id,
+        username,
+        wins,
+        losses,
+        lastOnline,
+        isTwoFactorAuthenticationEnabled,
+      }) => {
+        return {
+          intra_id,
+          username,
+          wins,
+          losses,
+          lastOnline,
+          isTwoFactorAuthenticationEnabled,
+        };
       },
     );
   }
@@ -193,7 +207,9 @@ export class UsersService {
       sender.friends.push(receiver);
       receiver.friends.push(sender);
       sender.incoming_friend_requests.splice(
-        sender.incoming_friend_requests.findIndex(user => user.intra_id === receiver.intra_id),
+        sender.incoming_friend_requests.findIndex(
+          (user) => user.intra_id === receiver.intra_id,
+        ),
         1,
       );
       this.usersRepository.save([sender, receiver]);
@@ -269,12 +285,19 @@ export class UsersService {
         friends: true,
       },
     });
-	console.log('incoming_fr', receiver.incoming_friend_requests);
-    console.log('index: ', receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id));
+    console.log('incoming_fr', receiver.incoming_friend_requests);
+    console.log(
+      'index: ',
+      receiver.incoming_friend_requests.findIndex(
+        (user) => user.intra_id === sender_id,
+      ),
+    );
     sender.friends.push(receiver);
     receiver.friends.push(sender);
     receiver.incoming_friend_requests.splice(
-      receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id),
+      receiver.incoming_friend_requests.findIndex(
+        (user) => user.intra_id === sender_id,
+      ),
       1,
     );
     this.usersRepository.save([sender, receiver]);
@@ -288,7 +311,9 @@ export class UsersService {
       },
     });
     receiver.incoming_friend_requests.splice(
-      receiver.incoming_friend_requests.findIndex(user => user.intra_id === sender_id),
+      receiver.incoming_friend_requests.findIndex(
+        (user) => user.intra_id === sender_id,
+      ),
       1,
     );
     this.usersRepository.save(receiver);
@@ -307,8 +332,14 @@ export class UsersService {
         friends: true,
       },
     });
-    user.friends.splice(user.friends.findIndex(user => user.intra_id === friend_id), 1);
-    friend.friends.splice(friend.friends.findIndex(user => user.intra_id === user_id), 1);
+    user.friends.splice(
+      user.friends.findIndex((user) => user.intra_id === friend_id),
+      1,
+    );
+    friend.friends.splice(
+      friend.friends.findIndex((user) => user.intra_id === user_id),
+      1,
+    );
     this.usersRepository.save(user);
     this.usersRepository.save(friend);
   }

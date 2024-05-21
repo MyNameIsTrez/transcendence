@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { UsersService } from '../users/users.service';
+import { User } from 'src/users/user.entity';
 
 @Controller()
 export class AuthController {
@@ -48,7 +49,13 @@ export class AuthController {
 
   @Post('2fa/generate')
   async generate(@Response() response, @Request() request) {
-    // TODO: Throw if the user already enabled 2fa
+    const user: User = await this.usersService.findOne(request.user.intra_id);
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't regenerate QR when 2fa is already enabled",
+      );
+    }
 
     const { otpAuthUrl } =
       await this.authService.generateTwoFactorAuthenticationSecret(
@@ -62,7 +69,13 @@ export class AuthController {
 
   @Post('2fa/turn-on')
   async turnOn(@Request() request, @Body() body) {
-    // TODO: Throw if the user already enabled 2fa
+    const user: User = await this.usersService.findOne(request.user.intra_id);
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't turn on 2fa when it is already enabled",
+      );
+    }
 
     console.log('body', body);
     console.log('request.user', request.user);
@@ -83,7 +96,11 @@ export class AuthController {
   @Public()
   @UseGuards(JwtAuthGuard)
   async authenticate(@Request() request, @Body() body) {
-    // TODO: Throw if the user's JWT already says 2fa is enabled
+    if (request.user.isTwoFactorAuthenticated) {
+      throw new UnauthorizedException(
+        "Can't authenticate when already authenticated",
+      );
+    }
 
     const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
       body.twoFactorAuthenticationCode,
