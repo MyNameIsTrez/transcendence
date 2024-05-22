@@ -3,7 +3,7 @@ import HomePage from '../components/HomePage.vue'
 import LoginPage from '../components/LoginPage.vue'
 import Profile from '../components/sidebar/Profile.vue'
 import Friends from '../components/sidebar/Friends.vue'
-import FriendProfile from '../components/sidebar/FriendProfile.vue'
+import UserProfile from '../components/sidebar/UserProfile.vue'
 import Leaderboard from '../components/sidebar/Leaderboard.vue'
 import TwoFactor from '../components/TwoFactor.vue'
 
@@ -15,7 +15,7 @@ const router = createRouter({
       component: HomePage,
       children: [
         {
-          path: '/profile',
+          path: '/',
           component: Profile
         },
         {
@@ -23,10 +23,10 @@ const router = createRouter({
           component: Friends
         },
         {
-          path: '/friendprofile/:id',
-          component: FriendProfile
-		//   name: 'friendprofile',
-        //   props: true
+          path: '/user/:intraId',
+          component: UserProfile,
+          //   name: 'UserProfile',
+          props: true
         },
         {
           path: '/leaderboard',
@@ -38,10 +38,10 @@ const router = createRouter({
       path: '/login',
       component: LoginPage
     },
-	{
-		path: '/twofactor',
-		component: TwoFactor
-	}
+    {
+      path: '/twofactor',
+      component: TwoFactor
+    }
   ]
 })
 

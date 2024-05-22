@@ -1,5 +1,5 @@
 <template>
-  <div class="card w-[352px] bg-base-100 shadow-xl">
+  <div class="card w-auto bg-base-100 shadow-xl">
     <div class="card-body">
       <div v-if="playerWon">
         <div class="flex justify-between">
