@@ -76,9 +76,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref,} from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
+import { nextTick } from 'vue';
 
 // VARIABLES
 const myIntraId = ref('')
@@ -287,9 +288,12 @@ async function getChat(chat_str: string) {
   i = 0
   while (history[i]) {
     chatHistory.value[i] = history[i].sender_name + ': ' + history[i].body + '\n'
-    const tempy = await get('chat/history/' + currentChatId.value)
     i++
   }
+  
+  await nextTick();
+
+  chat.value.scrollTop = chat.value.scrollHeight;
 }
 
 // onMounted(() => {
