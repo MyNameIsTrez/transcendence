@@ -54,24 +54,24 @@ export class UsersService {
     );
   }
 
-  async getAllUsers() {
+  async getAllUsers() { // TODO: console.logs uitzetten
     const users = await this.usersRepository.find();
 
     const returnUsers = await Promise.all(
       users.map(async (user) => {
-        // console.log('gAU user: ', user);
+        console.log('gAU user: ', user);
         const returned = {
           name: user.username,
           intraId: user.intra_id,
           wins: user.wins,
           losses: user.losses,
         };
-        // console.log('returned: ', returned);
+        console.log('returned: ', returned);
         return returned;
       }),
     );
     returnUsers.sort((a,b) => b.wins - a.wins);
-    // console.log('returnUsers: ', returnUsers);
+    console.log('returnUsers: ', returnUsers);
     return returnUsers;
   }
 

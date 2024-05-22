@@ -10,13 +10,13 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="user in users">
+        <template v-for="(user,index) in users">
           <RankComponent
             :username="user.name"
             :intraId="user.intraId"
             :wins="user.wins"
             :losses="user.losses"
-			:rank="nbr++"
+            :rank="index+1"
           />
         </template>
       </tbody>
@@ -26,9 +26,9 @@
 
 <script setup lang="ts">
 import RankComponent from './leaderboard/RankComponent.vue'
-import { get, post } from '../../httpRequests'
+import { get } from '../../httpRequests'
 
-const nbr = 1;
+const nbr = 1
 
 const users = await get('api/user/allUsers')
 </script>
