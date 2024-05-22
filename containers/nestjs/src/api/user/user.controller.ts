@@ -72,6 +72,11 @@ export class UserController {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
 
+  @Get('allUsers')
+  getAllUsers() {
+	return this.usersService.getAllUsers();
+  }
+
   @Get('friends')
   getFriends(@Request() req) {
     return this.usersService.getFriends(req.user.intra_id);

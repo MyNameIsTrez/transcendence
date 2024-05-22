@@ -54,10 +54,26 @@ export class UsersService {
     );
   }
 
-  // TODO: Remove?
-  // findAll(): Promise<User[]> {
-  //   return this.usersRepository.find();
-  // }
+  async getAllUsers() {
+    const users = await this.usersRepository.find();
+
+    const returnUsers = await Promise.all(
+      users.map(async (user) => {
+        // console.log('gAU user: ', user);
+        const returned = {
+          name: user.username,
+          intraId: user.intra_id,
+          wins: user.wins,
+          losses: user.losses,
+        };
+        // console.log('returned: ', returned);
+        return returned;
+      }),
+    );
+    returnUsers.sort((a,b) => b.wins - a.wins);
+    // console.log('returnUsers: ', returnUsers);
+    return returnUsers;
+  }
 
   findOne(intra_id: number): Promise<User> {
     const user = this.usersRepository.findOneBy({ intra_id });
