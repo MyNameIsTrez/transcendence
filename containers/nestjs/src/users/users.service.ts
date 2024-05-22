@@ -36,26 +36,23 @@ export class UsersService {
     });
   }
 
-  getUser(intra_id: number) {
-    return this.findOne(intra_id).then(
-      ({
-        intra_id,
-        username,
-        wins,
-        losses,
-        lastOnline,
-        isTwoFactorAuthenticationEnabled,
-      }) => {
-        return {
-          intra_id,
-          username,
-          wins,
-          losses,
-          lastOnline,
-          isTwoFactorAuthenticationEnabled,
-        };
+  async getUser(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        achievements: true,
       },
-    );
+    });
+
+    return {
+      intra_id: user.intra_id,
+      username: user.username,
+      wins: user.wins,
+      losses: user.losses,
+      lastOnline: user.lastOnline,
+      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
+      achievements: user.achievements,
+    };
   }
 
   // TODO: Remove?
