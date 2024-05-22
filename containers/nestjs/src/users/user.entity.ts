@@ -1,12 +1,15 @@
 import {
   Column,
+  JoinColumn,
   JoinTable,
   Entity,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { MyChat } from './mychat.entity';
+import { Achievements } from './achievements';
 
 @Entity()
 export class User {
@@ -50,4 +53,8 @@ export class User {
 
   @Column()
   lastOnline: Date;
+
+  @OneToOne(() => Achievements)
+  @JoinColumn()
+  achievements: Achievements;
 }

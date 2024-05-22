@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { MyChat } from './mychat.entity';
 import { createReadStream } from 'fs';
+import { Achievements } from './achievements';
 
 @Injectable()
 export class UsersService {
@@ -15,9 +16,11 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(MyChat)
     private readonly myChatRepository: Repository<MyChat>,
+    @InjectRepository(Achievements)
+    private readonly achievementsRepository: Repository<Achievements>,
   ) {}
 
-  create(
+  async create(
     intra_id: number,
     username: string,
     intra_name: string,
@@ -29,6 +32,7 @@ export class UsersService {
       intra_name,
       email,
       lastOnline: new Date(),
+      achievements: await this.achievementsRepository.save({}),
     });
   }
 
@@ -166,10 +170,56 @@ export class UsersService {
 
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
+
+    const wins = await this.getWins(intra_id);
+
+    if (wins === 1 || wins === 100) {
+      const achievements = await this.getAchievements(intra_id);
+
+      if (wins === 1) {
+        this.updateAchievement(achievements.id, { wonOnce: true });
+      } else {
+        this.updateAchievement(achievements.id, { wonOneHundredTimes: true });
+      }
+    }
   }
 
   async addLoss(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'losses', 1);
+
+    const losses = await this.getLosses(intra_id);
+
+    if (losses === 1 || losses === 100) {
+      const achievements = await this.getAchievements(intra_id);
+
+      if (losses === 1) {
+        this.updateAchievement(achievements.id, { lostOnce: true });
+      } else {
+        this.updateAchievement(achievements.id, { lostOneHundredTimes: true });
+      }
+    }
+  }
+
+  async getWins(intra_id: number) {
+    return (await this.findOne(intra_id)).wins;
+  }
+
+  async getLosses(intra_id: number) {
+    return (await this.findOne(intra_id)).losses;
+  }
+
+  async getAchievements(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        achievements: true,
+      },
+    });
+    return user.achievements;
+  }
+
+  async updateAchievement(achievement_id: number, achievement: any) {
+    this.achievementsRepository.update({ id: achievement_id }, achievement);
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
