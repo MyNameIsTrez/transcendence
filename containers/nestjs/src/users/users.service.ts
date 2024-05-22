@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { MyChat } from './mychat.entity';
 import { createReadStream } from 'fs';
-import { Achievements } from './achievements';
+import { AchievementsService } from './achievements.service';
 
 @Injectable()
 export class UsersService {
@@ -16,8 +16,7 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(MyChat)
     private readonly myChatRepository: Repository<MyChat>,
-    @InjectRepository(Achievements)
-    private readonly achievementsRepository: Repository<Achievements>,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async create(
@@ -32,7 +31,7 @@ export class UsersService {
       intra_name,
       email,
       lastOnline: new Date(),
-      achievements: await this.achievementsRepository.save({}),
+      achievements: await this.achievementsService.create(),
     });
   }
 
@@ -174,9 +173,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (wins === 1) {
-        this.updateAchievement(achievements.id, { wonOnce: true });
+        this.achievementsService.wonOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { wonOneHundredTimes: true });
+        this.achievementsService.wonOneHundredTimes(achievements.id);
       }
     }
   }
@@ -190,9 +189,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (losses === 1) {
-        this.updateAchievement(achievements.id, { lostOnce: true });
+        this.achievementsService.lostOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { lostOneHundredTimes: true });
+        this.achievementsService.lostOneHundredTimes(achievements.id);
       }
     }
   }
@@ -213,10 +212,6 @@ export class UsersService {
       },
     });
     return user.achievements;
-  }
-
-  async updateAchievement(achievement_id: number, achievement: any) {
-    this.achievementsRepository.update({ id: achievement_id }, achievement);
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
