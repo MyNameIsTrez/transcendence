@@ -8,7 +8,7 @@
           v-for="(chat, index) in chatsOnIndex"
           :key="index"
           class="line"
-          @click="getChat(chat)"
+          @click="validateLock(chat)"
           >
           {{ chat }}
         </div>
@@ -17,6 +17,11 @@
       <!-- <div v-for="(chat) in chatsOnIndex">
         <button @click="getChat(chat)">{{ chat }}</button>
       </div> -->
+
+      <br/><br/>
+      when ref bool locked is true: insert text field for typing the password, when it's filled in correct open chat, set locked bool to false and hide text field again
+      <br/><br/>
+
       <br/>
       <!-- createChat -->
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
@@ -53,6 +58,8 @@
       <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
       <br/>
       
+      CURRENT CHAT: {{ currentChat }} <br/><br/>
+
       <div ref="chat" class="scrollable-container">
         <div
           v-for="(line, index) in chatHistory"
@@ -64,13 +71,10 @@
         </div>
       </div>
 
-        <!-- <div v-for="instance in chatHistory">
-          {{ instance }}
-        </div> -->
-      </div>
       <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
       
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
+      </div>
     </div>
   <!-- </div> -->
 </template>
@@ -113,6 +117,7 @@ const optionsButton = ref(false)
 const openChat = ref(false)
 const text = ref('')
 const chat = ref()
+const locked = ref(false)
 
 function handleLineClick(line: string) {
   console.log("line in handleLineClick:", line)
@@ -256,6 +261,25 @@ async function getInfo() {
   direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
+}
+
+async function validateLock(chat_str: string) {
+  currentChat.value = chat_str
+  let i: number = 0
+
+  while (chatsOnIndex.value[i]) {
+    if (chatsOnIndex.value[i] == chat_str)
+      currentChatId.value = chatIdsOnIndex.value[i]
+    i++
+  }
+  if (await get('chat/isLocked/' + currentChatId.value)) {
+    console.log("chat is locked");
+    locked.value = true
+  }
+  else {
+    console.log("chat is not locked");
+    getChat(chat_str)
+  }
 }
 
 async function getChat(chat_str: string) {

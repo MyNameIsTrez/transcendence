@@ -283,7 +283,6 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
 
         const user = await this.usersService.findOneByUsername(username)
         if (!user) { return false }
@@ -304,5 +303,15 @@ export class ChatService {
     info.isMute = await this.isMute(chat_id, intra_id);
     info.isOwner = await this.isOwner(chat_id, intra_id);
     return info
+  }
+
+  public async isLocked(chat_id: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }})
+      .then(async (chat) => {
+        if (chat.visibility == "PROTECTED")
+          return true;
+        return false
+      })
   }
 }

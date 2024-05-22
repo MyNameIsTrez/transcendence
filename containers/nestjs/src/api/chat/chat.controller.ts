@@ -194,4 +194,9 @@ export class ChatController {
   async getInfo(@Request() req, @Param() dto: OtherUserDto) {
     return await this.chatService.getInfo(dto.chat_id, dto.intra_id)
   }
+
+  @Get('isLocked/:chat_id')
+  async isLocked(@Request() req, @Param() dto: NameDto) {
+    return await this.chatService.isLocked(dto.chat_id)
+  }
 }
