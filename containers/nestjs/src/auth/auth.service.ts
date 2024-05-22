@@ -3,7 +3,6 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
@@ -12,11 +11,13 @@ import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
 import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
+import TransJwtService from './trans-jwt-service';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
+    private transJwtService: TransJwtService,
     private configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly usersService: UsersService,
@@ -24,6 +25,7 @@ export class AuthService {
 
   async getAccessToken(code: string): Promise<string> {
     const formData = new FormData();
+
     formData.set('grant_type', 'authorization_code');
     formData.set('client_id', this.configService.get('INTRA_CLIENT_ID'));
     formData.set(
@@ -62,7 +64,9 @@ export class AuthService {
       });
   }
 
-  async getJwtPayload(access_token: string) {
+  async login(code: string) {
+    const access_token = await this.getAccessToken(code);
+
     const requestHeaders = new Headers();
     requestHeaders.set('Authorization', `Bearer ` + access_token);
     return fetch('https://api.intra.42.fr/v2/me', {
@@ -73,8 +77,6 @@ export class AuthService {
         const intra_id = j.id;
 
         if (!(await this.usersService.hasUser(intra_id))) {
-          console.log(`Saving user with intra_id ${intra_id}`);
-
           const url = j.image.versions.medium;
 
           const { data } = await firstValueFrom(
@@ -89,7 +91,6 @@ export class AuthService {
 
           writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
             if (err) throw err;
-            console.log('Saved profile picture');
           });
 
           await this.usersService.create(
@@ -100,14 +101,41 @@ export class AuthService {
           );
         }
 
-        return { sub: intra_id };
+        const jwt = this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
+
+        const user: User = await this.usersService.findOne(intra_id);
+
+        return {
+          jwt,
+          isTwoFactorAuthenticationEnabled:
+            user.isTwoFactorAuthenticationEnabled,
+        };
       });
   }
 
-  async generateTwoFactorAuthenticationSecret(intra_id: number, user: User) {
-    console.log('In generateTwoFactorAuthenticationSecret()');
-    const secret = user.twoFactorAuthenticationSecret
-      ? user.twoFactorAuthenticationSecret
+  async generate(intra_id: number, response: Response) {
+    const user: User = await this.usersService.findOne(intra_id);
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't regenerate QR when 2fa is already enabled",
+      );
+    }
+
+    const otpAuthUrl = await this.generateTwoFactorAuthenticationSecret(
+      intra_id,
+      user.twoFactorAuthenticationSecret,
+    );
+
+    return response.json(await toDataURL(otpAuthUrl));
+  }
+
+  async generateTwoFactorAuthenticationSecret(
+    intra_id: number,
+    twoFactorAuthenticationSecret: string,
+  ) {
+    const secret = twoFactorAuthenticationSecret
+      ? twoFactorAuthenticationSecret
       : authenticator.generateSecret();
 
     const otpAuthUrl = authenticator.keyuri(
@@ -118,35 +146,94 @@ export class AuthService {
 
     await this.usersService.setTwoFactorAuthenticationSecret(secret, intra_id);
 
-    return {
-      secret,
-      otpAuthUrl,
-    };
-  }
-
-  async generateQrCodeDataURL(otpAuthUrl: string) {
-    return toDataURL(otpAuthUrl);
+    return otpAuthUrl;
   }
 
   isTwoFactorAuthenticationCodeValid(
     twoFactorAuthenticationCode: string,
     twoFactorAuthenticationSecret: string,
   ) {
-    console.log('token', twoFactorAuthenticationCode);
-    console.log('secret', twoFactorAuthenticationSecret);
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: twoFactorAuthenticationSecret,
     });
   }
 
-  async loginWith2fa(intra_id: number) {
-    const payload = {
-      sub: intra_id,
-      isTwoFactorAuthenticationEnabled: true,
-      isTwoFactorAuthenticated: true,
-    };
+  async turnOn(
+    intra_id: number,
+    twoFactorAuthenticationSecret: string,
+    twoFactorAuthenticationCode: string,
+  ) {
+    const user: User = await this.usersService.findOne(intra_id);
 
-    return this.jwtService.sign(payload);
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't turn on 2fa when it is already enabled",
+      );
+    }
+
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode,
+      twoFactorAuthenticationSecret,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+    await this.usersService.turnOnTwoFactorAuthentication(intra_id);
+  }
+
+  async turnOff(
+    intra_id: number,
+    twoFactorAuthenticationSecret: string,
+    twoFactorAuthenticationCode: string,
+  ) {
+    const user: User = await this.usersService.findOne(intra_id);
+
+    if (!user.isTwoFactorAuthenticationEnabled) {
+      throw new UnauthorizedException(
+        "Can't turn off 2fa when it is already disabled",
+      );
+    }
+
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode,
+      twoFactorAuthenticationSecret,
+    );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+
+    await this.usersService.turnOffTwoFactorAuthentication(intra_id);
+
+    return this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
+  }
+
+  async isEnabled(intra_id: number) {
+    const user: User = await this.usersService.findOne(intra_id);
+    return user.isTwoFactorAuthenticationEnabled;
+  }
+
+  async authenticate(
+    intra_id: number,
+    isTwoFactorAuthenticated: boolean,
+    twoFactorAuthenticationSecret: string,
+    twoFactorAuthenticationCode: string,
+  ) {
+    if (isTwoFactorAuthenticated) {
+      throw new UnauthorizedException(
+        "Can't authenticate when already authenticated",
+      );
+    }
+
+    const isCodeValid = this.isTwoFactorAuthenticationCodeValid(
+      twoFactorAuthenticationCode,
+      twoFactorAuthenticationSecret,
+    );
+
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+
+    return this.transJwtService.sign(intra_id, true, true);
   }
 }
