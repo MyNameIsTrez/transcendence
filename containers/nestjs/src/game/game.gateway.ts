@@ -6,17 +6,17 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import LobbyManager from './LobbyManager';
+import TransJwtService from '../auth/trans-jwt-service';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
 @WebSocketGateway({ cors: { origin: '*' }, namespace: 'game' })
 export class GameGateway {
   constructor(
-    private jwtService: JwtService,
+    private transJwtService: TransJwtService,
     private configService: ConfigService,
     private readonly usersService: UsersService,
   ) {}
@@ -50,7 +50,7 @@ export class GameGateway {
     const jwt = authorization.split(' ')[1];
 
     try {
-      const decoded = this.jwtService.verify(jwt);
+      const decoded = this.transJwtService.verify(jwt);
       client.data.intra_id = decoded.sub;
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
