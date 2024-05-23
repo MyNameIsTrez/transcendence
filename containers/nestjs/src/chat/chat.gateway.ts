@@ -56,20 +56,13 @@ export class ChatGateway {
 				redirectToLoginPage: true,
 			});
 		}
-
 		this.connectedClients.add(client);
-		// this.sendConnectedClients();
 	}
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
 		this.connectedClients.delete(client);
-		// this.sendConnectedClients();
 	}
-
-	// sendConnectedClients() {
-	// 	this.server.emit('connectedClients', Array.from(this.connectedClients));
-	// }
 
 	letClientsUpdateTheirChats() {
 		for (let client of this.connectedClients.values()) {

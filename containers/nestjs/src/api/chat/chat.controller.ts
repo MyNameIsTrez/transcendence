@@ -38,14 +38,6 @@ class OtherUserDto {
   intra_id: number;
 }
 
-class JoinDto {
-  @IsUUID()
-  chat_id: string;
-
-  @IsNotEmpty()
-  password: string;
-}
-
 class MuteDto {
   @IsUUID()
   chat_id: string;
@@ -89,16 +81,11 @@ export class ChatController {
 
     // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
 
-    console.log("password", dto.password)
-
-    // TODO: Implement
     const hashed_password =
       dto.visibility === Visibility.PROTECTED
         ? await this.chatService.hashPassword(dto.password)
         : '';
 
-      console.log("hashed password", hashed_password)
-  
     const current_user = await this.usersService.findOne(intra_id);
     let all_users = []
     if (dto.visibility === Visibility.PUBLIC)
@@ -125,21 +112,12 @@ export class ChatController {
 
   @Post('addUserToChat')
   AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
-    console.log("addUserToChat")
     return this.chatService.addUser(dto.chat_id, dto.username);
   }
 
   @Post('addAdminToChat')
   AddAdminToChat(@Request() req, @Body() dto: AddUserDto) {
-    console.log("addAdminToChat")
     return this.chatService.addAdmin(dto.chat_id, dto.username);
-  }
-
-  @Get('chats')
-  chats(@Request() req) {
-    // TODO: Access the chat db
-    // Add public and protected chats, but not private ones
-    return ['uuid1', 'uuid2'];
   }
 
   @Get('kick/:chat_id/:username')
@@ -155,12 +133,6 @@ export class ChatController {
   @Get('name/:chat_id')
   name(@Request() req, @Param() dto: NameDto) {
     return this.chatService.getName(dto.chat_id);
-  }
-
-  @Get('users')
-  users(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69, 420];
   }
 
   @Get('history/:chat_id')
@@ -183,20 +155,9 @@ export class ChatController {
     return this.chatService.isDirect(dto.chat_id)
   }
 
-  @Get('visibility')
-  visibility(@Request() req) {
-    // TODO: Access the chat db
-    return Visibility.PUBLIC;
-  }
-
   @Get('getOtherIntraId/:chat_id/:intra_id')
   getOtherIntraId(@Request() req, @Param() dto: OtherUserDto) {
     return this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id)
-  }
-
-  @Post('join')
-  join(@Request() req, @Body() dto: JoinDto) {
-    return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
   }
 
   @Post('mute')

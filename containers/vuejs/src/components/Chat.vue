@@ -1,7 +1,6 @@
 <template>
   <div>
-    <button @click="changeChatButton"> {{ chatButtonText }} </button>
-    <br/><br/>
+    <button @click="changeChatButton"> {{ chatButtonText }} </button><br/><br/>
     <div v-if="chatButton">
       <div class="scrollable-container">
         <div
@@ -13,30 +12,27 @@
           {{ chat }}
         </div>
       </div>
-      <div v-if="locked">
-        <br/><br/>
+
+      <div v-if="locked"><br/><br/>
         Password of {{ currentChat }}: 
-        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
-        <br/><br/>
-      </div>
-      <br/>
+        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" /><br/><br/>
+      </div><br/>
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button 
         :class= "privateButtonClass"
         @click="chatVisibility"> {{ visibility }}
       </button>
-      <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" />
-      <br/>
+      <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" /><br/>
       <button @click="createChat">Create</button>
     </div>
+
     <div v-if="!chatButton && openChat">
       <div v-if="iAmAdmin"><br/>
         <button @click="changeOptionsButton"> {{ optionsButtonText }} </button><br/><br/>
         <div v-if="optionsButton">
           <div v-if="isProtected">
             <input v-model="newPassword" placeholder="New password..." @keyup.enter="changePassword" /><br/>
-            <button @click="changePassword">Change password</button>
-            <br/><br/>
+            <button @click="changePassword">Change password</button><br/><br/>
           </div>
           <button 
             :class= "privateButtonClass"
@@ -44,33 +40,25 @@
           </button>
           <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="changeVisibility" /><br/>
           <button @click="changeVisibility">Change visibility</button><br/><br/>
+
           <input v-model="otherUser" placeholder="42 student..." /><br/>
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
           <button @click="banUser">/Ban</button>
           <button @click="addAdmin">/Make admin</button>
           <button @click="muteUser">/Mute</button>
-          <input v-model="daysToMute" placeholder="days to mute..." />
-          <br/><br/>
+          <input v-model="daysToMute" placeholder="days to mute..." /><br/><br/>
         </div>
       </div>
-      <!-- admin operations -->
-      <!-- joinChat -->
-      <!-- <button @click="joinChat">Join chat</button>
-      <br /><br /> -->
-      <!-- getChat -->
+
       <div v-if="direct">
-        <button @click="handleBlock"> {{ blockStatus }}</button>
-        <br/><br/>
+        <button @click="handleBlock"> {{ blockStatus }}</button><br/><br/>
       </div>
-
       <div v-if="openOtherProfile">
-        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button>
-        <br/><br/>
+        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button><br/><br/>
       </div>
-      
-      CURRENT CHAT: {{ currentChat }} <br/><br/>
 
+      CURRENT CHAT: {{ currentChat }} <br/><br/>
       <div ref="chat" class="scrollable-container">
         <div
           v-for="(line, index) in chatHistory"
@@ -80,14 +68,11 @@
           >
           {{ line }}
         </div>
-      </div>
-      <br/>
+      </div><br/>
       <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
-      
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
       </div>
     </div>
-  <!-- </div> -->
 </template>
 
 <script setup lang="ts">
@@ -95,47 +80,45 @@ import { ref,} from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue';
-import type { profile } from 'console';
-import { isMapIterator } from 'util/types';
 
 // VARIABLES
-const myIntraId = ref('')
-const myUsername = ref('')
-const myChats = ref('')
+const blockStatus = ref('Block')
+const chat = ref()
 const chatName = ref('')
-const otherUser = ref('')
-const currentChat = ref('')
-const currentChatId = ref('')
-const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
 const chatHistorySender = ref<string[]>([]);
-const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
-const visibility = ref('PUBLIC')
-const visibilityNum = ref(1)
-const protectedChat = ref(false)
-const passwordChat = ref('')
-const iAmAdmin = ref(false)
-const iAmOwner = ref(false)
-const iAmMute = ref(false)
-const direct = ref(false)
-const otherIntraId = ref('')
-const blockStatus = ref('Block')
-const iAmBlocked = ref(false)
-const daysToMute = ref('')
 const chatButtonText = ref('== OPEN CHATS ==')
 const chatButton = ref(false)
+const currentChat = ref('')
+const currentChatId = ref('')
+const daysToMute = ref('')
+const direct = ref(false)
+const iAmAdmin = ref(false)
+const iAmBlocked = ref(false)
+const iAmMute = ref(false)
+const iAmOwner = ref(false)
+const isProtected = ref(false)
+const locked = ref(false)
+const myIntraId = ref('')
+const myUsername = ref('')
+const myChats = ref('')
+const newPassword = ref('')
+const otherIntraId = ref('')
+const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const openChat = ref(false)
-const chat = ref()
-const locked = ref(false)
-const password = ref('')
 const otherProfile = ref('')
 const openOtherProfile = ref(false)
-const newPassword = ref('')
-const isProtected = ref(false)
+const password = ref('')
+const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
+const protectedChat = ref(false)
+const passwordChat = ref('')
+const typedMessage = ref('')
+const visibility = ref('PUBLIC')
+const visibilityNum = ref(1)
 
 async function openProfile() {
   console.log("open profile of ", otherProfile.value)
@@ -262,29 +245,6 @@ async function addAdmin() {
   otherUser.value = ''
   
 }
-
-// async function isAdmin() {
-//   const result = await get('chat/isAdmin/' + currentChatId.value + '/' + myIntraId.value)
-//   console.log("admin res", result)
-//   return result
-// }
-
-// async function isDirect() {
-//   const direct = await get('chat/isDirect/' + currentChatId.value)
-//   if (direct == true)
-//   return true
-// return false
-// }
-
-// async function isMuted(intra_id: string) {
-//   return await get('chat/isMute/' + currentChatId.value + '/' + intra_id)
-// }
-
-// async function isOwner() {
-//   const result = await get('chat/isOwner/' + currentChatId.value + '/' + myIntraId.value)
-//   console.log("owner res", result)
-//   return result
-// }
 
 async function addUser() {
   const add_user = await post('chat/addUserToChat', {
@@ -453,10 +413,10 @@ getMyChats()
   width: 100%;
   padding: 5px;
   cursor: pointer;
-  user-select: none; /* Prevent text selection */
+  user-select: none;
 }
 
 .line:hover {
-  background-color: hsl(0, 0%, 30%); /* Highlight on hover */
+  background-color: hsl(0, 0%, 30%);
 }
 </style>

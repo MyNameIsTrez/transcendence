@@ -45,24 +45,25 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        if (!chat) { return }
         chat.users = [...chat.users, user]
         chat.number_of_users += 1
         await this.chatRepository.save(chat)
       })
   }
 
-  // check first if the user to make admin is part of the channel
   async addAdmin(chat_id: string, username: string) {
     let user = await this.usersService.findOneByUsername(username);
     if (!user)
       return
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { admins: true } })
+      .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
-        if (!chat) { return }
-        chat.admins = [...chat.admins, user]
-        await this.chatRepository.save(chat)
+        chat.users.forEach(async user => {
+          if (username == user.username) {
+            chat.admins = [...chat.admins, user]
+            await this.chatRepository.save(chat)
+          }
+        });
       })
   }
 
@@ -133,7 +134,7 @@ export class ChatService {
     });
   }
 
-  getHistory(chat_id: string) {
+  public async getHistory(chat_id: string) {
     return this.chatRepository
     .findOne({ where: { chat_id }, relations: { history: true } })
     .then(async (chat) => {
@@ -141,7 +142,7 @@ export class ChatService {
     });
   }
 
-  isAdmin(chat_id: string, intra_id: number) {
+  public async isAdmin(chat_id: string, intra_id: number) {
     return this.chatRepository
     .findOne({ where: { chat_id }, relations: { admins: true } })
     .then(async (chat) => {
@@ -155,7 +156,7 @@ export class ChatService {
     });
   }
 
-  isOwner(chat_id: string, intra_id: number) {
+  public async isOwner(chat_id: string, intra_id: number) {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
@@ -165,7 +166,7 @@ export class ChatService {
     });
   }
 
-  isDirect(chat_id: string) {
+  public async isDirect(chat_id: string) {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
@@ -175,7 +176,7 @@ export class ChatService {
     });
   }
 
-  isProtected(chat_id: string) {
+  public async isProtected(chat_id: string) {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
@@ -185,7 +186,7 @@ export class ChatService {
     });
   }
 
-  handleMessage(sender: number, chat_id: string, body: string) {
+  public async handleMessage(sender: number, chat_id: string, body: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
       .then(async (chat) => {
@@ -211,7 +212,6 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
 
         let user_id = 0
         const users = [...chat.users]
@@ -240,7 +240,6 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
 
         let is_mute = false
         const muted = [...chat.muted]
