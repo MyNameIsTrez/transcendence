@@ -2,6 +2,7 @@
   <div>
     <!-- Chats -->
     <button @click="changeChatButton"> {{ chatButtonText }} </button>
+    <br/><br/>
     <div v-if="chatButton">
       <div class="scrollable-container">
         <div
@@ -18,12 +19,12 @@
         <button @click="getChat(chat)">{{ chat }}</button>
       </div> -->
 
-      <br/><br/>
       <div v-if="locked">
+        <br/><br/>
         Password of {{ currentChat }}: 
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
+        <br/><br/>
       </div>
-      <br/><br/>
 
       <br/>
       <!-- createChat -->
@@ -43,6 +44,11 @@
         <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
         <br/><br/>
         <div v-if="optionsButton">
+          add<br/>
+          - set password<br/>
+          - change password<br/>
+          - remove password<br/><br/>
+
           <input v-model="otherUser" placeholder="42 student..." /><br/>
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
@@ -58,8 +64,15 @@
       <!-- <button @click="joinChat">Join chat</button>
       <br /><br /> -->
       <!-- getChat -->
-      <button v-if="direct" @click="handleBlock"> {{ blockStatus }}</button>
-      <br/>
+      <div v-if="direct">
+        <button @click="handleBlock"> {{ blockStatus }}</button>
+        <br/><br/>
+      </div>
+
+      <div v-if="openOtherProfile">
+        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button>
+        <br/><br/>
+      </div>
       
       CURRENT CHAT: {{ currentChat }} <br/><br/>
 
@@ -68,12 +81,12 @@
           v-for="(line, index) in chatHistory"
           :key="index"
           class="line"
-          @click="handleLineClick(line)"
+          @click="openProfileButton(index)"
           >
           {{ line }}
         </div>
       </div>
-
+      <br/>
       <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
       
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
@@ -87,10 +100,11 @@ import { ref,} from 'vue'
 import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue';
+import type { profile } from 'console';
 
 // VARIABLES
 const myIntraId = ref('')
-const allChats = ref('')
+const myUsername = ref('')
 const myChats = ref('')
 const chatName = ref('')
 const otherUser = ref('')
@@ -100,6 +114,7 @@ const typedMessage = ref('')
 const chatsOnIndex = ref<string[]>([]);
 const chatIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
+const chatHistorySender = ref<string[]>([]);
 const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
 const visibility = ref('PUBLIC')
 const visibilityNum = ref(1)
@@ -121,9 +136,21 @@ const openChat = ref(false)
 const chat = ref()
 const locked = ref(false)
 const password = ref('')
+const otherProfile = ref('')
+const openOtherProfile = ref(false)
 
-function handleLineClick(line: string) {
-  console.log("line in handleLineClick:", line)
+async function openProfile() {
+  console.log("open profile of ", otherProfile.value)
+}
+
+function openProfileButton(index: number) {
+  otherProfile.value = chatHistorySender.value[index]
+  if (otherProfile.value != myUsername.value) {
+    openOtherProfile.value = true
+  }
+  else {
+    openOtherProfile.value = false
+  }
 }
 
 function changeOptionsButton() {
@@ -162,6 +189,10 @@ async function getBlockStatus() {
 
 async function getMyIntraId() {
   myIntraId.value = await get('user/intraId')
+}
+
+async function getMyUsername() {
+  myUsername.value = await get('user/username')
 }
 
 async function getOtherIntraId() {
@@ -212,27 +243,28 @@ async function addAdmin() {
   
 }
 
-async function isAdmin() {
-  const result = await get('chat/isAdmin/' + currentChatId.value + '/' + myIntraId.value)
-  console.log("admin res", result)
-  return result
-}
+// async function isAdmin() {
+//   const result = await get('chat/isAdmin/' + currentChatId.value + '/' + myIntraId.value)
+//   console.log("admin res", result)
+//   return result
+// }
 
-async function isDirect() {
-  const direct = await get('chat/isDirect/' + currentChatId.value)
-  if (direct == true)
-  return true
-return false
-}
+// async function isDirect() {
+//   const direct = await get('chat/isDirect/' + currentChatId.value)
+//   if (direct == true)
+//   return true
+// return false
+// }
 
-async function isMuted(intra_id: string) {
-  return await get('chat/isMute/' + currentChatId.value + '/' + intra_id)
-}
-async function isOwner() {
-  const result = await get('chat/isOwner/' + currentChatId.value + '/' + myIntraId.value)
-  console.log("owner res", result)
-  return result
-}
+// async function isMuted(intra_id: string) {
+//   return await get('chat/isMute/' + currentChatId.value + '/' + intra_id)
+// }
+
+// async function isOwner() {
+//   const result = await get('chat/isOwner/' + currentChatId.value + '/' + myIntraId.value)
+//   console.log("owner res", result)
+//   return result
+// }
 
 async function addUser() {
   const add_user = await post('chat/addUserToChat', {
@@ -301,6 +333,7 @@ async function validateLock(chat_str: string) {
 async function getChat(chat_str: string) {
   let i: number = 0
   let history: string[] = []
+  locked.value = false
   if (openChat.value == false)
     changeChatButton()
 
@@ -320,6 +353,7 @@ async function getChat(chat_str: string) {
   i = 0
   while (history[i]) {
     chatHistory.value[i] = history[i].sender_name + ': ' + history[i].body + '\n'
+    chatHistorySender.value[i] = history[i].sender_name
     i++
   }
   
@@ -327,11 +361,6 @@ async function getChat(chat_str: string) {
 
   chat.value.scrollTop = chat.value.scrollHeight;
 }
-
-// onMounted(() => {
-//   console.log("onMounted") // <div>
-//   chat.value.scrollTop = chat.value.scrollHeight
-// })
 
 // async function joinChat() {
 //   // TODO: Replace this hardcoded chat_id and password
@@ -392,6 +421,7 @@ function chatVisibility() {
   }
 }
 
+getMyUsername()
 getMyIntraId()
 getMyChats()
 </script>
