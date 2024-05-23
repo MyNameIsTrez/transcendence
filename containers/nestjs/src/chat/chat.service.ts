@@ -54,11 +54,9 @@ export class ChatService {
 
   // check first if the user to make admin is part of the channel
   async addAdmin(chat_id: string, username: string) {
-    console.log("chat_id: ", chat_id, "username: ", username)
     let user = await this.usersService.findOneByUsername(username);
     if (!user)
       return
-    console.log("user: ", user)
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { admins: true } })
       .then(async (chat) => {
@@ -223,26 +221,6 @@ export class ChatService {
         });
         return user_id
     })
-  }
-  
-  public async join(intra_id: number, chat_id: string, password: string) {
-    const chat = await this.getChat(chat_id);
-
-    // TODO: Add tests for these in test/public.e2e-spec.ts
-    if (chat.visibility !== Visibility.PROTECTED) {
-      return true;
-    }
-
-    const hash = chat.hashed_password;
-
-    return bcrypt.compare(password, hash).then((res) => {
-      console.log('res', res);
-
-      // TODO: Add user instance to chat's 'users' db field
-      // TODO: Add chat instance to user's 'chats' db field
-
-      return res;
-    });
   }
 
   public getTimeOfUnmute(days: number) {

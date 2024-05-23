@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Chats -->
     <button @click="changeChatButton"> {{ chatButtonText }} </button>
     <br/><br/>
     <div v-if="chatButton">
@@ -14,20 +13,13 @@
           {{ chat }}
         </div>
       </div>
-
-      <!-- <div v-for="(chat) in chatsOnIndex">
-        <button @click="getChat(chat)">{{ chat }}</button>
-      </div> -->
-
       <div v-if="locked">
         <br/><br/>
         Password of {{ currentChat }}: 
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
         <br/><br/>
       </div>
-
       <br/>
-      <!-- createChat -->
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button 
         :class= "privateButtonClass"
@@ -37,12 +29,9 @@
       <br/>
       <button @click="createChat">Create</button>
     </div>
-
     <div v-if="!chatButton && openChat">
-      <div v-if="iAmAdmin">
-        <br/>
-        <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
-        <br/><br/>
+      <div v-if="iAmAdmin"><br/>
+        <button @click="changeOptionsButton"> {{ optionsButtonText }} </button><br/><br/>
         <div v-if="optionsButton">
           <div v-if="isProtected">
             <input v-model="newPassword" placeholder="New password..." @keyup.enter="changePassword" /><br/>
@@ -53,11 +42,8 @@
             :class= "privateButtonClass"
             @click="chatVisibility"> {{ visibility }}
           </button>
-          <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="changeVisibility" />
-          <br/>
-          <button @click="changeVisibility">Change visibility</button>
-
-          <br/><br/>
+          <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="changeVisibility" /><br/>
+          <button @click="changeVisibility">Change visibility</button><br/><br/>
           <input v-model="otherUser" placeholder="42 student..." /><br/>
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
@@ -396,15 +382,6 @@ async function getChat(chat_str: string) {
 
   chat.value.scrollTop = chat.value.scrollHeight;
 }
-
-// async function joinChat() {
-//   // TODO: Replace this hardcoded chat_id and password
-//   const chat_id = '36c54d23-7c33-4f0d-ab82-7b1582ba0e3c'
-//   const password = 'foo'
-
-//   const joined = await post('chat/join', { chat_id, password })
-//   console.log('joined', joined)
-// }
 
 async function getMyChats() {
   myChats.value = await get('user/myChats')
