@@ -5,6 +5,8 @@ import { UsersService } from 'src/users/users.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
+import { MatchService } from '../users/match.service';
+import { User } from '../users/user.entity';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -13,12 +15,16 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
-  private pong: APong;
+  private leftPlayer: User;
+  private rightPlayer: User;
 
-  private readonly gamemodes: Map<string, Function> = new Map([
-    ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
-    ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
-  ]);
+  public pong: APong;
+
+  private readonly gamemodes: Map<string, (scoreToWin: number) => APong> =
+    new Map([
+      ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
+      ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
+    ]);
 
   private gameHasStarted = false;
 
@@ -27,10 +33,11 @@ export default class Lobby {
     private readonly server: Server,
     private configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly matchService: MatchService,
   ) {
     console.log('Initializing lobby with mode:', mode);
     // console.log('gamemodes', this.gamemodes);
-    this.pong = this.gamemodes.get(mode)(10);
+    this.pong = this.gamemodes.get(mode)(1);
   }
 
   private getClientKey(client: Socket) {
@@ -40,13 +47,22 @@ export default class Lobby {
     return client.data.intra_id;
   }
 
-  public addClient(client: Socket) {
+  public async addClient(client: Socket) {
     // console.log(
     //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
     // );
     client.data.playerIndex = this.clients.size;
+
+    const user = await this.usersService.findOne(client.data.intra_id);
+    if (client.data.playerIndex === 0) {
+      this.leftPlayer = user;
+    } else {
+      this.rightPlayer = user;
+    }
+
     // console.log('Adding user', client.data);
     this.clients.set(this.getClientKey(client), client);
+
     client.join(this.id);
 
     // TODO: Maybe add a countdown when game starts?
@@ -87,8 +103,15 @@ export default class Lobby {
     if (this.pong.didSomeoneWin()) {
       const winnerIndex = this.pong.getWinnerIndex();
 
-      this.clients.forEach((client) => {
-        this.updatePlayerScore(client);
+      this.saveMatch();
+
+      this.clients.forEach(async (client) => {
+        if (client.data.playerIndex === this.pong.getWinnerIndex()) {
+          this.usersService.addWin(client.data.intra_id);
+        } else {
+          this.usersService.addLoss(client.data.intra_id);
+        }
+
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
       });
     }
@@ -119,15 +142,13 @@ export default class Lobby {
     this.pong.movePaddle(playerIndex, keydown, north);
   }
 
-  public updatePlayerScore(client: Socket) {
-    if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-      this.usersService.addWin(client.data.intra_id);
-    } else {
-      this.usersService.addLoss(client.data.intra_id);
-    }
-  }
-
-  public getPong(): APong {
-    return this.pong;
+  private async saveMatch() {
+    // TODO: Don't access private member variables
+    this.matchService.create(
+      this.leftPlayer,
+      this.rightPlayer,
+      this.pong._leftPlayer._score,
+      this.pong._rightPlayer._score,
+    );
   }
 }

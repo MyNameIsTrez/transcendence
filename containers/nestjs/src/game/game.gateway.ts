@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import LobbyManager from './LobbyManager';
 import TransJwtService from '../auth/trans-jwt-service';
+import { MatchService } from '../users/match.service';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -19,6 +20,7 @@ export class GameGateway {
     private transJwtService: TransJwtService,
     private configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly matchService: MatchService,
   ) {}
 
   @WebSocketServer()
@@ -71,6 +73,7 @@ export class GameGateway {
       this.server,
       this.configService,
       this.usersService,
+      this.matchService,
     );
     this.lobbyManager.updateLoop();
   }
