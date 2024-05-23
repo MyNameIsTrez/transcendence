@@ -65,6 +65,17 @@ class PasswordDto {
   password: string;
 }
 
+class ChangeVisibilityDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsEnum(Visibility)
+  visibility: Visibility;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
   constructor(
@@ -211,5 +222,15 @@ export class ChatController {
   @Get('validatePassword/:chat_id/:password')
   async isPassword(@Request() req, @Param() dto: PasswordDto) {
     return await this.chatService.isPassword(dto.chat_id, dto.password)
+  }
+
+  @Post('changePassword')
+  changePassword(@Request() req, @Body() dto: PasswordDto) {
+    return this.chatService.changePassword(dto.chat_id, dto.password);
+  }
+
+  @Post('changeVisibility')
+  changeVisibility(@Request() req, @Body() dto: ChangeVisibilityDto) {
+    return this.chatService.changeVisibility(dto.chat_id, dto.visibility, dto.password);
   }
 }

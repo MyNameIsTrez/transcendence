@@ -17,6 +17,7 @@ class Info {
   isDirect: boolean;
   isMute: boolean;
   isOwner: boolean;
+  isProtected: boolean;
 }
 
 @Injectable()
@@ -86,8 +87,6 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
-
         const user = await this.usersService.findOneByUsername(username)
         if (!user) { return false }
 
@@ -102,8 +101,6 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
-        if (!chat) { return false }
-
         let stop = false
 
         const user = await this.usersService.findOneByUsername(username)
@@ -142,8 +139,6 @@ export class ChatService {
     return this.chatRepository
     .findOne({ where: { chat_id }, relations: { history: true } })
     .then(async (chat) => {
-      if (!chat) { return }
-
       return chat.history
     });
   }
@@ -152,16 +147,12 @@ export class ChatService {
     return this.chatRepository
     .findOne({ where: { chat_id }, relations: { admins: true } })
     .then(async (chat) => {
-      if (!chat) { return }
-
       let isAdmin = false
-
       const admins = chat.admins
       admins.forEach(admin => {
         if (admin.intra_id == intra_id)
           isAdmin = true
       })
-
       return isAdmin
     });
   }
@@ -170,8 +161,6 @@ export class ChatService {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
-      if (!chat) { return }
-
       if (chat.owner == intra_id)
         return true
       return false
@@ -182,9 +171,17 @@ export class ChatService {
     return this.chatRepository
     .findOne({ where: { chat_id } })
     .then(async (chat) => {
-      if (!chat) { return }
-
       if (chat.number_of_users === 2)
+        return true
+      return false
+    });
+  }
+
+  isProtected(chat_id: string) {
+    return this.chatRepository
+    .findOne({ where: { chat_id } })
+    .then(async (chat) => {
+      if (chat.visibility === Visibility.PROTECTED)
         return true
       return false
     });
@@ -302,6 +299,7 @@ export class ChatService {
     info.isDirect = await this.isDirect(chat_id);
     info.isMute = await this.isMute(chat_id, intra_id);
     info.isOwner = await this.isOwner(chat_id, intra_id);
+    info.isProtected = await this.isProtected(chat_id);
     return info
   }
 
@@ -326,6 +324,26 @@ export class ChatService {
           console.log(err)
           throw new InternalServerErrorException('Comparing password failed');
         }
+      })
+  }
+
+  public async changePassword(chat_id: string, password: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }})
+      .then(async (chat) => {
+        chat.hashed_password = await this.hashPassword(password)
+        this.chatRepository.save(chat)
+      })
+  }
+
+  public async changeVisibility(chat_id: string, visibility: Visibility, password: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }})
+      .then(async (chat) => {
+        chat.visibility = visibility
+        if (chat.visibility == Visibility.PROTECTED)
+          chat.hashed_password = await this.hashPassword(password)
+        this.chatRepository.save(chat)
       })
   }
 }

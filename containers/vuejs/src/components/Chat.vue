@@ -44,11 +44,20 @@
         <button @click="changeOptionsButton"> {{ optionsButtonText }} </button>
         <br/><br/>
         <div v-if="optionsButton">
-          add<br/>
-          - set password<br/>
-          - change password<br/>
-          - remove password<br/><br/>
+          <div v-if="isProtected">
+            <input v-model="newPassword" placeholder="New password..." @keyup.enter="changePassword" /><br/>
+            <button @click="changePassword">Change password</button>
+            <br/><br/>
+          </div>
+          <button 
+            :class= "privateButtonClass"
+            @click="chatVisibility"> {{ visibility }}
+          </button>
+          <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="changeVisibility" />
+          <br/>
+          <button @click="changeVisibility">Change visibility</button>
 
+          <br/><br/>
           <input v-model="otherUser" placeholder="42 student..." /><br/>
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
@@ -101,6 +110,7 @@ import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue';
 import type { profile } from 'console';
+import { isMapIterator } from 'util/types';
 
 // VARIABLES
 const myIntraId = ref('')
@@ -138,9 +148,33 @@ const locked = ref(false)
 const password = ref('')
 const otherProfile = ref('')
 const openOtherProfile = ref(false)
+const newPassword = ref('')
+const isProtected = ref(false)
 
 async function openProfile() {
   console.log("open profile of ", otherProfile.value)
+}
+
+async function changePassword() {
+  await post('chat/changePassword', {
+    chat_id: currentChatId.value,
+    password: newPassword.value
+  })
+  newPassword.value = ''
+}
+
+async function changeVisibility() {
+  if (passwordChat.value == '' && visibility.value == 'PROTECTED')
+    return ;
+  console.log("visibility", visibility.value)
+  if (passwordChat.value == '')
+    passwordChat.value = 'foo'
+  await post('chat/changeVisibility', {
+    chat_id: currentChatId.value,
+    visibility: visibility.value,
+    password: passwordChat.value
+  })
+  passwordChat.value = ''
 }
 
 function openProfileButton(index: number) {
@@ -296,6 +330,7 @@ async function getInfo() {
   direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
+  isProtected.value = info.isProtected
 }
 
 async function validatePassword() {
