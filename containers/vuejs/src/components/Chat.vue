@@ -19,7 +19,10 @@
       </div> -->
 
       <br/><br/>
-      when ref bool locked is true: insert text field for typing the password, when it's filled in correct open chat, set locked bool to false and hide text field again
+      <div v-if="locked">
+        Password of {{ currentChat }}: 
+        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
+      </div>
       <br/><br/>
 
       <br/>
@@ -115,9 +118,9 @@ const chatButton = ref(false)
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const openChat = ref(false)
-const text = ref('')
 const chat = ref()
 const locked = ref(false)
+const password = ref('')
 
 function handleLineClick(line: string) {
   console.log("line in handleLineClick:", line)
@@ -263,6 +266,19 @@ async function getInfo() {
   iAmOwner.value = info.isOwner
 }
 
+async function validatePassword() {
+  console.log("password", password.value);
+  const result = await get('chat/validatePassword/' + currentChatId.value + '/' + password.value)
+  console.log("result in validatePassword", result)
+  if (result) {
+    getChat(currentChat.value)
+    console.log("password is correct")
+  }
+  else
+    console.log("password is incorrect")
+  password.value = ''
+}
+
 async function validateLock(chat_str: string) {
   currentChat.value = chat_str
   let i: number = 0
@@ -283,18 +299,10 @@ async function validateLock(chat_str: string) {
 }
 
 async function getChat(chat_str: string) {
-  currentChat.value = chat_str
-  text.value = ''
   let i: number = 0
   let history: string[] = []
   if (openChat.value == false)
     changeChatButton()
-
-  while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] == chat_str)
-      currentChatId.value = chatIdsOnIndex.value[i]
-    i++
-  }
 
   await getInfo()
   if (direct.value) {

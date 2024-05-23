@@ -309,9 +309,23 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }})
       .then(async (chat) => {
-        if (chat.visibility == "PROTECTED")
+        if (chat.visibility == Visibility.PROTECTED)
           return true;
         return false
+      })
+  }
+
+  public async isPassword(chat_id: string, password: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }})
+      .then(async (chat) => {
+        try {
+          return await bcrypt.compare(password, chat.hashed_password)
+        }
+        catch (err) {
+          console.log(err)
+          throw new InternalServerErrorException('Comparing password failed');
+        }
       })
   }
 }

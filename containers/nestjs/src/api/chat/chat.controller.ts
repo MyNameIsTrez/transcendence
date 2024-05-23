@@ -57,6 +57,14 @@ class MuteDto {
   days: number;
 }
 
+class PasswordDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
   constructor(
@@ -198,5 +206,10 @@ export class ChatController {
   @Get('isLocked/:chat_id')
   async isLocked(@Request() req, @Param() dto: NameDto) {
     return await this.chatService.isLocked(dto.chat_id)
+  }
+
+  @Get('validatePassword/:chat_id/:password')
+  async isPassword(@Request() req, @Param() dto: PasswordDto) {
+    return await this.chatService.isPassword(dto.chat_id, dto.password)
   }
 }
