@@ -9,7 +9,8 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { MyChat } from './mychat.entity';
-import { Achievements } from './achievements';
+import { Achievements } from './achievements.entity';
+import { Match } from './match.entity';
 
 @Entity()
 export class User {
@@ -57,4 +58,8 @@ export class User {
   @OneToOne(() => Achievements)
   @JoinColumn()
   achievements: Achievements;
+
+  @ManyToMany(() => Match)
+  @JoinTable()
+  matchHistory: Match;
 }

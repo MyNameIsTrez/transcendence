@@ -44,7 +44,7 @@ export default class LobbyManager {
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
   private getLobby(mode: string): Lobby {
-    // TODO: Update this to look for corrrect gamemode lobby
+    // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
       (lobby) => lobby.pong.type === mode && !lobby.isFull(),
     );
@@ -65,7 +65,7 @@ export default class LobbyManager {
     return newLobby;
   }
 
-  public removeClient(client: Socket) {
+  public async removeClient(client: Socket) {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
