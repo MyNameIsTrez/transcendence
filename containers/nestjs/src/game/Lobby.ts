@@ -5,6 +5,7 @@ import { UsersService } from 'src/users/users.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
+import { WsException } from '@nestjs/websockets';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -30,6 +31,9 @@ export default class Lobby {
   ) {
     console.log('Initializing lobby with mode:', mode);
     // console.log('gamemodes', this.gamemodes);
+    if (!this.gamemodes.has(mode)) {
+      throw new WsException('Requested gamemode does not exist');
+    }
     this.pong = this.gamemodes.get(mode)(10);
   }
 
