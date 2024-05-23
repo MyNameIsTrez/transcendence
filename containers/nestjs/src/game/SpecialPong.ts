@@ -198,7 +198,7 @@ export default class SpecialPong extends APong {
         const id = this._ball._vel.dx > 0 ? 0 : 1;
         item.onItemPickup(id);
         this._itemsPickedUp.push(item);
-        this._itemsOnMap.splice(i, i + 1);
+        this._itemsOnMap.splice(i, 1);
         // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
       }
@@ -210,7 +210,7 @@ export default class SpecialPong extends APong {
       const doesItemContinue: boolean = item.hookFunction(this);
       if (!doesItemContinue) {
         item.onItemEnd(this);
-        this._itemsPickedUp.splice(i, i + 1);
+        this._itemsPickedUp.splice(i, 1);
         // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
       }
@@ -246,13 +246,13 @@ export default class SpecialPong extends APong {
         const doesItemContinue: boolean = item.onPaddleHit(this);
         if (!doesItemContinue) {
           item.onItemEnd(this);
-          this._itemsPickedUp.splice(i, i + 1);
+          this._itemsPickedUp.splice(i, 1);
           // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
           i--;
         }
       }
       // 1/4 chance to spawn an item
-      if (Math.random() <= 0.25) {
+      if (Math.random() <= 0.33) {
         const pos = Item.generateRandomPos();
         this._itemsOnMap.push(
           this._availableItems[
