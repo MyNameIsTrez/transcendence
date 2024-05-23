@@ -11,6 +11,7 @@ import { Mute } from './mute.entity';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 
 class Info {
   isAdmin: boolean;
@@ -65,7 +66,33 @@ export class ChatService {
           }
         });
       })
-  }
+    }
+    
+  // public async create(
+  //   intra_id: number,
+  //   name: string,
+  //   visibility: Visibility,
+  //   password: string,
+  // ): Promise<Chat> {
+  //   const hashed_password =
+  //     visibility === Visibility.PROTECTED
+  //       ? await this.hashPassword(password)
+  //       : '';
+
+  //   const chat_id = uuid();
+
+  //   this.usersService.addToChat(intra_id, chat_id, name);
+
+  //   return this.chatRepository.save({
+  //     chat_id,
+  //     name,
+  //     users: [intra_id],
+  //     visibility: visibility,
+  //     hashed_password,
+  //     owner: intra_id,
+  //     admins: [intra_id],
+  //   });
+  // }
 
   public hashPassword(password: string) {
     const rounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS'))

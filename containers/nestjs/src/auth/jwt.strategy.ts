@@ -25,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       intra_id: payload.sub,
       twoFactorAuthenticationSecret: user.twoFactorAuthenticationSecret,
+      isTwoFactorAuthenticated: payload.isTwoFactorAuthenticated,
     };
   }
 }

@@ -13,84 +13,79 @@ import {
 import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { UsersService } from '../users/users.service';
 
 @Controller()
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @Public()
   @Get('login')
   @Redirect()
   async login(@Request() req) {
     const code = req.query.code;
+
+    // TODO: Add LoginDto and use it to check this for us
     if (code === undefined) {
       throw new UnauthorizedException(
         'Expected an authorization code parameter from the 42 API',
       );
     }
 
-    const access_token = await this.authService.getAccessToken(code);
+    const { jwt, isTwoFactorAuthenticationEnabled } =
+      await this.authService.login(code);
 
-    const jwt = await this.authService.login(access_token);
     return {
       url:
         process.env.VITE_ADDRESS +
         ':' +
         process.env.FRONTEND_PORT +
-        `/login?jwt=${jwt}`,
+        (isTwoFactorAuthenticationEnabled ? '/twofactor' : '/login') +
+        `?jwt=${jwt}`,
       statusCode: 302,
     };
   }
 
   @Post('2fa/generate')
   async generate(@Response() response, @Request() request) {
-    const { otpAuthUrl } =
-      await this.authService.generateTwoFactorAuthenticationSecret(
-        request.user,
-      );
-
-    return response.json(
-      await this.authService.generateQrCodeDataURL(otpAuthUrl),
-    );
+    return this.authService.generate(request.user.intra_id, response);
   }
 
   @Post('2fa/turn-on')
   async turnOn(@Request() request, @Body() body) {
-    console.log(
-      'body.twoFactorAuthenticationCode',
-      body.twoFactorAuthenticationCode,
-    );
-    console.log('request.user', request.user);
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      body.twoFactorAuthenticationCode,
-      request.user.twoFactorAuthenticationSecret,
-    );
-    if (!isCodeValid) {
-      throw new UnauthorizedException('Wrong authentication code');
-    }
-    await this.usersService.turnOnTwoFactorAuthentication(
+    this.authService.turnOn(
       request.user.intra_id,
+      request.user.twoFactorAuthenticationSecret,
+      body.twoFactorAuthenticationCode,
     );
+  }
+
+  @Post('2fa/turn-off')
+  async turnOff(@Request() request, @Body() body) {
+    return this.authService.turnOff(
+      request.user.intra_id,
+      request.user.twoFactorAuthenticationSecret,
+      body.twoFactorAuthenticationCode,
+    );
+  }
+
+  @Get('2fa/isEnabled')
+  @HttpCode(200)
+  @Public()
+  @UseGuards(JwtAuthGuard)
+  isEnabled(@Request() request) {
+    return this.authService.isEnabled(request.user.intra_id);
   }
 
   @Post('2fa/authenticate')
   @HttpCode(200)
   @Public()
   @UseGuards(JwtAuthGuard)
-  async authenticate(@Request() request, @Body() body) {
-    const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
-      body.twoFactorAuthenticationCode,
+  authenticate(@Request() request, @Body() body) {
+    return this.authService.authenticate(
+      request.user.intra_id,
+      request.user.isTwoFactorAuthenticated,
       request.user.twoFactorAuthenticationSecret,
+      body.twoFactorAuthenticationCode,
     );
-
-    if (!isCodeValid) {
-      throw new UnauthorizedException('Wrong authentication code');
-    }
-
-    return this.authService.loginWith2fa(request.user.intra_id);
   }
 }

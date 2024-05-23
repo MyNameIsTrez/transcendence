@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
+import { UsersService } from 'src/users/users.service';
 import { WsException } from '@nestjs/websockets';
 import { ConfigService } from '@nestjs/config';
 
@@ -11,9 +12,10 @@ export default class LobbyManager {
   constructor(
     private readonly server: Server,
     private configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
-  public queue(client: Socket) {
+  public queue(client: Socket, mode: string) {
     if (
       this.isUserAlreadyInLobby(client.data) &&
       this.configService.get('DEBUG') == 0
@@ -22,7 +24,7 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
-    const lobby = this.getLobby();
+    const lobby = this.getLobby(mode);
     lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
@@ -39,32 +41,41 @@ export default class LobbyManager {
   // and checking if the last lobby only has 1 player.
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
-  private getLobby(): Lobby {
+  private getLobby(mode: string): Lobby {
+    // TODO: Update this to look for corrrect gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => !lobby.isFull(),
+      (lobby) => lobby.getPong().type === mode && !lobby.isFull(),
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
       return notFullLobby;
     }
 
-    const newLobby = new Lobby(this.server, this.configService);
+    const newLobby = new Lobby(
+      mode,
+      this.server,
+      this.configService,
+      this.usersService,
+    );
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
   }
 
-  // TODO: Use this to join private lobbies
-  // public join(lobby_id: string) {}
-
   public removeClient(client: Socket) {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
+      this.usersService.addLoss(client.data.intra_id);
+
       lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
+
+      lobby.clients.forEach((otherClient) => {
+        this.usersService.addWin(otherClient.data.intra_id);
+      });
 
       this.removeLobby(lobby);
     }

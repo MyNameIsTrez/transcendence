@@ -55,14 +55,7 @@ describe('App (e2e)', () => {
   });
 
   async function addUser() {
-    await usersService.create({
-      intra_id: intraId,
-      username: 'foo',
-      email: 'foo',
-      isTwoFactorAuthenticationEnabled: false,
-      twoFactorAuthenticationSecret: null,
-      my_chats: [],
-    });
+    await usersService.create(intraId, 'foo', 'foo');
   }
 
   function getPublic(path, expectedStatus, expectedBody) {

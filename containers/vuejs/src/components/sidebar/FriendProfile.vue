@@ -60,6 +60,15 @@
 import MatchReport from './profile/MatchReport.vue'
 // import Achievements from './profile/Achievements.vue'
 import Achievements from './achievements/Achievements.vue'
+
+import { get, getImage, post } from '../../httpRequests'
+import { ref } from 'vue'
+
+const props = defineProps({
+  name: String,
+  isOnline: Boolean,
+  intraId: Number
+})
 </script>
 
 <style lang="scss" scoped></style>

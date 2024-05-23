@@ -77,9 +77,11 @@
 
 <script setup lang="ts">
 import { ref,} from 'vue'
-import { chatSocket } from '../getSocket'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue';
+
+const props = defineProps(['chatSocket'])
+const chatSocket = props.chatSocket
 
 // VARIABLES
 const blockStatus = ref('Block')
@@ -125,7 +127,7 @@ async function openProfile() {
 }
 
 async function changePassword() {
-  await post('chat/changePassword', {
+  await post('api/chat/changePassword', {
     chat_id: currentChatId.value,
     password: newPassword.value
   })
@@ -138,7 +140,7 @@ async function changeVisibility() {
   console.log("visibility", visibility.value)
   if (passwordChat.value == '')
     passwordChat.value = 'foo'
-  await post('chat/changeVisibility', {
+  await post('api/chat/changeVisibility', {
     chat_id: currentChatId.value,
     visibility: visibility.value,
     password: passwordChat.value
@@ -177,7 +179,7 @@ function changeChatButton() {
 }
 
 async function muteUser() {
-  const mute = await post('chat/mute', {
+  const mute = await post('api/chat/mute', {
     chat_id: currentChatId.value,
     username: otherUser.value,
     days: daysToMute.value
@@ -187,19 +189,19 @@ async function muteUser() {
 }
 
 async function getBlockStatus() {
-  return await get('user/blockStatus/' + myIntraId.value + '/' + otherIntraId.value)
+  return await get('api/user/blockStatus/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function getMyIntraId() {
-  myIntraId.value = await get('user/intraId')
+  myIntraId.value = await get('api/user/intraId')
 }
 
 async function getMyUsername() {
-  myUsername.value = await get('user/username')
+  myUsername.value = await get('api/user/username')
 }
 
 async function getOtherIntraId() {
-  return await get('chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
+  return await get('api/chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
 }
 
 async function handleBlock() {
@@ -214,21 +216,21 @@ async function handleBlock() {
 }
 
 async function blockUser() {
-  const result = await get('user/block/' + myIntraId.value + '/' + otherIntraId.value)
+  const result = await get('api/user/block/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function deblockUser() {
-  const result = await get('user/deblock/' + myIntraId.value + '/' + otherIntraId.value)
+  const result = await get('api/user/deblock/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function kickUser() {
-  const result = await get('chat/kick/' + currentChatId.value + '/' + otherUser.value)
+  const result = await get('api/chat/kick/' + currentChatId.value + '/' + otherUser.value)
   otherUser.value = ''
   getChat(currentChat.value)
 }
 
 async function banUser() {
-  const result = await get('chat/ban/' + currentChatId.value + '/' + otherUser.value)
+  const result = await get('api/chat/ban/' + currentChatId.value + '/' + otherUser.value)
   otherUser.value = ''
 }
 
@@ -238,7 +240,7 @@ async function addAdmin() {
     return 
   }
   console.log("You are admin")
-  const addAdmin = await post('chat/addAdminToChat', {
+  const addAdmin = await post('api/chat/addAdminToChat', {
     chat_id: currentChatId.value,
     username: otherUser.value,
   })
@@ -247,7 +249,7 @@ async function addAdmin() {
 }
 
 async function addUser() {
-  const add_user = await post('chat/addUserToChat', {
+  const add_user = await post('api/chat/addUserToChat', {
     chat_id: currentChatId.value,
     username: otherUser.value,
   })
@@ -259,7 +261,7 @@ async function createChat() {
   if (passwordChat.value == '')
     passwordChat.value = 'foo'
   console.log("password", passwordChat.value)
-  const chat = await post('chat/create', {
+  const chat = await post('api/chat/create', {
     name: chatName.value,
     visibility: visibility.value,
     password: passwordChat.value
@@ -271,7 +273,7 @@ async function createChat() {
 }
 
 async function getInfo() {
-  const info = await get('chat/info/' + currentChatId.value + '/' + myIntraId.value)
+  const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
   iAmAdmin.value = info.isAdmin
   direct.value = info.isDirect
   iAmMute.value = info.isMute
@@ -281,7 +283,7 @@ async function getInfo() {
 
 async function validatePassword() {
   console.log("password", password.value);
-  const result = await get('chat/validatePassword/' + currentChatId.value + '/' + password.value)
+  const result = await get('api/chat/validatePassword/' + currentChatId.value + '/' + password.value)
   console.log("result in validatePassword", result)
   if (result) {
     getChat(currentChat.value)
@@ -301,7 +303,7 @@ async function validateLock(chat_str: string) {
       currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
-  if (await get('chat/isLocked/' + currentChatId.value)) {
+  if (await get('api/chat/isLocked/' + currentChatId.value)) {
     console.log("chat is locked");
     locked.value = true
   }
@@ -329,7 +331,7 @@ async function getChat(chat_str: string) {
   }
   
   chatHistory.value = []
-  history = await get('chat/history/' + currentChatId.value)
+  history = await get('api/chat/history/' + currentChatId.value)
   
   i = 0
   while (history[i]) {
@@ -344,7 +346,7 @@ async function getChat(chat_str: string) {
 }
 
 async function getMyChats() {
-  myChats.value = await get('user/myChats')
+  myChats.value = await get('api/user/myChats')
   let i: number = 0
   chatsOnIndex.value = []
   chatIdsOnIndex.value = []

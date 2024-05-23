@@ -8,7 +8,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { gameSocket } from '../getSocket'
+
+const props = defineProps(['gameSocket'])
+const gameSocket = props.gameSocket
 
 const leftPlayerScore = ref(0)
 const rightPlayerScore = ref(0)
@@ -22,9 +24,9 @@ gameSocket.on('gameStart', () => {
   startGame.value = true
 })
 gameSocket.on('pong', (data: any) => {
-  leftPlayerScore.value = data.leftPlayer.score
+  leftPlayerScore.value = data.score.leftPlayer
   // console.log('leftPlayerScore', leftPlayerScore.value)
-  rightPlayerScore.value = data.rightPlayer.score
+  rightPlayerScore.value = data.score.rightPlayer
   // console.log('rightPlayerScore', rightPlayerScore.value)
 })
 </script>
@@ -37,5 +39,6 @@ gameSocket.on('pong', (data: any) => {
   transform: translateX(-50%);
   font-size: 2vw;
   color: white;
+  pointer-events: none; /* Makes the cursor select the canvas behind it */
 }
 </style>

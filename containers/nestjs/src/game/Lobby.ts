@@ -1,23 +1,37 @@
 import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import Pong from './pong';
+import { UsersService } from 'src/users/users.service';
+import { APong } from './APong';
+import NormalPong from './NormalPong';
+import SpecialPong from './SpecialPong';
 
 export default class Lobby {
   public readonly id: string = uuid();
 
   private readonly maxClients = 2;
 
-  private readonly clients = new Map<string, Socket>();
+  public readonly clients = new Map<string, Socket>();
 
-  private readonly pong = new Pong(10);
+  private pong: APong;
+
+  private readonly gamemodes: Map<string, Function> = new Map([
+    ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
+    ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
+  ]);
 
   private gameHasStarted = false;
 
   constructor(
+    readonly mode: string,
     private readonly server: Server,
     private configService: ConfigService,
-  ) {}
+    private readonly usersService: UsersService,
+  ) {
+    console.log('Initializing lobby with mode:', mode);
+    // console.log('gamemodes', this.gamemodes);
+    this.pong = this.gamemodes.get(mode)(10);
+  }
 
   private getClientKey(client: Socket) {
     if (this.configService.get('DEBUG')) {
@@ -74,6 +88,7 @@ export default class Lobby {
       const winnerIndex = this.pong.getWinnerIndex();
 
       this.clients.forEach((client) => {
+        this.updatePlayerScore(client);
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
       });
     }
@@ -102,5 +117,17 @@ export default class Lobby {
     }
 
     this.pong.movePaddle(playerIndex, keydown, north);
+  }
+
+  public updatePlayerScore(client: Socket) {
+    if (client.data.playerIndex === this.pong.getWinnerIndex()) {
+      this.usersService.addWin(client.data.intra_id);
+    } else {
+      this.usersService.addLoss(client.data.intra_id);
+    }
+  }
+
+  public getPong(): APong {
+    return this.pong;
   }
 }

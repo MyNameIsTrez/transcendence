@@ -2,5 +2,6 @@
 personal_notes.md
 notes.txt
 frontend/node_modules
+out.log
 # TODO: Add this back and remove from git history before handing in!
 # .env
