@@ -7,10 +7,7 @@ export class Match {
   id: number;
 
   @ManyToMany(() => User, (user) => user.matchHistory)
-  leftPlayer: User;
-
-  @ManyToMany(() => User, (user) => user.matchHistory)
-  rightPlayer: User;
+  players: User[];
 
   @Column('int')
   leftScore: number;

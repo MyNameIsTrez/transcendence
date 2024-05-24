@@ -15,8 +15,8 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
-  private leftPlayer: User;
-  private rightPlayer: User;
+  private leftPlayerIntraId: number;
+  private rightPlayerIntraId: number;
 
   public pong: APong;
 
@@ -53,11 +53,10 @@ export default class Lobby {
     // );
     client.data.playerIndex = this.clients.size;
 
-    const user = await this.usersService.findOne(client.data.intra_id);
     if (client.data.playerIndex === 0) {
-      this.leftPlayer = user;
+      this.leftPlayerIntraId = client.data.intra_id;
     } else {
-      this.rightPlayer = user;
+      this.rightPlayerIntraId = client.data.intra_id;
     }
 
     // console.log('Adding user', client.data);
@@ -143,12 +142,11 @@ export default class Lobby {
   }
 
   private async saveMatch() {
-    // TODO: Don't access private member variables
-    this.matchService.create(
-      this.leftPlayer,
-      this.rightPlayer,
-      this.pong._leftPlayer._score,
-      this.pong._rightPlayer._score,
+    await this.matchService.create(
+      await this.usersService.findOne(this.leftPlayerIntraId),
+      await this.usersService.findOne(this.rightPlayerIntraId),
+      this.pong.getLeftPlayerScore(),
+      this.pong.getRightPlayerScore(),
     );
   }
 }

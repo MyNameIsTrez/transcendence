@@ -59,7 +59,7 @@ export class User {
   @JoinColumn()
   achievements: Achievements;
 
-  @ManyToMany(() => Match)
+  @ManyToMany(() => Match, (match) => match.players)
   @JoinTable()
-  matchHistory: Match;
+  matchHistory: Match[];
 }

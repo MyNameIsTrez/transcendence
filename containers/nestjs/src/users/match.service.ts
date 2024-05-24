@@ -11,15 +11,14 @@ export class MatchService {
     private readonly matchRepository: Repository<Match>,
   ) {}
 
-  create(
+  async create(
     leftPlayer: User,
     rightPlayer: User,
     leftScore: number,
     rightScore: number,
   ) {
-    return this.matchRepository.save({
-      leftPlayer,
-      rightPlayer,
+    return await this.matchRepository.save({
+      players: [leftPlayer, rightPlayer],
       leftScore,
       rightScore,
     });
