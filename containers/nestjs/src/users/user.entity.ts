@@ -1,3 +1,4 @@
+import { Chat } from 'src/chat/chat.entity';
 import {
   Column,
   JoinColumn,
@@ -8,7 +9,6 @@ import {
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { MyChat } from './mychat.entity';
 import { Achievements } from './achievements';
 
 @Entity()
@@ -31,8 +31,20 @@ export class User {
   @Column({ nullable: true })
   twoFactorAuthenticationSecret: string | null;
 
-  @OneToMany(() => MyChat, (my_chat) => my_chat.user)
-  my_chats: MyChat[];
+  @ManyToMany(() => Chat, (chat) => chat.users)
+  @JoinTable()
+  chats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.admins)
+  @JoinTable()
+  adminChats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.banned)
+  @JoinTable()
+  bannedChats: Chat[];
+
+  @Column('int', { array: true })
+  blocked: number[];
 
   @ManyToMany(() => User, (friend) => friend.friends)
   @JoinTable()

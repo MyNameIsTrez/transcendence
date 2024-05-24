@@ -9,7 +9,7 @@
       <PongCanvas :game-socket="gameSocket" />
     </div>
     <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
-      <Chat />
+      <Chat :chat-socket="chatSocket" />
     </div>
   </div>
   <GameHeader :game-socket="gameSocket" />
@@ -53,6 +53,7 @@ const opts = {
 }
 
 const gameSocket = getSocket('/game', opts)
+const chatSocket = getSocket('/chat', opts)
 
 gameSocket.on('exception', (error) => {
   console.log('In gameSocket exception handler')
@@ -63,7 +64,17 @@ gameSocket.on('exception', (error) => {
   }
 })
 
+chatSocket.on('exception', (error) => {
+  console.log('In chatSocket exception handler')
+  console.error('exception', error)
+  if (error.redirectToLoginPage) {
+    console.log('Redirecting to /login')
+    router.replace({ path: '/login' })
+  }
+})
+
 onUnmounted(() => {
   gameSocket.disconnect()
+  chatSocket.disconnect()
 })
 </script>

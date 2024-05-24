@@ -6,16 +6,17 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { MyChat } from './mychat.entity';
+import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
+import { privateDecrypt } from 'crypto';
+import { ChatService } from 'src/chat/chat.service';
 import { Achievements } from './achievements';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(MyChat)
-    private readonly myChatRepository: Repository<MyChat>,
+    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
     @InjectRepository(Achievements)
     private readonly achievementsRepository: Repository<Achievements>,
   ) {}
@@ -33,6 +34,7 @@ export class UsersService {
       email,
       lastOnline: new Date(),
       achievements: await this.achievementsRepository.save({}),
+      blocked: [],
     });
   }
 
@@ -60,16 +62,40 @@ export class UsersService {
   //   return this.usersRepository.find();
   // }
 
-  findOne(intra_id: number): Promise<User> {
-    const user = this.usersRepository.findOneBy({ intra_id });
+  async findOne(intra_id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ intra_id });
     if (!user) {
       throw new BadRequestException('No user with this intra_id exists');
     }
     return user;
   }
 
+  async findOneByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException('No user with this username exists');
+    }
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await this.usersRepository.find()
+  }
+  
+  // TODO: Remove?
+  // async remove(intra_id: number): Promise<void> {
+  //   await this.usersRepository.delete(intra_id);
+  // }
+
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
+  }
+
+  async getUsername(intra_id: number): Promise<string> {
+    console.log("getUsername")
+    return this.findOne(intra_id).then((user) => {
+      return user.username;
+    });
   }
 
   async setUsername(intra_id: number, username: string) {
@@ -107,24 +133,16 @@ export class UsersService {
     );
   }
 
-  async addToChat(intra_id: number, chat_id: string, name: string) {
-    await this.myChatRepository.save({
-      chat_id,
-      name,
-      user: await this.findOne(intra_id),
-    });
-  }
-
-  getMyChats(intra_id: number): Promise<MyChat[]> {
+  getMyChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
         where: { intra_id },
         relations: {
-          my_chats: true,
+          chats: true,
         },
       })
       .then((user) => {
-        return user?.my_chats;
+        return user?.chats;
       });
   }
 
@@ -165,6 +183,28 @@ export class UsersService {
     return new StreamableFile(stream);
   }
 
+  async block(my_intra_id: number, other_intra_id: number) {
+    const user = await this.findOne(my_intra_id)
+    user.blocked.push(other_intra_id)
+    return this.usersRepository.save(user)
+  }
+
+  async deblock(my_intra_id: number, other_intra_id: number) {
+    const user = await this.findOne(my_intra_id)
+    user.blocked = user.blocked.filter(u => u != other_intra_id)
+    return this.usersRepository.save(user)
+  }
+
+  async iAmBlocked(my_intra_id: number, other_intra_id: number) {
+    const other_user = await this.findOne(other_intra_id)
+    let is_blocked = false
+    other_user.blocked.forEach(user => {
+      if (user == my_intra_id)
+        is_blocked = true
+    })
+    return is_blocked
+  }
+  
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
 
