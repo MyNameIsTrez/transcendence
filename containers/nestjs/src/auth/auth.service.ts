@@ -6,12 +6,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { existsSync, mkdirSync, writeFile } from 'fs';
+import { writeFile } from 'fs';
 import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
 import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
-import { Chat } from 'src/chat/chat.entity';
 import TransJwtService from './trans-jwt-service';
 import { Response } from 'express';
 

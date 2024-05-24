@@ -10,12 +10,14 @@ import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
 import { Jwt2faStrategy } from './jwt-2fa.strategy';
 import { UsersModule } from '../users/users.module';
 import TransJwtService from './trans-jwt-service';
+import { CreationModule } from '../creation/creation.module';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
     UsersModule,
+    CreationModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,

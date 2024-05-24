@@ -66,18 +66,22 @@ export default class LobbyManager {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
-      lobby.saveMatch();
-
-      this.usersService.addLoss(client.data.intra_id);
+      // If a client disconnect while queueing, lobby.clients.size is 1
+      if (lobby.clients.size >= 2) {
+        lobby.saveMatch();
+        this.usersService.addLoss(client.data.intra_id);
+      }
 
       lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
-      lobby.clients.forEach((otherClient) => {
-        this.usersService.addWin(otherClient.data.intra_id);
-      });
+      if (lobby.clients.size >= 2) {
+        lobby.clients.forEach((otherClient) => {
+          this.usersService.addWin(otherClient.data.intra_id);
+        });
+      }
 
       this.removeLobby(lobby);
     }

@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { ApiModule } from './api/api.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
+import { CreationModule } from './creation/creation.module';
 import { GameModule } from './game/game.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -41,6 +42,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ApiModule,
     AuthModule,
     ChatModule,
+    CreationModule,
     GameModule,
     UsersModule,
     TypeOrmModule.forRootAsync({
