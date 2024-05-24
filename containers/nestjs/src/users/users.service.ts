@@ -9,16 +9,24 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
-import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(Chat)
-    private readonly chatService: ChatService,
     private readonly achievementsService: AchievementsService,
-  ) {}
+  ) {
+    this.createFooUser();
+  }
+
+  // Adds a dummy user that is used to play against oneself during development
+  async createFooUser() {
+    const foo_intra_id = 42;
+
+    if (!(await this.hasUser(foo_intra_id))) {
+      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+    }
+  }
 
   async create(
     intra_id: number,
@@ -54,11 +62,6 @@ export class UsersService {
       achievements: user.achievements,
     };
   }
-
-  // TODO: Remove?
-  // findAll(): Promise<User[]> {
-  //   return this.usersRepository.find();
-  // }
 
   async findOne(intra_id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ intra_id });

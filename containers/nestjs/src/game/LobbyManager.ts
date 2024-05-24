@@ -18,10 +18,7 @@ export default class LobbyManager {
   ) {}
 
   public async queue(client: Socket, mode: string) {
-    if (
-      this.isUserAlreadyInLobby(client.data) &&
-      this.configService.get('DEBUG') == 0
-    ) {
+    if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }
@@ -69,18 +66,24 @@ export default class LobbyManager {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
-      lobby.saveMatch();
+      // If a client disconnect while queueing, lobby.clients.size is 1
+      const client_count = lobby.clients.size;
 
-      this.usersService.addLoss(client.data.intra_id);
+      if (client_count >= 2) {
+        lobby.saveMatch();
+        this.usersService.addLoss(client.data.intra_id);
+      }
 
       lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
-      lobby.clients.forEach((otherClient) => {
-        this.usersService.addWin(otherClient.data.intra_id);
-      });
+      if (client_count >= 2) {
+        lobby.clients.forEach((otherClient) => {
+          this.usersService.addWin(otherClient.data.intra_id);
+        });
+      }
 
       this.removeLobby(lobby);
     }

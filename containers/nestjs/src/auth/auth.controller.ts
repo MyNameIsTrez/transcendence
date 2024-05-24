@@ -45,6 +45,20 @@ export class AuthController {
     };
   }
 
+  @Public()
+  @Get('loginFoo')
+  @Redirect()
+  async loginFoo() {
+    return {
+      url:
+        process.env.VITE_ADDRESS +
+        ':' +
+        process.env.FRONTEND_PORT +
+        `/login?jwt=${this.authService.getFooJwt()}`,
+      statusCode: 302,
+    };
+  }
+
   @Post('2fa/generate')
   async generate(@Response() response, @Request() request) {
     return this.authService.generate(request.user.intra_id, response);

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { Chat } from 'src/chat/chat.entity';
+import { Chat } from '../chat/chat.entity';
 import { Achievements } from './achievements.entity';
 import { AchievementsService } from './achievements.service';
 import { Match } from './match.entity';

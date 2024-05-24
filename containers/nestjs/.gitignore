@@ -56,4 +56,6 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 coverage-e2e
-profile_pictures
+
+profile_pictures/*
+!profile_pictures/42.png
