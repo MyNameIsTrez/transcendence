@@ -62,16 +62,16 @@ export class UsersService {
   //   return this.usersRepository.find();
   // }
 
-  findOne(intra_id: number): Promise<User> {
-    const user = this.usersRepository.findOneBy({ intra_id });
+  async findOne(intra_id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ intra_id });
     if (!user) {
       throw new BadRequestException('No user with this intra_id exists');
     }
     return user;
   }
 
-  findOneByUsername(username: string): Promise<User> {
-    const user = this.usersRepository.findOneBy({ username });
+  async findOneByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
     if (!user) {
       throw new BadRequestException('No user with this username exists');
     }
