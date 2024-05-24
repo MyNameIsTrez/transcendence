@@ -69,6 +69,8 @@ export default class LobbyManager {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
+      lobby.saveMatch();
+
       this.usersService.addLoss(client.data.intra_id);
 
       lobby.removeClient(client);

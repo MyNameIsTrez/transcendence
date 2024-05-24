@@ -100,9 +100,9 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      const winnerIndex = this.pong.getWinnerIndex();
-
       this.saveMatch();
+
+      const winnerIndex = this.pong.getWinnerIndex();
 
       this.clients.forEach(async (client) => {
         if (client.data.playerIndex === this.pong.getWinnerIndex()) {
@@ -141,7 +141,7 @@ export default class Lobby {
     this.pong.movePaddle(playerIndex, keydown, north);
   }
 
-  private async saveMatch() {
+  public async saveMatch() {
     await this.matchService.create(
       await this.usersService.findOne(this.leftPlayerIntraId),
       await this.usersService.findOne(this.rightPlayerIntraId),
