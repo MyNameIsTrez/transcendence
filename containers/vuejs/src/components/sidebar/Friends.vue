@@ -58,7 +58,7 @@
       </div>
     </div>
     <h1 class="text-center">---- Online ----</h1>
-    <template v-for="friend in friends">
+    <template v-for="friend in friends" :key="friend.intraId">
       <!-- getFriendPicture(friend.intraId) -->
       <Friend
         v-if="friend.isOnline"
@@ -68,7 +68,7 @@
       />
     </template>
     <h1 class="text-center">---- Offline ----</h1>
-    <template v-for="friend in friends">
+    <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="!friend.isOnline"
         :name="friend.name"
@@ -77,7 +77,12 @@
       />
     </template>
     <h1 class="text-center">---- Incoming ----</h1>
-    <Incoming v-for="request in incomingRequests" :name="request.name" :intraId="request.intraId" />
+    <Incoming
+      v-for="request in incomingRequests"
+      :key="request.intraId"
+      :name="request.name"
+      :intraId="request.intraId"
+    />
   </div>
 </template>
 
