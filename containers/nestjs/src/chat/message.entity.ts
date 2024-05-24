@@ -6,6 +6,9 @@ export class Message {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  sender_name: string;
+
   @Column('int')
   sender: number;
 

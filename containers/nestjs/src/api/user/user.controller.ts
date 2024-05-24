@@ -27,9 +27,33 @@ class SetUsernameDto {
   username: string;
 }
 
+class SetIntraIdDto {
+  @IsNotEmpty()
+  intraId: number;
+}
+
+class BlockDto {
+  @IsNotEmpty()
+  my_intra_id: number;
+
+  @IsNotEmpty()
+  other_intra_id: number;
+}
+
 @Controller('api/user')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('username')
+  username(@Request() req) {
+    console.log('username');
+    return this.usersService.getUsername(req.user.intra_id);
+  }
+
+  @Get('intraId')
+  intraId(@Request() req) {
+    return req.user.intra_id;
+  }
 
   @Get('me')
   me(@Request() req) {
@@ -39,6 +63,11 @@ export class UserController {
   @Get('other/:intra_id')
   user(@Param('intra_id') intra_id) {
     return this.usersService.getUser(intra_id);
+  }
+
+  @Get('usernameOnIntraId/:intraId')
+  usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
+    return this.usersService.getUsername(dto.intraId);
   }
 
   @Post('setUsername')
@@ -70,6 +99,24 @@ export class UserController {
     file: Express.Multer.File,
   ) {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
+  }
+
+  @Get('block/:my_intra_id/:other_intra_id')
+  blockUser(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.block(dto.my_intra_id, dto.other_intra_id);
+  }
+
+  @Get('unblock/:my_intra_id/:other_intra_id')
+  unblockUser(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.unblock(dto.my_intra_id, dto.other_intra_id);
+  }
+
+  @Get('blockStatus/:my_intra_id/:other_intra_id')
+  async iAmBlocked(@Request() req, @Param() dto: BlockDto) {
+    return await this.usersService.iAmBlocked(
+      dto.my_intra_id,
+      dto.other_intra_id,
+    );
   }
 
   @Get('friends')

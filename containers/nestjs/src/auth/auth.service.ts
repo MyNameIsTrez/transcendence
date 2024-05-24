@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
 import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
+import { Chat } from 'src/chat/chat.entity';
 import TransJwtService from './trans-jwt-service';
 import { Response } from 'express';
 

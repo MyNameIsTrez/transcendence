@@ -6,16 +6,17 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { MyChat } from './mychat.entity';
+import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(MyChat)
-    private readonly myChatRepository: Repository<MyChat>,
+    @InjectRepository(Chat)
+    private readonly chatService: ChatService,
     private readonly achievementsService: AchievementsService,
   ) {}
 
@@ -67,8 +68,27 @@ export class UsersService {
     return user;
   }
 
+  async findOneByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException('No user with this username exists');
+    }
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await this.usersRepository.find();
+  }
+
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
+  }
+
+  async getUsername(intra_id: number): Promise<string> {
+    console.log('getUsername');
+    return this.findOne(intra_id).then((user) => {
+      return user.username;
+    });
   }
 
   async setUsername(intra_id: number, username: string) {
@@ -106,24 +126,16 @@ export class UsersService {
     );
   }
 
-  async addToChat(intra_id: number, chat_id: string, name: string) {
-    await this.myChatRepository.save({
-      chat_id,
-      name,
-      user: await this.findOne(intra_id),
-    });
-  }
-
-  getMyChats(intra_id: number): Promise<MyChat[]> {
+  getMyChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
         where: { intra_id },
         relations: {
-          my_chats: true,
+          chats: true,
         },
       })
       .then((user) => {
-        return user?.my_chats;
+        return user?.chats;
       });
   }
 
@@ -162,6 +174,41 @@ export class UsersService {
     // });
 
     return new StreamableFile(stream);
+  }
+
+  async block(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    const other = await this.findOne(other_intra_id);
+
+    me.blocked.push(other);
+
+    return this.usersRepository.save(me);
+  }
+
+  async unblock(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    me.blocked = me.blocked.filter((user) => user.intra_id != other_intra_id);
+    return this.usersRepository.save(me);
+  }
+
+  async iAmBlocked(my_intra_id: number, other_intra_id: number) {
+    const other_user = await this.usersRepository.findOne({
+      where: { intra_id: other_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    return other_user.blocked.some((user) => user.intra_id == my_intra_id);
   }
 
   async addWin(intra_id: number) {

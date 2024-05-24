@@ -1,14 +1,13 @@
+import { Chat } from 'src/chat/chat.entity';
 import {
   Column,
   JoinColumn,
   JoinTable,
   Entity,
   ManyToMany,
-  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { MyChat } from './mychat.entity';
 import { Achievements } from './achievements.entity';
 import { Match } from './match.entity';
 
@@ -32,8 +31,21 @@ export class User {
   @Column({ nullable: true })
   twoFactorAuthenticationSecret: string | null;
 
-  @OneToMany(() => MyChat, (my_chat) => my_chat.user)
-  my_chats: MyChat[];
+  @ManyToMany(() => Chat, (chat) => chat.users)
+  @JoinTable()
+  chats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.admins)
+  @JoinTable()
+  adminChats: Chat[];
+
+  @ManyToMany(() => Chat, (chat) => chat.banned)
+  @JoinTable()
+  bannedChats: Chat[];
+
+  @ManyToMany(() => User, (block) => block.blocked)
+  @JoinTable()
+  blocked: User[];
 
   @ManyToMany(() => User, (friend) => friend.friends)
   @JoinTable()
