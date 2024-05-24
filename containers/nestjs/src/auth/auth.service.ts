@@ -94,17 +94,6 @@ export class AuthService {
             if (err) throw err;
           });
 
-          // this.usersService.create({
-          //   intra_id: intra_id,
-          //   username: j.displayname,
-          //   email: j.email,
-          //   isTwoFactorAuthenticationEnabled: false,
-          //   twoFactorAuthenticationSecret: null,
-          //   chats: [],
-          //   adminChats: [],
-          //   bannedChats: [],
-          //   blocked: [],
-          // });
           await this.usersService.create(
             intra_id,
             j.displayname,

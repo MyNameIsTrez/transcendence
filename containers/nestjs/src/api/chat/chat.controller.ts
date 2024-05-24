@@ -77,37 +77,12 @@ export class ChatController {
 
   @Post('create')
   async create(@Request() req, @Body() dto: CreateDto) {
-    const intra_id = req.user.intra_id;
-
-    // TODO: Throw error if visibility isn't PUBLIC/PROTECTED/PRIVATE
-
-    const hashed_password =
-      dto.visibility === Visibility.PROTECTED
-        ? await this.chatService.hashPassword(dto.password)
-        : '';
-
-    const current_user = await this.usersService.findOne(intra_id);
-    let all_users = []
-    if (dto.visibility === Visibility.PUBLIC)
-      all_users = await this.usersService.getAllUsers()
-    else
-      all_users = [current_user]
-
-    const num_of_users = all_users.length
-
-    return this.chatService.create(intra_id, {
-      chat_id: uuid(),
-      name: dto.name,
-      number_of_users: num_of_users,
-      users: [...all_users],
-      history: [],
-      visibility: dto.visibility,
-      hashed_password: hashed_password,
-      owner: intra_id,
-      admins: [current_user],
-      banned: [],
-      muted: [],
-    });
+    return this.chatService.create(
+      req.user.intra_id,
+      dto.name,
+      dto.visibility,
+      dto.password,
+    );
   }
 
   @Post('addUserToChat')

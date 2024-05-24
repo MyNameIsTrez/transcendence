@@ -133,10 +133,6 @@ export class UsersService {
     );
   }
 
-  async addToChat(intra_id: number, chat: Chat) {
-    return await this.chatRepository.save(chat);
-  }
-
   getMyChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
