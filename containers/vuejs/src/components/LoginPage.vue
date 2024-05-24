@@ -10,11 +10,13 @@
           backend_port +
           '%2Flogin&response_type=code'
         "
-        >Login</a
+        >Log in</a
       >
     </li>
     <br />
-    <li><a :href="address + ':' + backend_port + '/loginFoo'">Login as the user 'foo'</a></li>
+    <li>
+      <a :href="address + ':' + backend_port + '/loginFoo'">Log in as the debug user</a>
+    </li>
   </ul>
 </template>
 
