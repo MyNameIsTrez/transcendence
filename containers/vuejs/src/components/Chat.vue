@@ -184,7 +184,6 @@ async function muteUser() {
     username: otherUser.value,
     days: daysToMute.value
   })
-  console.log("mute", mute)
   daysToMute.value = ''
 }
 

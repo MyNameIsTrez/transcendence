@@ -66,14 +66,11 @@ export class ChatService {
   }
 
   async addUser(chat_id: string, username: string) {
-    console.log('chat_id: ', chat_id, 'username: ', username);
     let user = await this.usersService.findOneByUsername(username);
-    if (!user) return;
-    console.log('user: ', user);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        chat.users = [...chat.users, user];
+        chat.users.push(user);
         chat.number_of_users += 1;
         await this.chatRepository.save(chat);
       });
@@ -81,13 +78,12 @@ export class ChatService {
 
   async addAdmin(chat_id: string, username: string) {
     let user = await this.usersService.findOneByUsername(username);
-    if (!user) return;
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         chat.users.forEach(async (user) => {
           if (username == user.username) {
-            chat.admins = [...chat.admins, user];
+            chat.admins.push(user);
             await this.chatRepository.save(chat);
           }
         });
@@ -139,11 +135,7 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
         const user = await this.usersService.findOneByUsername(username);
-        if (!user) {
-          return false;
-        }
-
-        chat.banned = [...chat.banned, user];
+        chat.banned.push(user);
         let result = await this.chatRepository.save(chat);
         if (result) return true;
       });
@@ -156,12 +148,7 @@ export class ChatService {
         let stop = false;
 
         const user = await this.usersService.findOneByUsername(username);
-        if (!user) {
-          return false;
-        }
-
-        const admins = [...chat.admins];
-        admins.forEach((admin) => {
+        chat.admins.forEach((admin) => {
           if (admin.intra_id === user.intra_id) {
             stop = true;
           }
@@ -247,8 +234,7 @@ export class ChatService {
           message.sender = sender;
           message.body = body;
           await this.messageRepository.save(message);
-
-          chat.history = [...chat.history, message];
+          chat.history.push(message);
           await this.chatRepository.save(chat);
         });
       });
@@ -257,13 +243,12 @@ export class ChatService {
   public async getOtherIntraId(chat_id: string, intra_id: number) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
-      .then(async (chat) => {
-        let user_id = 0;
-        const users = [...chat.users];
-        users.forEach((user) => {
-          if (user.intra_id != intra_id) user_id = user.intra_id;
-        });
-        return user_id;
+      .then((chat) => {
+        const user = chat.users.find((user) => user.intra_id != intra_id)
+        if (!user) {
+          throw new BadRequestException("Couldn't find another user in this chat");
+        }
+        return user.intra_id;
       });
   }
 
@@ -285,8 +270,7 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
         let is_mute = false;
-        const muted = [...chat.muted];
-        muted.forEach((mute) => {
+        chat.muted.forEach((mute) => {
           if (mute.intra_id == intra_id) {
             if (!this.timeIsPassed(mute.time_of_unmute)) is_mute = true;
           }
@@ -300,15 +284,11 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
         const user = await this.usersService.findOneByUsername(username);
-        if (!user) {
-          return false;
-        }
-
         const mute = new Mute();
         mute.intra_id = user.intra_id;
         mute.time_of_unmute = this.getTimeOfUnmute(days);
         await this.muteRepository.save(mute);
-        chat.muted = [...chat.muted, mute];
+        chat.muted.push(mute);
         return await this.chatRepository.save(chat);
       });
   }

@@ -185,27 +185,20 @@ export class UsersService {
 
   async block(my_intra_id: number, other_intra_id: number) {
     const user = await this.findOne(my_intra_id)
-    if (!user) { return false }
-
-    user.blocked = [...user.blocked, other_intra_id]
+    user.blocked.push(other_intra_id)
     return this.usersRepository.save(user)
   }
 
   async deblock(my_intra_id: number, other_intra_id: number) {
     const user = await this.findOne(my_intra_id)
-    if (!user) { return false }
-
     user.blocked = user.blocked.filter(u => u != other_intra_id)
     return this.usersRepository.save(user)
   }
 
   async iAmBlocked(my_intra_id: number, other_intra_id: number) {
     const other_user = await this.findOne(other_intra_id)
-    if (!other_user) { return false }
-    
     let is_blocked = false
-    const blockedUsers = [...other_user.blocked]
-    blockedUsers.forEach(user => {
+    other_user.blocked.forEach(user => {
       if (user == my_intra_id)
         is_blocked = true
     })
