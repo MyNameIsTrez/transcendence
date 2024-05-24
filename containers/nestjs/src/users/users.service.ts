@@ -15,7 +15,6 @@ import TransJwtService from '../auth/trans-jwt-service';
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(Chat)
     private readonly achievementsService: AchievementsService,
     private transJwtService: TransJwtService,
   ) {
