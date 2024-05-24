@@ -86,10 +86,6 @@ export class AuthService {
             }),
           );
 
-          if (!existsSync('profile_pictures')) {
-            mkdirSync('profile_pictures');
-          }
-
           writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
             if (err) throw err;
           });

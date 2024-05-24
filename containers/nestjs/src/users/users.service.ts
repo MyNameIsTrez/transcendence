@@ -9,6 +9,7 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
+import TransJwtService from '../auth/trans-jwt-service';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,23 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Chat)
     private readonly achievementsService: AchievementsService,
-  ) {}
+    private transJwtService: TransJwtService,
+  ) {
+    this.createFooUser();
+  }
+
+  // Adds a dummy user that is used to play against oneself during development
+  async createFooUser() {
+    const foo_intra_id = 42;
+
+    if (!(await this.hasUser(foo_intra_id))) {
+      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+    }
+
+    // Add this jwt to your localstorage in order to log in as the user foo
+    const foo_jwt = this.transJwtService.sign(foo_intra_id, false, false); // TODO: Are the `false` correct?
+    console.log("foo's jwt", foo_jwt);
+  }
 
   async create(
     intra_id: number,
