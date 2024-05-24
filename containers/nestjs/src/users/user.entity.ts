@@ -5,11 +5,11 @@ import {
   JoinTable,
   Entity,
   ManyToMany,
-  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { Achievements } from './achievements';
+import { Achievements } from './achievements.entity';
+import { Match } from './match.entity';
 
 @Entity()
 export class User {
@@ -43,8 +43,9 @@ export class User {
   @JoinTable()
   bannedChats: Chat[];
 
-  @Column('int', { array: true })
-  blocked: number[];
+  @ManyToMany(() => User, (block) => block.blocked)
+  @JoinTable()
+  blocked: User[];
 
   @ManyToMany(() => User, (friend) => friend.friends)
   @JoinTable()
@@ -69,4 +70,8 @@ export class User {
   @OneToOne(() => Achievements)
   @JoinColumn()
   achievements: Achievements;
+
+  @ManyToMany(() => Match, (match) => match.players)
+  @JoinTable()
+  matchHistory: Match[];
 }

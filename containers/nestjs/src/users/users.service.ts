@@ -8,17 +8,16 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
-import { privateDecrypt } from 'crypto';
+import { AchievementsService } from './achievements.service';
 import { ChatService } from 'src/chat/chat.service';
-import { Achievements } from './achievements';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
-    @InjectRepository(Achievements)
-    private readonly achievementsRepository: Repository<Achievements>,
+    @InjectRepository(Chat)
+    private readonly chatService: ChatService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async create(
@@ -33,8 +32,7 @@ export class UsersService {
       intra_name,
       email,
       lastOnline: new Date(),
-      achievements: await this.achievementsRepository.save({}),
-      blocked: [],
+      achievements: await this.achievementsService.create(),
     });
   }
 
@@ -79,20 +77,15 @@ export class UsersService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await this.usersRepository.find()
+    return await this.usersRepository.find();
   }
-  
-  // TODO: Remove?
-  // async remove(intra_id: number): Promise<void> {
-  //   await this.usersRepository.delete(intra_id);
-  // }
 
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
   }
 
   async getUsername(intra_id: number): Promise<string> {
-    console.log("getUsername")
+    console.log('getUsername');
     return this.findOne(intra_id).then((user) => {
       return user.username;
     });
@@ -184,27 +177,40 @@ export class UsersService {
   }
 
   async block(my_intra_id: number, other_intra_id: number) {
-    const user = await this.findOne(my_intra_id)
-    user.blocked.push(other_intra_id)
-    return this.usersRepository.save(user)
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    const other = await this.findOne(other_intra_id);
+
+    me.blocked.push(other);
+
+    return this.usersRepository.save(me);
   }
 
-  async deblock(my_intra_id: number, other_intra_id: number) {
-    const user = await this.findOne(my_intra_id)
-    user.blocked = user.blocked.filter(u => u != other_intra_id)
-    return this.usersRepository.save(user)
+  async unblock(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    me.blocked = me.blocked.filter((user) => user.intra_id != other_intra_id);
+    return this.usersRepository.save(me);
   }
 
   async iAmBlocked(my_intra_id: number, other_intra_id: number) {
-    const other_user = await this.findOne(other_intra_id)
-    let is_blocked = false
-    other_user.blocked.forEach(user => {
-      if (user == my_intra_id)
-        is_blocked = true
-    })
-    return is_blocked
+    const other_user = await this.usersRepository.findOne({
+      where: { intra_id: other_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    return other_user.blocked.some((user) => user.intra_id == my_intra_id);
   }
-  
+
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
 
@@ -214,9 +220,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (wins === 1) {
-        this.updateAchievement(achievements.id, { wonOnce: true });
+        this.achievementsService.wonOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { wonOneHundredTimes: true });
+        this.achievementsService.wonOneHundredTimes(achievements.id);
       }
     }
   }
@@ -230,9 +236,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (losses === 1) {
-        this.updateAchievement(achievements.id, { lostOnce: true });
+        this.achievementsService.lostOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { lostOneHundredTimes: true });
+        this.achievementsService.lostOneHundredTimes(achievements.id);
       }
     }
   }
@@ -253,10 +259,6 @@ export class UsersService {
       },
     });
     return user.achievements;
-  }
-
-  async updateAchievement(achievement_id: number, achievement: any) {
-    this.achievementsRepository.update({ id: achievement_id }, achievement);
   }
 
   findOneByName(intra_name: string): Promise<User | null> {

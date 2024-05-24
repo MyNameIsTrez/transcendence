@@ -85,7 +85,7 @@ export class AuthService {
               responseType: 'arraybuffer',
             }),
           );
-          
+
           if (!existsSync('profile_pictures')) {
             mkdirSync('profile_pictures');
           }

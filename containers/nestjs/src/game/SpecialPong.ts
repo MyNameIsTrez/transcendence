@@ -264,7 +264,7 @@ export default class SpecialPong extends APong {
   }
 
   getData() {
-    let rects: Array<any> = [];
+    const rects: Array<any> = [];
     rects.push({
       color: this._leftPlayer.paddle._color,
       pos: this._leftPlayer.paddle._pos,

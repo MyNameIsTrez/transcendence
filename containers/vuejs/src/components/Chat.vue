@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button @click="changeChatButton"> {{ chatButtonText }} </button><br/><br/>
+    <button @click="changeChatButton">{{ chatButtonText }}</button><br /><br />
     <div v-if="chatButton">
       <div class="scrollable-container">
         <div
@@ -8,77 +8,98 @@
           :key="index"
           class="line"
           @click="validateLock(chat)"
-          >
+        >
           {{ chat }}
         </div>
       </div>
 
-      <div v-if="locked"><br/><br/>
-        Password of {{ currentChat }}: 
-        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" /><br/><br/>
-      </div><br/>
+      <div v-if="locked">
+        <br /><br />
+        Password of {{ currentChat }}:
+        <input
+          v-model="password"
+          placeholder="Password..."
+          @keyup.enter="validatePassword"
+        /><br /><br />
+      </div>
+      <br />
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
-      <button 
-        :class= "privateButtonClass"
-        @click="chatVisibility"> {{ visibility }}
-      </button>
-      <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="createChat" /><br/>
+      <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
+      <input
+        v-if="protectedChat"
+        v-model="passwordChat"
+        placeholder="Password..."
+        @keyup.enter="createChat"
+      /><br />
       <button @click="createChat">Create</button>
     </div>
 
     <div v-if="!chatButton && openChat">
-      <div v-if="iAmAdmin"><br/>
-        <button @click="changeOptionsButton"> {{ optionsButtonText }} </button><br/><br/>
+      <div v-if="iAmAdmin">
+        <br />
+        <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
         <div v-if="optionsButton">
           <div v-if="isProtected">
-            <input v-model="newPassword" placeholder="New password..." @keyup.enter="changePassword" /><br/>
-            <button @click="changePassword">Change password</button><br/><br/>
+            <input
+              v-model="newPassword"
+              placeholder="New password..."
+              @keyup.enter="changePassword"
+            /><br />
+            <button @click="changePassword">Change password</button><br /><br />
           </div>
-          <button 
-            :class= "privateButtonClass"
-            @click="chatVisibility"> {{ visibility }}
-          </button>
-          <input v-if="protectedChat" v-model="passwordChat" placeholder="Password..." @keyup.enter="changeVisibility" /><br/>
-          <button @click="changeVisibility">Change visibility</button><br/><br/>
+          <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
+          <input
+            v-if="protectedChat"
+            v-model="passwordChat"
+            placeholder="Password..."
+            @keyup.enter="changeVisibility"
+          /><br />
+          <button @click="changeVisibility">Change visibility</button><br /><br />
 
-          <input v-model="otherUser" placeholder="42 student..." /><br/>
+          <input v-model="otherUser" placeholder="42 student..." /><br />
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
           <button @click="banUser">/Ban</button>
           <button @click="addAdmin">/Make admin</button>
           <button @click="muteUser">/Mute</button>
-          <input v-model="daysToMute" placeholder="days to mute..." /><br/><br/>
+          <input v-model="daysToMute" placeholder="days to mute..." /><br /><br />
         </div>
       </div>
 
       <div v-if="direct">
-        <button @click="handleBlock"> {{ blockStatus }}</button><br/><br/>
+        <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
       </div>
       <div v-if="openOtherProfile">
-        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button><br/><br/>
+        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button><br /><br />
       </div>
 
-      CURRENT CHAT: {{ currentChat }} <br/><br/>
+      CURRENT CHAT: {{ currentChat }} <br /><br />
       <div ref="chat" class="scrollable-container">
         <div
           v-for="(line, index) in chatHistory"
           :key="index"
           class="line"
           @click="openProfileButton(index)"
-          >
+        >
           {{ line }}
         </div>
-      </div><br/>
-      <input v-if="!iAmMute" v-model="typedMessage" placeholder="Type message..." @keyup.enter="sendMessage" />
-      <button v-if="!iAmMute" @click="sendMessage">Send</button>
       </div>
+      <br />
+      <input
+        v-if="!iAmMute"
+        v-model="typedMessage"
+        placeholder="Type message..."
+        @keyup.enter="sendMessage"
+      />
+      <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref,} from 'vue'
+import { ref } from 'vue'
 import { get, post } from '../httpRequests'
-import { nextTick } from 'vue';
+import { nextTick } from 'vue'
 
 const props = defineProps(['chatSocket'])
 const chatSocket = props.chatSocket
@@ -87,10 +108,10 @@ const chatSocket = props.chatSocket
 const blockStatus = ref('Block')
 const chat = ref()
 const chatName = ref('')
-const chatsOnIndex = ref<string[]>([]);
-const chatIdsOnIndex = ref<string[]>([]);
-const chatHistory = ref<string[]>([]);
-const chatHistorySender = ref<string[]>([]);
+const chatsOnIndex = ref<string[]>([])
+const chatIdsOnIndex = ref<string[]>([])
+const chatHistory = ref<string[]>([])
+const chatHistorySender = ref<string[]>([])
 const chatButtonText = ref('== OPEN CHATS ==')
 const chatButton = ref(false)
 const currentChat = ref('')
@@ -123,7 +144,7 @@ const visibility = ref('PUBLIC')
 const visibilityNum = ref(1)
 
 async function openProfile() {
-  console.log("open profile of ", otherProfile.value)
+  console.log('open profile of ', otherProfile.value)
 }
 
 async function changePassword() {
@@ -135,11 +156,9 @@ async function changePassword() {
 }
 
 async function changeVisibility() {
-  if (passwordChat.value == '' && visibility.value == 'PROTECTED')
-    return ;
-  console.log("visibility", visibility.value)
-  if (passwordChat.value == '')
-    passwordChat.value = 'foo'
+  if (passwordChat.value == '' && visibility.value == 'PROTECTED') return
+  console.log('visibility', visibility.value)
+  if (passwordChat.value == '') passwordChat.value = 'foo'
   await post('api/chat/changeVisibility', {
     chat_id: currentChatId.value,
     visibility: visibility.value,
@@ -152,28 +171,24 @@ function openProfileButton(index: number) {
   otherProfile.value = chatHistorySender.value[index]
   if (otherProfile.value != myUsername.value) {
     openOtherProfile.value = true
-  }
-  else {
+  } else {
     openOtherProfile.value = false
   }
 }
 
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
-  if (optionsButton.value == false)
-    optionsButtonText.value = "~ open options ~"
-  else
-    optionsButtonText.value = "~ close options ~"  
+  if (optionsButton.value == false) optionsButtonText.value = '~ open options ~'
+  else optionsButtonText.value = '~ close options ~'
 }
 
 function changeChatButton() {
   chatButton.value = !chatButton.value
   if (chatButton.value == false) {
-    chatButtonText.value = "== OPEN CHATS =="
+    chatButtonText.value = '== OPEN CHATS =='
     openChat.value = true
-  }
-  else {
-    chatButtonText.value = "== CLOSE CHATS =="  
+  } else {
+    chatButtonText.value = '== CLOSE CHATS =='
     openChat.value = false
   }
 }
@@ -206,60 +221,57 @@ async function getOtherIntraId() {
 async function handleBlock() {
   if (blockStatus.value == 'Block') {
     blockUser()
-    blockStatus.value = 'Deblock'
-  }
-  else {
-    deblockUser()
+    blockStatus.value = 'Unblock'
+  } else {
+    unblockUser()
     blockStatus.value = 'Block'
   }
 }
 
 async function blockUser() {
-  const result = await get('api/user/block/' + myIntraId.value + '/' + otherIntraId.value)
+  await get('api/user/block/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
-async function deblockUser() {
-  const result = await get('api/user/deblock/' + myIntraId.value + '/' + otherIntraId.value)
+async function unblockUser() {
+  await get('api/user/unblock/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function kickUser() {
-  const result = await get('api/chat/kick/' + currentChatId.value + '/' + otherUser.value)
+  await get('api/chat/kick/' + currentChatId.value + '/' + otherUser.value)
   otherUser.value = ''
   getChat(currentChat.value)
 }
 
 async function banUser() {
-  const result = await get('api/chat/ban/' + currentChatId.value + '/' + otherUser.value)
+  await get('api/chat/ban/' + currentChatId.value + '/' + otherUser.value)
   otherUser.value = ''
 }
 
 async function addAdmin() {
   if (iAmAdmin.value == false) {
-    console.log("No admin authorization")
-    return 
+    console.log('No admin authorization')
+    return
   }
-  console.log("You are admin")
+  console.log('You are admin')
   const addAdmin = await post('api/chat/addAdminToChat', {
     chat_id: currentChatId.value,
-    username: otherUser.value,
+    username: otherUser.value
   })
   otherUser.value = ''
-  
 }
 
 async function addUser() {
   const add_user = await post('api/chat/addUserToChat', {
     chat_id: currentChatId.value,
-    username: otherUser.value,
+    username: otherUser.value
   })
   otherUser.value = ''
   getChat(currentChat.value)
 }
 
 async function createChat() {
-  if (passwordChat.value == '')
-    passwordChat.value = 'foo'
-  console.log("password", passwordChat.value)
+  if (passwordChat.value == '') passwordChat.value = 'foo'
+  console.log('password', passwordChat.value)
   const chat = await post('api/chat/create', {
     name: chatName.value,
     visibility: visibility.value,
@@ -281,15 +293,15 @@ async function getInfo() {
 }
 
 async function validatePassword() {
-  console.log("password", password.value);
-  const result = await get('api/chat/validatePassword/' + currentChatId.value + '/' + password.value)
-  console.log("result in validatePassword", result)
+  console.log('password', password.value)
+  const result = await get(
+    'api/chat/validatePassword/' + currentChatId.value + '/' + password.value
+  )
+  console.log('result in validatePassword', result)
   if (result) {
     getChat(currentChat.value)
-    console.log("password is correct")
-  }
-  else
-    console.log("password is incorrect")
+    console.log('password is correct')
+  } else console.log('password is incorrect')
   password.value = ''
 }
 
@@ -298,16 +310,14 @@ async function validateLock(chat_str: string) {
   let i: number = 0
 
   while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] == chat_str)
-      currentChatId.value = chatIdsOnIndex.value[i]
+    if (chatsOnIndex.value[i] == chat_str) currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
   if (await get('api/chat/isLocked/' + currentChatId.value)) {
-    console.log("chat is locked");
+    console.log('chat is locked')
     locked.value = true
-  }
-  else {
-    console.log("chat is not locked");
+  } else {
+    console.log('chat is not locked')
     getChat(chat_str)
   }
 }
@@ -316,32 +326,30 @@ async function getChat(chat_str: string) {
   let i: number = 0
   let history: string[] = []
   locked.value = false
-  if (openChat.value == false)
-    changeChatButton()
+  if (openChat.value == false) changeChatButton()
 
   await getInfo()
   if (direct.value) {
     otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
-  }
-  else {
+  } else {
     otherIntraId.value = ''
     iAmBlocked.value = false
   }
-  
+
   chatHistory.value = []
   history = await get('api/chat/history/' + currentChatId.value)
-  
+
   i = 0
   while (history[i]) {
     chatHistory.value[i] = history[i].sender_name + ': ' + history[i].body + '\n'
     chatHistorySender.value[i] = history[i].sender_name
     i++
   }
-  
-  await nextTick();
 
-  chat.value.scrollTop = chat.value.scrollHeight;
+  await nextTick()
+
+  chat.value.scrollTop = chat.value.scrollHeight
 }
 
 async function getMyChats() {
@@ -357,7 +365,7 @@ async function getMyChats() {
   }
 }
 
-chatSocket.on('confirm', async result => {
+chatSocket.on('confirm', async (result) => {
   typedMessage.value = ''
   await getChat(currentChat.value)
 })
@@ -377,18 +385,15 @@ function sendMessage() {
 function chatVisibility() {
   protectedChat.value = false
   visibilityNum.value += 1
-  if (visibilityNum.value > 3)
-    visibilityNum.value = 1
+  if (visibilityNum.value > 3) visibilityNum.value = 1
   if (visibilityNum.value == 1) {
-    privateButtonClass.value = "btn btn-warning mb-3"
+    privateButtonClass.value = 'btn btn-warning mb-3'
     visibility.value = 'PUBLIC'
-  }
-  else if (visibilityNum.value == 2) {
-    privateButtonClass.value = "btn btn-primary mx-3 mb-3"
+  } else if (visibilityNum.value == 2) {
+    privateButtonClass.value = 'btn btn-primary mx-3 mb-3'
     visibility.value = 'PRIVATE'
-  }
-  else {
-    privateButtonClass.value = "btn btn-info mx-6 mb-3"
+  } else {
+    privateButtonClass.value = 'btn btn-info mx-6 mb-3'
     visibility.value = 'PROTECTED'
     protectedChat.value = true
   }

@@ -46,7 +46,7 @@ export class UserController {
 
   @Get('username')
   username(@Request() req) {
-    console.log("username")
+    console.log('username');
     return this.usersService.getUsername(req.user.intra_id);
   }
 
@@ -54,7 +54,7 @@ export class UserController {
   intraId(@Request() req) {
     return req.user.intra_id;
   }
-  
+
   @Get('me')
   me(@Request() req) {
     return this.usersService.getUser(req.user.intra_id);
@@ -103,19 +103,22 @@ export class UserController {
 
   @Get('block/:my_intra_id/:other_intra_id')
   blockUser(@Request() req, @Param() dto: BlockDto) {
-    return this.usersService.block(dto.my_intra_id, dto.other_intra_id)
+    return this.usersService.block(dto.my_intra_id, dto.other_intra_id);
   }
 
-  @Get('deblock/:my_intra_id/:other_intra_id')
-  deblockUser(@Request() req, @Param() dto: BlockDto) {
-    return this.usersService.deblock(dto.my_intra_id, dto.other_intra_id)
+  @Get('unblock/:my_intra_id/:other_intra_id')
+  unblockUser(@Request() req, @Param() dto: BlockDto) {
+    return this.usersService.unblock(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('blockStatus/:my_intra_id/:other_intra_id')
   async iAmBlocked(@Request() req, @Param() dto: BlockDto) {
-    return await this.usersService.iAmBlocked(dto.my_intra_id, dto.other_intra_id)
+    return await this.usersService.iAmBlocked(
+      dto.my_intra_id,
+      dto.other_intra_id,
+    );
   }
-  
+
   @Get('friends')
   getFriends(@Request() req) {
     return this.usersService.getFriends(req.user.intra_id);

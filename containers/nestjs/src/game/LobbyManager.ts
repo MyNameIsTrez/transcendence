@@ -1,8 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
-import { UsersService } from 'src/users/users.service';
 import { WsException } from '@nestjs/websockets';
 import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../users/users.service';
+import { MatchService } from '../users/match.service';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -13,9 +14,10 @@ export default class LobbyManager {
     private readonly server: Server,
     private configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly matchService: MatchService,
   ) {}
 
-  public queue(client: Socket, mode: string) {
+  public async queue(client: Socket, mode: string) {
     if (
       this.isUserAlreadyInLobby(client.data) &&
       this.configService.get('DEBUG') == 0
@@ -25,7 +27,7 @@ export default class LobbyManager {
     }
 
     const lobby = this.getLobby(mode);
-    lobby.addClient(client);
+    await lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
   }
@@ -42,9 +44,9 @@ export default class LobbyManager {
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
   private getLobby(mode: string): Lobby {
-    // TODO: Update this to look for corrrect gamemode lobby
+    // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => lobby.getPong().type === mode && !lobby.isFull(),
+      (lobby) => lobby.pong.type === mode && !lobby.isFull(),
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
@@ -56,16 +58,19 @@ export default class LobbyManager {
       this.server,
       this.configService,
       this.usersService,
+      this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
   }
 
-  public removeClient(client: Socket) {
+  public async removeClient(client: Socket) {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
+      lobby.saveMatch();
+
       this.usersService.addLoss(client.data.intra_id);
 
       lobby.removeClient(client);
