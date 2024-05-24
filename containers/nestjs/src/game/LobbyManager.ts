@@ -67,7 +67,9 @@ export default class LobbyManager {
 
     if (lobby) {
       // If a client disconnect while queueing, lobby.clients.size is 1
-      if (lobby.clients.size >= 2) {
+      const client_count = lobby.clients.size;
+
+      if (client_count >= 2) {
         lobby.saveMatch();
         this.usersService.addLoss(client.data.intra_id);
       }
@@ -77,7 +79,7 @@ export default class LobbyManager {
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
-      if (lobby.clients.size >= 2) {
+      if (client_count >= 2) {
         lobby.clients.forEach((otherClient) => {
           this.usersService.addWin(otherClient.data.intra_id);
         });
