@@ -110,6 +110,11 @@ export class AuthService {
       });
   }
 
+  public getFooJwt() {
+    const foo_intra_id = 42;
+    return this.transJwtService.sign(foo_intra_id, false, false); // TODO: Are the `false` correct?
+  }
+
   async generate(intra_id: number, response: Response) {
     const user: User = await this.usersService.findOne(intra_id);
 

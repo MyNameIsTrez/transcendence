@@ -28,10 +28,6 @@ export class UsersService {
     if (!(await this.hasUser(foo_intra_id))) {
       this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
     }
-
-    // Add this jwt to your localstorage in order to log in as the user foo
-    const foo_jwt = this.transJwtService.sign(foo_intra_id, false, false); // TODO: Are the `false` correct?
-    console.log("foo's jwt", foo_jwt);
   }
 
   async create(
