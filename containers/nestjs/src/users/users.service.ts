@@ -9,14 +9,12 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
-import TransJwtService from '../auth/trans-jwt-service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
-    private transJwtService: TransJwtService,
   ) {
     this.createFooUser();
   }

@@ -7,13 +7,9 @@ import { Achievements } from './achievements.entity';
 import { AchievementsService } from './achievements.service';
 import { Match } from './match.entity';
 import { MatchService } from './match.service';
-import { TransJwtModule } from '../auth/trans-jwt.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Chat, Achievements, Match, User]),
-    TransJwtModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Chat, Achievements, Match, User])],
   providers: [UsersService, AchievementsService, MatchService],
   exports: [UsersService, MatchService],
 })
