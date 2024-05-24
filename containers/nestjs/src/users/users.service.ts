@@ -9,14 +9,12 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
-import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectRepository(Chat)
-    private readonly chatService: ChatService,
     private readonly achievementsService: AchievementsService,
   ) {}
 
@@ -54,11 +52,6 @@ export class UsersService {
       achievements: user.achievements,
     };
   }
-
-  // TODO: Remove?
-  // findAll(): Promise<User[]> {
-  //   return this.usersRepository.find();
-  // }
 
   async findOne(intra_id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ intra_id });

@@ -18,10 +18,7 @@ export default class LobbyManager {
   ) {}
 
   public async queue(client: Socket, mode: string) {
-    if (
-      this.isUserAlreadyInLobby(client.data) &&
-      this.configService.get('DEBUG') == 0
-    ) {
+    if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }

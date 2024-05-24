@@ -43,13 +43,6 @@ export default class Lobby {
     this.pong = this.gamemodes.get(mode)(10);
   }
 
-  private getClientKey(client: Socket) {
-    if (this.configService.get('DEBUG')) {
-      return client.data.intra_id + '-' + client.id;
-    }
-    return client.data.intra_id;
-  }
-
   public async addClient(client: Socket) {
     // console.log(
     //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
@@ -63,7 +56,7 @@ export default class Lobby {
     }
 
     // console.log('Adding user', client.data);
-    this.clients.set(this.getClientKey(client), client);
+    this.clients.set(client.data.intra_id, client);
 
     client.join(this.id);
 
@@ -78,7 +71,7 @@ export default class Lobby {
     // console.log(
     //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
     // );
-    this.clients.delete(this.getClientKey(client));
+    this.clients.delete(client.data.intra_id);
     client.leave(this.id);
     client.data.lobby = undefined;
   }

@@ -30,8 +30,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
         APP_NAME: Joi.string(),
 
-        DEBUG: Joi.boolean(),
-
         BCRYPT_SALT_ROUNDS: Joi.number().integer().positive(),
       }),
       validationOptions: {
