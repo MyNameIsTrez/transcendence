@@ -101,6 +101,7 @@
               :myIntraId="me.intra_id"
               :leftPlayerScore="match.leftScore"
               :rightPlayerScore="match.rightScore"
+              :gamemode="match.gamemode"
             />
           </div>
         </div>
@@ -135,7 +136,6 @@ const alertVisibility = ref('invisible')
 const alertMessage = ref('Name change failed')
 
 const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
-console.log({ matchHistory })
 
 function uploadProfilePicture(event: any) {
   let data = new FormData()

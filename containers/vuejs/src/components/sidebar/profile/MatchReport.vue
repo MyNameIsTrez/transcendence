@@ -1,5 +1,5 @@
 <template>
-  <div class="card w-auto bg-base-100 shadow-xl">
+  <div class="card w-auto bg-base-100 shadow-xl mb-4">
     <div class="card-body">
       <div class="flex justify-between">
         <h2 :class="`card-title ${leftWon ? 'text-green-500' : 'text-red-600'}`">
@@ -12,8 +12,7 @@
           {{ rightPlayerDisconnected ? 'D/C' : leftWon ? 'Loss' : 'Win' }}
         </h2>
       </div>
-      <br />
-      <br />
+      <p class="text-center py-4 first-letter:capitalize">{{ gamemode }} match</p>
       <div class="flex justify-between">
         <p class="text-justify text-blue-500">{{ leftPlayerName }}</p>
         <p class="text-justify">VS</p>
@@ -33,7 +32,8 @@ let props = defineProps({
   leftPlayerIntraId: Number,
   myIntraId: Number,
   leftPlayerScore: Number,
-  rightPlayerScore: Number
+  rightPlayerScore: Number,
+  gamemode: String
 })
 
 let leftPlayerName = props.leftPlayerName
@@ -44,6 +44,7 @@ let leftPlayerIntraId = props.leftPlayerIntraId
 let myIntraId = props.myIntraId
 let leftPlayerScore = props.leftPlayerScore
 let rightPlayerScore = props.rightPlayerScore
+const gamemode = props.gamemode
 
 // Make sure that we are always on the left side of the match history
 if (myIntraId != leftPlayerIntraId) {
