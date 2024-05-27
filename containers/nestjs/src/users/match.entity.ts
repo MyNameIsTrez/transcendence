@@ -1,9 +1,8 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToMany,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
@@ -16,8 +15,7 @@ export class Match {
   @ManyToMany(() => User, (user) => user.matchHistory)
   players: User[];
 
-  @OneToOne(() => User)
-  @JoinColumn()
+  @ManyToOne(() => User)
   disconnectedPlayer: User | null;
 
   @Column('int')
