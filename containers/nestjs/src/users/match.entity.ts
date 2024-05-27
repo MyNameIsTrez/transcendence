@@ -7,6 +7,11 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
+export enum Gamemode {
+  NORMAL = 'normal',
+  SPECIAL = 'special',
+}
+
 @Entity()
 export class Match {
   @PrimaryGeneratedColumn()
@@ -23,4 +28,10 @@ export class Match {
 
   @Column('int')
   rightScore: number;
+
+  @Column({
+    type: 'enum',
+    enum: Gamemode,
+  })
+  gamemode: Gamemode;
 }

@@ -1,3 +1,5 @@
+import { Gamemode } from 'src/users/match.entity';
+
 export const WINDOW_WIDTH = 1920;
 export const WINDOW_HEIGHT = 1080;
 
@@ -305,7 +307,7 @@ export abstract class APong {
   _ball: Ball;
   _leftPlayer: Player;
   _rightPlayer: Player;
-  type: string = 'APong';
+  gamemode: Gamemode;
   collidedWithBorder: Sides = Sides.None;
 
   constructor(winScore: number) {
