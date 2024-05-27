@@ -7,6 +7,7 @@ import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
 import { MatchService } from '../users/match.service';
 import { WsException } from '@nestjs/websockets';
+import { User } from '../users/user.entity';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -96,7 +97,7 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      this.saveMatch();
+      this.saveMatch(null);
 
       const winnerIndex = this.pong.getWinnerIndex();
 
@@ -137,10 +138,11 @@ export default class Lobby {
     this.pong.movePaddle(playerIndex, keydown, north);
   }
 
-  public async saveMatch() {
+  public async saveMatch(disconnectedPlayer: User | null) {
     await this.matchService.create(
       await this.usersService.findOne(this.leftPlayerIntraId),
       await this.usersService.findOne(this.rightPlayerIntraId),
+      disconnectedPlayer,
       this.pong.getLeftPlayerScore(),
       this.pong.getRightPlayerScore(),
     );

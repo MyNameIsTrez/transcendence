@@ -88,7 +88,6 @@ export class UsersService {
   }
 
   async getUsername(intra_id: number): Promise<string> {
-    console.log('getUsername');
     return this.findOne(intra_id).then((user) => {
       return user.username;
     });
@@ -464,7 +463,11 @@ export class UsersService {
     return this.usersRepository
       .findOne({
         where: { intra_id },
-        relations: ['matchHistory', 'matchHistory.players'],
+        relations: [
+          'matchHistory',
+          'matchHistory.players',
+          'matchHistory.disconnectedPlayer',
+        ],
       })
       .then((user) => {
         return user?.matchHistory;

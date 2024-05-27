@@ -14,11 +14,13 @@ export class MatchService {
   async create(
     leftPlayer: User,
     rightPlayer: User,
+    disconnectedPlayer: User,
     leftScore: number,
     rightScore: number,
   ) {
     return await this.matchRepository.save({
       players: [leftPlayer, rightPlayer],
+      disconnectedPlayer,
       leftScore,
       rightScore,
     });

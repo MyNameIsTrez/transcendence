@@ -70,7 +70,7 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch();
+        lobby.saveMatch(await this.usersService.findOne(client.data.intra_id));
         this.usersService.addLoss(client.data.intra_id);
       }
 

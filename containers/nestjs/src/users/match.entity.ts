@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
@@ -8,6 +15,10 @@ export class Match {
 
   @ManyToMany(() => User, (user) => user.matchHistory)
   players: User[];
+
+  @OneToOne(() => User)
+  @JoinColumn()
+  disconnectedPlayer: User | null;
 
   @Column('int')
   leftScore: number;
