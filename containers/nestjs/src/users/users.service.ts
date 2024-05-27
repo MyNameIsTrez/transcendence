@@ -459,4 +459,15 @@ export class UsersService {
       return user.lastOnline;
     });
   }
+
+  getMatchHistory(intra_id: number) {
+    return this.usersRepository
+      .findOne({
+        where: { intra_id },
+        relations: ['matchHistory', 'matchHistory.players'],
+      })
+      .then((user) => {
+        return user?.matchHistory;
+      });
+  }
 }
