@@ -1,14 +1,23 @@
 <template>
-  <a
-    :href="
-      'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-687341ddad62ca71f252d1088176c46c196e91ce842a42462761637728776f8a&redirect_uri=' +
-      address +
-      '%3A' +
-      backend_port +
-      '%2Flogin&response_type=code'
-    "
-    >Login</a
-  >
+  <ul class="text-center">
+    <br />
+    <li>
+      <a
+        :href="
+          'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-687341ddad62ca71f252d1088176c46c196e91ce842a42462761637728776f8a&redirect_uri=' +
+          address +
+          '%3A' +
+          backend_port +
+          '%2Flogin&response_type=code'
+        "
+        >Log in</a
+      >
+    </li>
+    <br />
+    <li>
+      <a :href="address + ':' + backend_port + '/loginFoo'">Log in as the debug user</a>
+    </li>
+  </ul>
 </template>
 
 <script setup lang="ts">

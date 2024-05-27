@@ -1,14 +1,12 @@
 <template>
-  <div class="tooltip tooltip-top" :data-tip="`${this.description}`">
-    <p>{{ name }}</p>
+  <div class="tooltip tooltip-top" :data-tip="`${props.description}`">
+    <p>{{ props.name }}</p>
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    name: String,
-    description: String
-  }
-}
+<script setup lang="ts">
+const props = defineProps({
+  name: String,
+  description: String
+})
 </script>

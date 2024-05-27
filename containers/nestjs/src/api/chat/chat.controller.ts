@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
+import { v4 as uuid } from 'uuid';
+import { UsersService } from 'src/users/users.service';
 import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
@@ -20,7 +22,34 @@ class NameDto {
   chat_id: string;
 }
 
-class JoinDto {
+class AddUserDto {
+  @IsNotEmpty()
+  chat_id: string;
+
+  @IsNotEmpty()
+  username: string;
+}
+
+class OtherUserDto {
+  @IsNotEmpty()
+  chat_id: string;
+
+  @IsNotEmpty()
+  intra_id: number;
+}
+
+class MuteDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsNotEmpty()
+  username: string;
+
+  @IsNotEmpty()
+  days: number;
+}
+
+class PasswordDto {
   @IsUUID()
   chat_id: string;
 
@@ -28,12 +57,26 @@ class JoinDto {
   password: string;
 }
 
+class ChangeVisibilityDto {
+  @IsUUID()
+  chat_id: string;
+
+  @IsEnum(Visibility)
+  visibility: Visibility;
+
+  @IsNotEmpty()
+  password: string;
+}
+
 @Controller('api/chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Post('create')
-  create(@Request() req, @Body() dto: CreateDto) {
+  async create(@Request() req, @Body() dto: CreateDto) {
     return this.chatService.create(
       req.user.intra_id,
       dto.name,
@@ -42,11 +85,24 @@ export class ChatController {
     );
   }
 
-  @Get('chats')
-  chats(@Request() req) {
-    // TODO: Access the chat db
-    // Add public and protected chats, but not private ones
-    return ['uuid1', 'uuid2'];
+  @Post('addUserToChat')
+  AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
+    return this.chatService.addUser(dto.chat_id, dto.username);
+  }
+
+  @Post('addAdminToChat')
+  AddAdminToChat(@Request() req, @Body() dto: AddUserDto) {
+    return this.chatService.addAdmin(dto.chat_id, dto.username);
+  }
+
+  @Get('kick/:chat_id/:username')
+  kick(@Request() req, @Param() dto: AddUserDto) {
+    return this.chatService.kickUser(dto.chat_id, dto.username)
+  }
+
+  @Get('ban/:chat_id/:username')
+  ban(@Request() req, @Param() dto: AddUserDto) {
+    return this.chatService.banUser(dto.chat_id, dto.username)
   }
 
   @Get('name/:chat_id')
@@ -54,63 +110,63 @@ export class ChatController {
     return this.chatService.getName(dto.chat_id);
   }
 
-  @Get('users')
-  users(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69, 420];
+  @Get('history/:chat_id')
+  history(@Request() req, @Param() dto: NameDto) {
+    return this.chatService.getHistory(dto.chat_id)
   }
 
-  @Get('history')
-  history(@Request() req) {
-    // TODO: Access the chat db
-    return [
-      {
-        sender: 42,
-        body: 'hello',
-      },
-      {
-        sender: 69,
-        body: 'world',
-      },
-      {
-        sender: 420,
-        body: 'lmao',
-      },
-    ];
+  @Get('isAdmin/:chat_id/:intra_id')
+  isAdmin(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.isAdmin(dto.chat_id, dto.intra_id)
   }
 
-  @Get('visibility')
-  visibility(@Request() req) {
-    // TODO: Access the chat db
-    return Visibility.PUBLIC;
+  @Get('isOwner/:chat_id/:intra_id')
+  isOwner(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.isOwner(dto.chat_id, dto.intra_id)
   }
 
-  @Get('owner')
-  owner(@Request() req) {
-    // TODO: Access the chat db
-    return 42;
+  @Get('isDirect/:chat_id')
+  isDirect(@Request() req, @Param() dto: NameDto) {
+    return this.chatService.isDirect(dto.chat_id)
   }
 
-  @Get('admins')
-  admins(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69];
+  @Get('getOtherIntraId/:chat_id/:intra_id')
+  getOtherIntraId(@Request() req, @Param() dto: OtherUserDto) {
+    return this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id)
   }
 
-  @Get('banned')
-  banned(@Request() req) {
-    // TODO: Access the chat db
-    return [7, 666];
+  @Post('mute')
+  async mute(@Request() req, @Body() dto: MuteDto) {
+    return await this.chatService.mute(dto.chat_id, dto.username, dto.days)
   }
 
-  @Get('muted')
-  muted(@Request() req) {
-    // TODO: Access the chat db
-    return [42, 69];
+  @Get('isMute/:chat_id/:intra_id')
+  async isMute(@Request() req, @Param() dto: OtherUserDto) {
+    return await this.chatService.isMute(dto.chat_id, dto.intra_id)
   }
 
-  @Post('join')
-  join(@Request() req, @Body() dto: JoinDto) {
-    return this.chatService.join(req.user.intra_id, dto.chat_id, dto.password);
+  @Get('info/:chat_id/:intra_id')
+  async getInfo(@Request() req, @Param() dto: OtherUserDto) {
+    return await this.chatService.getInfo(dto.chat_id, dto.intra_id)
+  }
+
+  @Get('isLocked/:chat_id')
+  async isLocked(@Request() req, @Param() dto: NameDto) {
+    return await this.chatService.isLocked(dto.chat_id)
+  }
+
+  @Get('validatePassword/:chat_id/:password')
+  async isPassword(@Request() req, @Param() dto: PasswordDto) {
+    return await this.chatService.isPassword(dto.chat_id, dto.password)
+  }
+
+  @Post('changePassword')
+  changePassword(@Request() req, @Body() dto: PasswordDto) {
+    return this.chatService.changePassword(dto.chat_id, dto.password);
+  }
+
+  @Post('changeVisibility')
+  changeVisibility(@Request() req, @Body() dto: ChangeVisibilityDto) {
+    return this.chatService.changeVisibility(dto.chat_id, dto.visibility, dto.password);
   }
 }

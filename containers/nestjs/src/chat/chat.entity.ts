@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
+import { User } from 'src/users/user.entity';
 
 export enum Visibility {
   PUBLIC = 'PUBLIC',
@@ -16,8 +17,11 @@ export class Chat {
   @Column()
   name: string;
 
-  @Column('int', { array: true })
-  users: number[];
+  @Column()
+  number_of_users: number;
+
+  @ManyToMany(() => User, (user) => user.chats)
+  users: User[];
 
   @OneToMany(() => Message, (message) => message.chat)
   history: Message[];
@@ -34,11 +38,11 @@ export class Chat {
   @Column()
   owner: number;
 
-  @Column('int', { array: true })
-  admins: number[];
+  @ManyToMany(() => User, (user) => user.adminChats)
+  admins: User[];
 
-  @Column('int', { array: true, default: [] })
-  banned: number[];
+  @ManyToMany(() => User, (user) => user.bannedChats)
+  banned: User[];
 
   @OneToMany(() => Mute, (mute) => mute.chat)
   muted: Mute[];

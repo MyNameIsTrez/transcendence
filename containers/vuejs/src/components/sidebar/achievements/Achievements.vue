@@ -6,24 +6,33 @@
       <div class="card w-auto bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="text-2xl font-bold text-center">Unlocked</h2>
-          <Achievement name="A good start" description="Win for the first time" />
-          <Achievement name="Unstoppalbe!" description="Win 100 times in a row" />
+          <Achievement v-if="wonOnce" name="A good start" description="Win for the first time" />
+          <Achievement v-if="wonHundred" name="Unstoppable!" description="Win 100 times" />
+          <Achievement v-if="lostOnce" name="Unfortunate" description="Lose for the first time" />
+          <Achievement v-if="lostHundred" name="How?!" description="Lose 100 times" />
         </div>
       </div>
       <br />
       <div class="card w-auto bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="text-2xl font-bold text-center">Locked</h2>
-          <Achievement name="Unfortunate" description="Lose for the first time" />
-          <Achievement name="How?!" description="Lose 100 times in a row" />
+          <Achievement v-if="!wonOnce" name="A good start" description="Win for the first time" />
+          <Achievement v-if="!wonHundred" name="Unstoppable!" description="Win 100 times" />
+          <Achievement v-if="!lostOnce" name="Unfortunate" description="Lose for the first time" />
+          <Achievement v-if="!lostHundred" name="How?!" description="Lose 100 times" />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script async setup lang="ts">
 import Achievement from './Achievement.vue'
+import { get } from '../../../httpRequests'
+
+const user = await get('api/user/me')
+
+const { wonOnce, wonHundred, lostOnce, lostHundred } = user.achievements
 </script>
 
 <style lang="scss"></style>

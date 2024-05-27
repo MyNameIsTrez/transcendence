@@ -354,6 +354,14 @@ export abstract class APong {
     return playerIndex == 0 ? this._leftPlayer : this._rightPlayer;
   }
 
+  public getLeftPlayerScore() {
+    return this._leftPlayer._score;
+  }
+
+  public getRightPlayerScore() {
+    return this._rightPlayer._score;
+  }
+
   abstract update(): void;
   abstract getData(): any;
   abstract reset(): void;

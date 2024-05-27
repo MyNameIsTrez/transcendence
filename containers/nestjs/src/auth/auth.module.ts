@@ -9,12 +9,15 @@ import { AuthController } from './auth.controller';
 import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
 import { Jwt2faStrategy } from './jwt-2fa.strategy';
 import { UsersModule } from '../users/users.module';
+import TransJwtService from './trans-jwt-service';
+import { CreationModule } from '../creation/creation.module';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
     UsersModule,
+    CreationModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
@@ -22,6 +25,7 @@ import { UsersModule } from '../users/users.module';
     }),
   ],
   providers: [
+    TransJwtService,
     AuthService,
     JwtStrategy,
     Jwt2faStrategy,
@@ -31,5 +35,6 @@ import { UsersModule } from '../users/users.module';
     },
   ],
   controllers: [AuthController],
+  exports: [TransJwtService],
 })
 export class AuthModule {}

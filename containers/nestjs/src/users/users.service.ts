@@ -6,18 +6,29 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { MyChat } from './mychat.entity';
+import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
+import { AchievementsService } from './achievements.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(MyChat)
-    private readonly myChatRepository: Repository<MyChat>,
-  ) {}
+    private readonly achievementsService: AchievementsService,
+  ) {
+    this.createFooUser();
+  }
 
-  create(
+  // Adds a dummy user that is used to play against oneself during development
+  async createFooUser() {
+    const foo_intra_id = 42;
+
+    if (!(await this.hasUser(foo_intra_id))) {
+      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+    }
+  }
+
+  async create(
     intra_id: number,
     username: string,
     intra_name: string,
@@ -29,29 +40,27 @@ export class UsersService {
       intra_name,
       email,
       lastOnline: new Date(),
+      achievements: await this.achievementsService.create(),
     });
   }
 
-  getUser(intra_id: number) {
-    return this.findOne(intra_id).then(
-      ({
-        intra_id,
-        username,
-        wins,
-        losses,
-        lastOnline,
-        isTwoFactorAuthenticationEnabled,
-      }) => {
-        return {
-          intra_id,
-          username,
-          wins,
-          losses,
-          lastOnline,
-          isTwoFactorAuthenticationEnabled,
-        };
+  async getUser(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        achievements: true,
       },
-    );
+    });
+
+    return {
+      intra_id: user.intra_id,
+      username: user.username,
+      wins: user.wins,
+      losses: user.losses,
+      lastOnline: user.lastOnline,
+      isTwoFactorAuthenticationEnabled: user.isTwoFactorAuthenticationEnabled,
+      achievements: user.achievements,
+    };
   }
 
   async getAllUsers() { // TODO: console.logs uitzetten
@@ -75,16 +84,35 @@ export class UsersService {
     return returnUsers;
   }
 
-  findOne(intra_id: number): Promise<User> {
-    const user = this.usersRepository.findOneBy({ intra_id });
+  async findOne(intra_id: number): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ intra_id });
     if (!user) {
       throw new BadRequestException('No user with this intra_id exists');
     }
     return user;
   }
 
+  async findOneByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException('No user with this username exists');
+    }
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await this.usersRepository.find();
+  }
+
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
+  }
+
+  async getUsername(intra_id: number): Promise<string> {
+    console.log('getUsername');
+    return this.findOne(intra_id).then((user) => {
+      return user.username;
+    });
   }
 
   async setUsername(intra_id: number, username: string) {
@@ -122,24 +150,16 @@ export class UsersService {
     );
   }
 
-  async addToChat(intra_id: number, chat_id: string, name: string) {
-    await this.myChatRepository.save({
-      chat_id,
-      name,
-      user: await this.findOne(intra_id),
-    });
-  }
-
-  getMyChats(intra_id: number): Promise<MyChat[]> {
+  getMyChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
         where: { intra_id },
         relations: {
-          my_chats: true,
+          chats: true,
         },
       })
       .then((user) => {
-        return user?.my_chats;
+        return user?.chats;
       });
   }
 
@@ -180,12 +200,89 @@ export class UsersService {
     return new StreamableFile(stream);
   }
 
+  async block(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    const other = await this.findOne(other_intra_id);
+
+    me.blocked.push(other);
+
+    return this.usersRepository.save(me);
+  }
+
+  async unblock(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    me.blocked = me.blocked.filter((user) => user.intra_id != other_intra_id);
+    return this.usersRepository.save(me);
+  }
+
+  async iAmBlocked(my_intra_id: number, other_intra_id: number) {
+    const other_user = await this.usersRepository.findOne({
+      where: { intra_id: other_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    return other_user.blocked.some((user) => user.intra_id == my_intra_id);
+  }
+
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
+
+    const wins = await this.getWins(intra_id);
+
+    if (wins === 1 || wins === 100) {
+      const achievements = await this.getAchievements(intra_id);
+
+      if (wins === 1) {
+        this.achievementsService.wonOnce(achievements.id);
+      } else {
+        this.achievementsService.wonOneHundredTimes(achievements.id);
+      }
+    }
   }
 
   async addLoss(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'losses', 1);
+
+    const losses = await this.getLosses(intra_id);
+
+    if (losses === 1 || losses === 100) {
+      const achievements = await this.getAchievements(intra_id);
+
+      if (losses === 1) {
+        this.achievementsService.lostOnce(achievements.id);
+      } else {
+        this.achievementsService.lostOneHundredTimes(achievements.id);
+      }
+    }
+  }
+
+  async getWins(intra_id: number) {
+    return (await this.findOne(intra_id)).wins;
+  }
+
+  async getLosses(intra_id: number) {
+    return (await this.findOne(intra_id)).losses;
+  }
+
+  async getAchievements(intra_id: number) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations: {
+        achievements: true,
+      },
+    });
+    return user.achievements;
   }
 
   findOneByName(intra_name: string): Promise<User | null> {

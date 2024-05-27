@@ -5,6 +5,8 @@ import { UsersService } from 'src/users/users.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
+import { MatchService } from '../users/match.service';
+import { WsException } from '@nestjs/websockets';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -13,12 +15,16 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
-  private pong: APong;
+  private leftPlayerIntraId: number;
+  private rightPlayerIntraId: number;
 
-  private readonly gamemodes: Map<string, Function> = new Map([
-    ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
-    ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
-  ]);
+  public pong: APong;
+
+  private readonly gamemodes: Map<string, (scoreToWin: number) => APong> =
+    new Map([
+      ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
+      ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
+    ]);
 
   private gameHasStarted = false;
 
@@ -27,26 +33,31 @@ export default class Lobby {
     private readonly server: Server,
     private configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly matchService: MatchService,
   ) {
     console.log('Initializing lobby with mode:', mode);
     // console.log('gamemodes', this.gamemodes);
+    if (!this.gamemodes.has(mode)) {
+      throw new WsException('Requested gamemode does not exist');
+    }
     this.pong = this.gamemodes.get(mode)(10);
   }
 
-  private getClientKey(client: Socket) {
-    if (this.configService.get('DEBUG')) {
-      return client.data.intra_id + '-' + client.id;
-    }
-    return client.data.intra_id;
-  }
-
-  public addClient(client: Socket) {
+  public async addClient(client: Socket) {
     // console.log(
     //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
     // );
     client.data.playerIndex = this.clients.size;
+
+    if (client.data.playerIndex === 0) {
+      this.leftPlayerIntraId = client.data.intra_id;
+    } else {
+      this.rightPlayerIntraId = client.data.intra_id;
+    }
+
     // console.log('Adding user', client.data);
-    this.clients.set(this.getClientKey(client), client);
+    this.clients.set(client.data.intra_id, client);
+
     client.join(this.id);
 
     // TODO: Maybe add a countdown when game starts?
@@ -60,7 +71,7 @@ export default class Lobby {
     // console.log(
     //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
     // );
-    this.clients.delete(this.getClientKey(client));
+    this.clients.delete(client.data.intra_id);
     client.leave(this.id);
     client.data.lobby = undefined;
   }
@@ -85,10 +96,17 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
+      this.saveMatch();
+
       const winnerIndex = this.pong.getWinnerIndex();
 
-      this.clients.forEach((client) => {
-        this.updatePlayerScore(client);
+      this.clients.forEach(async (client) => {
+        if (client.data.playerIndex === this.pong.getWinnerIndex()) {
+          this.usersService.addWin(client.data.intra_id);
+        } else {
+          this.usersService.addLoss(client.data.intra_id);
+        }
+
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
       });
     }
@@ -119,15 +137,12 @@ export default class Lobby {
     this.pong.movePaddle(playerIndex, keydown, north);
   }
 
-  public updatePlayerScore(client: Socket) {
-    if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-      this.usersService.addWin(client.data.intra_id);
-    } else {
-      this.usersService.addLoss(client.data.intra_id);
-    }
-  }
-
-  public getPong(): APong {
-    return this.pong;
+  public async saveMatch() {
+    await this.matchService.create(
+      await this.usersService.findOne(this.leftPlayerIntraId),
+      await this.usersService.findOne(this.rightPlayerIntraId),
+      this.pong.getLeftPlayerScore(),
+      this.pong.getRightPlayerScore(),
+    );
   }
 }

@@ -25,29 +25,11 @@
           <input type="checkbox" />
           <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
-            <MatchReport
-              player="mforstho"
-              opponent="safoh"
-              :p1Score="10"
-              :p2Score="7"
-              v-bind:playerWon="true"
-            />
+            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="7" />
             <br />
-            <MatchReport
-              player="mforstho"
-              opponent="safoh"
-              :p1Score="5"
-              :p2Score="10"
-              v-bind:playerWon="false"
-            />
+            <MatchReport player="mforstho" opponent="safoh" :p1Score="5" :p2Score="10" />
             <br />
-            <MatchReport
-              player="mforstho"
-              opponent="safoh"
-              :p1Score="10"
-              :p2Score="3"
-              v-bind:playerWon="true"
-            />
+            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="3" />
           </div>
         </div>
       </div>
