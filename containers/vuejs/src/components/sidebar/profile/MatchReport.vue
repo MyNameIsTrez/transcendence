@@ -60,9 +60,6 @@ if (myIntraId != leftPlayerIntraId) {
   rightPlayerScore = tempScore
 }
 
-let leftWon = false
-if (rightPlayerDisconnected || (!leftPlayerDisconnected && leftPlayerScore > rightPlayerScore)) {
-  leftWon = true
-}
-console.log('leftWon', leftWon)
+let leftWon =
+  rightPlayerDisconnected || (!leftPlayerDisconnected && leftPlayerScore > rightPlayerScore)
 </script>
