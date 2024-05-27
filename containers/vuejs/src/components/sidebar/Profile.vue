@@ -107,7 +107,7 @@ import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
 
 const me = await get(`api/user/me`)
-// console.log('me', me)
+
 const username = me.username
 const wins = me.wins
 const losses = me.losses
@@ -116,16 +116,19 @@ const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
 
+const alertVisibility = ref('invisible')
+
+const alertMessage = ref('Name change failed')
+
+const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
+console.log({ matchHistory })
+
 function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
   post('api/user/profilePicture', data).then(() => location.reload())
 }
-
-const alertVisibility = ref('invisible')
-
-const alertMessage = ref('Name change failed')
 
 function changeUsername() {
   post('api/user/setUsername', { username: newUsername.value })
