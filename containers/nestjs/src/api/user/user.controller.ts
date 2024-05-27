@@ -152,7 +152,7 @@ export class UserController {
   }
 
   @Get('matchHistory/:intra_id')
-  getMatchHistory(@Param('intra_id') intra_id) {
-    return this.usersService.getMatchHistory(intra_id);
+  async getMatchHistory(@Param('intra_id') intra_id) {
+    return (await this.usersService.getMatchHistory(intra_id)).reverse();
   }
 }
