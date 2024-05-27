@@ -13,7 +13,7 @@ export async function get(path: string) {
       return response.data
     })
     .catch((e) => {
-      if (e.response.data.message === 'JWT was issued before the database existed') {
+      if (e.response.data.resetJwt) {
         localStorage.removeItem('jwt')
         location.reload()
       }
@@ -32,7 +32,7 @@ export async function post(path: string, body: any) {
       return response.data
     })
     .catch((e) => {
-      if (e.response.data.message === 'JWT was issued before the database existed') {
+      if (e.response.data.resetJwt) {
         localStorage.removeItem('jwt')
         location.reload()
       }
