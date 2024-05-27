@@ -87,8 +87,18 @@
             <MatchReport
               v-for="match in matchHistory"
               :key="match.id"
-              :leftPlayer="match.players[0].username"
-              :rightPlayer="match.players[1].username"
+              :leftPlayerName="match.players[0].username"
+              :rightPlayerName="match.players[1].username"
+              :leftPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[0].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :rightPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[1].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :leftPlayerIntraId="match.players[0].intra_id"
+              :myIntraId="me.intra_id"
               :leftPlayerScore="match.leftScore"
               :rightPlayerScore="match.rightScore"
             />
