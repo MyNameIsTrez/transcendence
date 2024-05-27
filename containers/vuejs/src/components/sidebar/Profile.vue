@@ -83,11 +83,15 @@
           <input type="checkbox" />
           <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="7" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="5" :p2Score="10" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="3" />
+            <!-- TODO: Add css padding between the MatchReports -->
+            <MatchReport
+              v-for="match in matchHistory"
+              :key="match.id"
+              :leftPlayer="match.players[0].username"
+              :rightPlayer="match.players[1].username"
+              :leftPlayerScore="match.leftScore"
+              :rightPlayerScore="match.rightScore"
+            />
           </div>
         </div>
       </div>
