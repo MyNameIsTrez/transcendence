@@ -133,10 +133,16 @@ export class Velocity {
       this._dy = 0;
       return;
     }
-    const randomDirection = Math.random() < 0.5 ? 1 : -1;
+
     const randomAngle = this.calculateRandomAngle();
-    this._dx = randomDirection * Math.cos(randomAngle);
-    this._dy = Math.sin(randomAngle);
+    console.log({ randomAngle });
+
+    const leftOrRight = Math.random() < 0.5 ? 1 : -1;
+    this._dx = leftOrRight * Math.cos(randomAngle);
+
+    const upOrDown = Math.random() < 0.5 ? 1 : -1;
+    this._dy = upOrDown * Math.sin(randomAngle);
+
     this.len = speed;
   }
 }
