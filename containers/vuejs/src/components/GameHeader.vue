@@ -64,6 +64,12 @@ gameSocket.on('gameOver', (won: boolean) => {
 gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
+
+gameSocket.on('exception', (error) => {
+  if (error.alreadyInALobby) {
+    reset()
+  }
+})
 </script>
 
 <style>

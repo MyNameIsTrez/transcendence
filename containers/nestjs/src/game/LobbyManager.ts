@@ -19,7 +19,10 @@ export default class LobbyManager {
   public async queue(client: Socket, gamemode: Gamemode) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException('Already in a lobby');
+      throw new WsException({
+        message: 'Already in a lobby',
+        alreadyInALobby: true,
+      });
     }
 
     const lobby = this.getLobby(gamemode);
