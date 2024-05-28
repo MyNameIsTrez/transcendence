@@ -38,7 +38,7 @@ const gamemode = ref('normal')
 
 const joinGame = () => {
   queueing.value = true
-  gameSocket.emit('joinGame', { gamemode: gamemode.value })
+  gameSocket.emit('queue', { gamemode: gamemode.value })
 }
 const reset = () => {
   gameTitle.value = 'PONG'

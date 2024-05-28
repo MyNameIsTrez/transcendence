@@ -74,12 +74,17 @@ export class GameGateway {
     this.lobbyManager.updateLoop();
   }
 
-  @SubscribeMessage('joinGame')
-  async joinGame(
+  @SubscribeMessage('queue')
+  async queue(
     @ConnectedSocket() client: Socket,
     @MessageBody('gamemode') gamemode: Gamemode,
   ) {
     await this.lobbyManager.queue(client, gamemode);
+  }
+
+  @SubscribeMessage('leaveQueue')
+  async leaveQueue(@ConnectedSocket() client: Socket) {
+    this.lobbyManager.removeClient(client);
   }
 
   @SubscribeMessage('movePaddle')
