@@ -79,7 +79,7 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody('gamemode') gamemode: Gamemode,
   ) {
-    this.lobbyManager.queue(client, gamemode);
+    await this.lobbyManager.queue(client, gamemode);
   }
 
   @SubscribeMessage('movePaddle')
