@@ -1,12 +1,13 @@
-import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
 import { MatchService } from '../users/match.service';
 import { WsException } from '@nestjs/websockets';
+import { User } from '../users/user.entity';
+import { Gamemode } from '../users/match.entity';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -22,25 +23,24 @@ export default class Lobby {
 
   private readonly gamemodes: Map<string, (scoreToWin: number) => APong> =
     new Map([
-      ['normal', (scoreToWin: number) => new NormalPong(scoreToWin)],
-      ['special', (scoreToWin: number) => new SpecialPong(scoreToWin)],
+      [Gamemode.NORMAL, (scoreToWin: number) => new NormalPong(scoreToWin)],
+      [Gamemode.SPECIAL, (scoreToWin: number) => new SpecialPong(scoreToWin)],
     ]);
 
   private gameHasStarted = false;
 
   constructor(
-    readonly mode: string,
+    readonly gamemode: Gamemode,
     private readonly server: Server,
-    private configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly matchService: MatchService,
   ) {
-    console.log('Initializing lobby with mode:', mode);
+    console.log('Initializing lobby with gamemode:', gamemode);
     // console.log('gamemodes', this.gamemodes);
-    if (!this.gamemodes.has(mode)) {
+    if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
     }
-    this.pong = this.gamemodes.get(mode)(10);
+    this.pong = this.gamemodes.get(gamemode)(3);
   }
 
   public async addClient(client: Socket) {
@@ -96,7 +96,7 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      this.saveMatch();
+      this.saveMatch(null);
 
       const winnerIndex = this.pong.getWinnerIndex();
 
@@ -137,12 +137,14 @@ export default class Lobby {
     this.pong.movePaddle(playerIndex, keydown, north);
   }
 
-  public async saveMatch() {
+  public async saveMatch(disconnectedPlayer: User | null) {
     await this.matchService.create(
       await this.usersService.findOne(this.leftPlayerIntraId),
       await this.usersService.findOne(this.rightPlayerIntraId),
+      disconnectedPlayer,
       this.pong.getLeftPlayerScore(),
       this.pong.getRightPlayerScore(),
+      this.pong.gamemode,
     );
   }
 }
