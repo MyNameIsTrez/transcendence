@@ -5,6 +5,8 @@
 
     <p v-if="!endOfGame && queueing">Seeking {{ gamemode }} game...</p>
 
+    <PlayButton v-if="!endOfGame && queueing" @clicked="leaveQueue" :buttonText="'Leave queue'" />
+
     <!-- TODO: Make the button prettier -->
     <form v-if="!endOfGame && !queueing" class="max-w-sm mx-auto">
       <select
@@ -40,6 +42,12 @@ const joinGame = () => {
   queueing.value = true
   gameSocket.emit('queue', { gamemode: gamemode.value })
 }
+
+const leaveQueue = () => {
+  gameSocket.emit('leaveQueue')
+  reset()
+}
+
 const reset = () => {
   gameTitle.value = 'PONG'
   endOfGame.value = false
