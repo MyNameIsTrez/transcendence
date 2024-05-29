@@ -100,10 +100,6 @@ export class UsersService {
     return user;
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return await this.usersRepository.find();
-  }
-
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
   }
