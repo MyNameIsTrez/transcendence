@@ -13,9 +13,13 @@
             <img :src="profilePicture" />
           </div>
         </div>
-        <div class="text">
-          W/L ratio: <span class="text text-green-500">{{ wins }}</span
-          >/<span class="text text-red-600">{{ losses }}</span>
+        <div>
+          <div class="text">
+            W/L ratio: <span class="text text-green-500">{{ wins }}</span
+            >/<span class="text text-red-600">{{ losses }}</span>
+          </div>
+          <br />
+          <button class="btn justify-self-end w-60">Invite to game</button>
         </div>
       </div>
 
