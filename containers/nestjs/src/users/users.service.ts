@@ -63,6 +63,27 @@ export class UsersService {
     };
   }
 
+  async getAllUsers() { // TODO: console.logs uitzetten
+    const users = await this.usersRepository.find();
+
+    const returnUsers = await Promise.all(
+      users.map(async (user) => {
+        console.log('gAU user: ', user);
+        const returned = {
+          name: user.username,
+          intraId: user.intra_id,
+          wins: user.wins,
+          losses: user.losses,
+        };
+        console.log('returned: ', returned);
+        return returned;
+      }),
+    );
+    returnUsers.sort((a,b) => b.wins - a.wins);
+    console.log('returnUsers: ', returnUsers);
+    return returnUsers;
+  }
+
   async findOne(intra_id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ intra_id });
     if (!user) {
@@ -77,10 +98,6 @@ export class UsersService {
       throw new BadRequestException('No user with this username exists');
     }
     return user;
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return await this.usersRepository.find();
   }
 
   hasUser(intra_id: number) {

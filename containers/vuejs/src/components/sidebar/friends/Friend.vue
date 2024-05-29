@@ -15,11 +15,7 @@
           tabindex="0"
           class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
         >
-          <li><router-link to="FriendProfile">View profile</router-link></li>
-          <!-- <li><router-link :to="{ name: 'friendprofile', params: { id: intraId, intraId: intraId, name: name }}">View profile</router-link></li> -->
-		  <!-- <li><router-link v-slot="{ FriendProfile }">
-			<component :is="FriendProfile"></component>
-		</router-link></li> -->
+          <li><router-link :to="`user/${intraId}`">View profile</router-link></li>
           <li><a>Invite to game</a></li>
           <li><a>Open chat</a></li>
           <li><a @click="removeFriend">Remove friend</a></li>
@@ -32,7 +28,7 @@
 
 <script setup lang="ts">
 import { post, getImage } from '../../../httpRequests'
-import FriendProfile from '../FriendProfile.vue'
+// import UserProfile from '../UserProfile.vue'
 
 const props = defineProps({
   name: String,
@@ -63,7 +59,7 @@ async function removeFriend() {
 			  tabindex="0"
 			  class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
 			>
-			  <li><router-link to="FriendProfile">View profile</router-link></li>
+			  <li><router-link to="UserProfile">View profile</router-link></li>
 			  <li><a>Invite to game</a></li>
 			  <li><a>Open chat</a></li>
 			  <li><a @click="removeFriend">Remove friend</a></li>
