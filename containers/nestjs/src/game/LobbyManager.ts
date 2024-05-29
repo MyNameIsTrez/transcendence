@@ -1,9 +1,12 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
+import PrivateLobby from './PrivateLobby';
 import { WsException } from '@nestjs/websockets';
 import { UsersService } from '../users/users.service';
 import { MatchService } from '../users/match.service';
 import { Gamemode } from '../users/match.entity';
+import { User } from 'src/users/user.entity';
+import { BadRequestException } from '@nestjs/common';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -21,14 +24,55 @@ export default class LobbyManager {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException({
         message: 'Already in a lobby',
-        alreadyInALobby: true,
+        exitQueue: true,
       });
     }
 
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
-    this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
+  }
+
+  public async createPrivateLobby(
+    client: Socket,
+    invitedIntraId: number,
+    gamemode: Gamemode,
+    clients: Map<number, Socket[]>,
+  ) {
+    if (this.isUserAlreadyInLobby(client.data)) {
+      console.error(`User ${client.data.intra_id} is already in a lobby`);
+      throw new WsException({
+        message: 'Already in a lobby',
+        exitQueue: true,
+      });
+    }
+
+    if (!(await this.usersService.hasUser(invitedIntraId))) {
+      throw new WsException({
+        message: 'Could not find user',
+        exitQueue: true,
+      });
+    }
+
+    const lobby = new PrivateLobby(
+      gamemode,
+      true,
+      this.server,
+      this.usersService,
+      this.matchService,
+    );
+    this.lobbies.set(lobby.id, lobby);
+    await lobby.addClient(client);
+    client.data.lobby = lobby;
+
+    lobby.invitedIntraId = invitedIntraId;
+
+    const clientSockets = clients.get(invitedIntraId);
+    clientSockets.forEach((socket) => {
+      socket.emit('invitation', {
+        invitedBy: client.data.intra_id,
+      });
+    });
   }
 
   private isUserAlreadyInLobby(user: any): boolean {
@@ -45,7 +89,8 @@ export default class LobbyManager {
   private getLobby(gamemode: Gamemode): Lobby {
     // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => lobby.pong.gamemode === gamemode && !lobby.isFull(),
+      (lobby) =>
+        lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
@@ -54,6 +99,7 @@ export default class LobbyManager {
 
     const newLobby = new Lobby(
       gamemode,
+      false,
       this.server,
       this.usersService,
       this.matchService,

@@ -84,7 +84,7 @@ gameSocket.on('gameStart', () => {
 })
 
 gameSocket.on('exception', (error) => {
-  if (error.alreadyInALobby) {
+  if (error.exitQueue) {
     reset()
     alertVisibility.value = 'visible'
     setTimeout(() => {

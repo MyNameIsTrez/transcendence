@@ -31,6 +31,7 @@ export default class Lobby {
 
   constructor(
     readonly gamemode: Gamemode,
+    readonly isPrivate: boolean,
     private readonly server: Server,
     private readonly usersService: UsersService,
     private readonly matchService: MatchService,

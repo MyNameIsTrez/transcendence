@@ -112,6 +112,22 @@ export class GameGateway {
     this.lobbyManager.removeClient(client);
   }
 
+  @SubscribeMessage('createPrivateLobby')
+  async createPrivateLobby(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('invitedUser') invitedIntraId: number,
+    @MessageBody('gamemode') gamemode: Gamemode,
+  ) {
+    // TODO: User can't invite person if person isn't online
+    // TODO: Don't allow user to invite people while user is in queue
+    await this.lobbyManager.createPrivateLobby(
+      client,
+      invitedIntraId,
+      gamemode,
+      this.clients,
+    );
+  }
+
   @SubscribeMessage('movePaddle')
   async movePaddle(
     @ConnectedSocket() client: Socket,
