@@ -47,7 +47,7 @@ export class ChatService {
 
     const current_user = await this.usersService.findOne(intra_id);
     let all_users = [];
-    if (visibility === Visibility.PUBLIC)
+    if (visibility === Visibility.PUBLIC || visibility === Visibility.PROTECTED)
       all_users = await this.usersService.getAllUsers();
     else all_users = [current_user];
 
@@ -62,6 +62,7 @@ export class ChatService {
       hashed_password,
       owner: intra_id,
       admins: [current_user],
+      access_granted: [current_user]
     });
   }
 
@@ -89,32 +90,6 @@ export class ChatService {
         });
       });
   }
-
-  // public async create(
-  //   intra_id: number,
-  //   name: string,
-  //   visibility: Visibility,
-  //   password: string,
-  // ): Promise<Chat> {
-  //   const hashed_password =
-  //     visibility === Visibility.PROTECTED
-  //       ? await this.hashPassword(password)
-  //       : '';
-
-  //   const chat_id = uuid();
-
-  //   this.usersService.addToChat(intra_id, chat_id, name);
-
-  //   return this.chatRepository.save({
-  //     chat_id,
-  //     name,
-  //     users: [intra_id],
-  //     visibility: visibility,
-  //     hashed_password,
-  //     owner: intra_id,
-  //     admins: [intra_id],
-  //   });
-  // }
 
   public hashPassword(password: string) {
     const rounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS'));
@@ -303,11 +278,14 @@ export class ChatService {
     return info;
   }
 
-  public async isLocked(chat_id: string) {
+  public async isLocked(chat_id: string, intra_id: number) {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
-        if (chat.visibility == Visibility.PROTECTED) return true;
+        if (chat.visibility == Visibility.PROTECTED) {
+          // if (chat.access_granted.find(this.usersService.getUser(intra_id)))
+          return true;
+        }
         return false;
       });
   }

@@ -152,7 +152,7 @@ export class ChatController {
 
   @Get('isLocked/:chat_id')
   async isLocked(@Request() req, @Param() dto: NameDto) {
-    return await this.chatService.isLocked(dto.chat_id)
+    return await this.chatService.isLocked(dto.chat_id, req.intra_id)
   }
 
   @Get('validatePassword/:chat_id/:password')

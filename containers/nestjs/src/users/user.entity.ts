@@ -69,4 +69,8 @@ export class User {
   @OneToOne(() => Achievements)
   @JoinColumn()
   achievements: Achievements;
+
+  @ManyToMany(() => Chat, (chat) => chat.access_granted)
+  @JoinTable()
+  accessGrantedChats: Chat[];
 }

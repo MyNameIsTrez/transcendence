@@ -310,9 +310,9 @@ async function validateLock(chat_str: string) {
   currentChat.value = chat_str
   let i: number = 0
 
-  while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] == chat_str)
-      currentChatId.value = chatIdsOnIndex.value[i]
+  while (channelsOnIndex.value[i]) {
+    if (channelsOnIndex.value[i] == chat_str)
+      currentChatId.value = channelIdsOnIndex.value[i]
     i++
   }
   if (await get('api/chat/isLocked/' + currentChatId.value)) {
