@@ -31,6 +31,8 @@ export class GameGateway {
 
   lobbyManager: LobbyManager;
 
+  clients = new Map<number, Socket[]>();
+
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`Client ${client.id} connected to game socket`);
 
@@ -50,7 +52,15 @@ export class GameGateway {
 
     try {
       const decoded = this.transJwtService.verify(jwt);
-      client.data.intra_id = decoded.sub;
+      const intra_id = decoded.sub;
+      client.data.intra_id = intra_id;
+
+      let sockets = this.clients.get(intra_id);
+      if (!sockets) {
+        sockets = [];
+        this.clients.set(intra_id, sockets);
+      }
+      sockets.push(client);
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {
@@ -61,8 +71,22 @@ export class GameGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
+    // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
     console.log(`Client ${client.id} disconnected game socket`);
     this.lobbyManager.removeClient(client);
+    this.removeClient(client);
+  }
+
+  private removeClient(client: Socket) {
+    const intra_id = client.data.intra_id;
+    const clientSockets = this.clients.get(intra_id);
+    const index = clientSockets.indexOf(client);
+    if (index > -1) {
+      clientSockets.splice(index, 1);
+    }
+    if (clientSockets.length === 0) {
+      this.clients.delete(intra_id);
+    }
   }
 
   afterInit() {
@@ -79,6 +103,7 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody('gamemode') gamemode: Gamemode,
   ) {
+    // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
   }
 

@@ -58,7 +58,7 @@ export default class Lobby {
     // console.log('Adding user', client.data);
     this.clients.set(client.data.intra_id, client);
 
-    client.join(this.id);
+    await client.join(this.id);
 
     // TODO: Maybe add a countdown when game starts?
     if (this.isFull()) {
