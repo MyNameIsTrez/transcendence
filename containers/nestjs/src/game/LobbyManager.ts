@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
 import { WsException } from '@nestjs/websockets';
-import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { MatchService } from '../users/match.service';
+import { Gamemode } from '../users/match.entity';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -12,18 +12,20 @@ export default class LobbyManager {
 
   constructor(
     private readonly server: Server,
-    private configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly matchService: MatchService,
   ) {}
 
-  public async queue(client: Socket, mode: string) {
+  public async queue(client: Socket, gamemode: Gamemode) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException('Already in a lobby');
+      throw new WsException({
+        message: 'Already in a lobby',
+        alreadyInALobby: true,
+      });
     }
 
-    const lobby = this.getLobby(mode);
+    const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
@@ -40,10 +42,10 @@ export default class LobbyManager {
   // and checking if the last lobby only has 1 player.
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
-  private getLobby(mode: string): Lobby {
+  private getLobby(gamemode: Gamemode): Lobby {
     // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => lobby.pong.type === mode && !lobby.isFull(),
+      (lobby) => lobby.pong.gamemode === gamemode && !lobby.isFull(),
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
@@ -51,9 +53,8 @@ export default class LobbyManager {
     }
 
     const newLobby = new Lobby(
-      mode,
+      gamemode,
       this.server,
-      this.configService,
       this.usersService,
       this.matchService,
     );
@@ -70,7 +71,7 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch();
+        lobby.saveMatch(await this.usersService.findOne(client.data.intra_id));
         this.usersService.addLoss(client.data.intra_id);
       }
 

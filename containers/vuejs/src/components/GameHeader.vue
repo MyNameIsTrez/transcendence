@@ -1,9 +1,25 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
     <h1 class="game-title">{{ gameTitle }}</h1>
-    <!-- <PlayButton v-if="!loggedIn" @clicked="attemptLogin" :buttonText="`LOGIN`" /> -->
-    <PlayButton v-if="!endOfGame" @clicked="joinGame" :buttonText="buttonText" />
-    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="`Continue`" />
+    <PlayButton v-if="!endOfGame && !queueing" @clicked="joinGame" :buttonText="'PLAY'" />
+
+    <p v-if="!endOfGame && queueing">Seeking {{ gamemode }} game...</p>
+
+    <PlayButton v-if="!endOfGame && queueing" @clicked="leaveQueue" :buttonText="'Leave queue'" />
+
+    <!-- TODO: Make the button prettier -->
+    <form v-if="!endOfGame && !queueing" class="max-w-sm mx-auto">
+      <select
+        id="gamemode"
+        v-model="gamemode"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+      >
+        <option selected value="normal">Normal game</option>
+        <option value="special">Special game</option>
+      </select>
+    </form>
+
+    <PlayButton v-if="endOfGame" @clicked="reset" :buttonText="'Continue'" />
   </div>
 </template>
 
@@ -16,19 +32,27 @@ const gameSocket = props.gameSocket
 
 const emit = defineEmits(['resetCanvas'])
 const gameTitle = ref('PONG')
-const buttonText = ref('PLAY')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
+const queueing = ref(false)
+
+const gamemode = ref('normal')
 
 const joinGame = () => {
-  buttonText.value = 'Seeking game...'
-  gameSocket.emit('joinGame', { mode: 'normal' })
+  queueing.value = true
+  gameSocket.emit('queue', { gamemode: gamemode.value })
 }
+
+const leaveQueue = () => {
+  gameSocket.emit('leaveQueue')
+  reset()
+}
+
 const reset = () => {
-  buttonText.value = 'PLAY'
   gameTitle.value = 'PONG'
   endOfGame.value = false
   startOfGame.value = false
+  queueing.value = false
   emit('resetCanvas')
 }
 
@@ -39,6 +63,12 @@ gameSocket.on('gameOver', (won: boolean) => {
 })
 gameSocket.on('gameStart', () => {
   startOfGame.value = true
+})
+
+gameSocket.on('exception', (error) => {
+  if (error.alreadyInALobby) {
+    reset()
+  }
 })
 </script>
 

@@ -7,12 +7,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ConfigService } from '@nestjs/config';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import LobbyManager from './LobbyManager';
 import { BadRequestTransformFilter } from '../bad-request-transform.filter';
 import TransJwtService from '../auth/trans-jwt-service';
 import { MatchService } from '../users/match.service';
+import { Gamemode } from '../users/match.entity';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -22,7 +22,6 @@ import { MatchService } from '../users/match.service';
 export class GameGateway {
   constructor(
     private transJwtService: TransJwtService,
-    private configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly matchService: MatchService,
   ) {}
@@ -69,19 +68,23 @@ export class GameGateway {
   afterInit() {
     this.lobbyManager = new LobbyManager(
       this.server,
-      this.configService,
       this.usersService,
       this.matchService,
     );
     this.lobbyManager.updateLoop();
   }
 
-  @SubscribeMessage('joinGame')
-  async joinGame(
+  @SubscribeMessage('queue')
+  async queue(
     @ConnectedSocket() client: Socket,
-    @MessageBody('mode') mode: string,
+    @MessageBody('gamemode') gamemode: Gamemode,
   ) {
-    this.lobbyManager.queue(client, mode);
+    await this.lobbyManager.queue(client, gamemode);
+  }
+
+  @SubscribeMessage('leaveQueue')
+  async leaveQueue(@ConnectedSocket() client: Socket) {
+    this.lobbyManager.removeClient(client);
   }
 
   @SubscribeMessage('movePaddle')

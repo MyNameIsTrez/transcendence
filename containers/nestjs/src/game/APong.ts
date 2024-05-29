@@ -1,3 +1,5 @@
+import { Gamemode } from 'src/users/match.entity';
+
 export const WINDOW_WIDTH = 1920;
 export const WINDOW_HEIGHT = 1080;
 
@@ -131,10 +133,16 @@ export class Velocity {
       this._dy = 0;
       return;
     }
-    const randomDirection = Math.random() < 0.5 ? 1 : -1;
+
     const randomAngle = this.calculateRandomAngle();
-    this._dx = randomDirection * Math.cos(randomAngle);
-    this._dy = Math.sin(randomAngle);
+    console.log({ randomAngle });
+
+    const leftOrRight = Math.random() < 0.5 ? 1 : -1;
+    this._dx = leftOrRight * Math.cos(randomAngle);
+
+    const upOrDown = Math.random() < 0.5 ? 1 : -1;
+    this._dy = upOrDown * Math.sin(randomAngle);
+
     this.len = speed;
   }
 }
@@ -305,7 +313,7 @@ export abstract class APong {
   _ball: Ball;
   _leftPlayer: Player;
   _rightPlayer: Player;
-  type: string = 'APong';
+  gamemode: Gamemode;
   collidedWithBorder: Sides = Sides.None;
 
   constructor(winScore: number) {

@@ -155,4 +155,9 @@ export class UserController {
   removeFriend(@Request() req, @Body() body) {
     this.usersService.removeFriend(req.user.intra_id, body.friend_id);
   }
+
+  @Get('matchHistory/:intra_id')
+  async getMatchHistory(@Param('intra_id') intra_id) {
+    return (await this.usersService.getMatchHistory(intra_id)).reverse();
+  }
 }

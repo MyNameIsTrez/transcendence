@@ -1,9 +1,10 @@
 import { APong, Sides } from './APong';
+import { Gamemode } from '../users/match.entity';
 
 export default class NormalPong extends APong {
   constructor(winScore: number) {
     super(winScore);
-    this.type = 'normal';
+    this.gamemode = Gamemode.NORMAL;
   }
 
   update() {

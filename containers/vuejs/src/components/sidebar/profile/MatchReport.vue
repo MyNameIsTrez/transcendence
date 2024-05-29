@@ -1,27 +1,22 @@
 <template>
-  <div class="card w-auto bg-base-100 shadow-xl">
+  <div class="card w-auto bg-base-100 shadow-xl mb-4">
     <div class="card-body">
       <div class="flex justify-between">
-        <h2
-          :class="`card-title ${props.p1Score > props.p2Score ? 'text-green-500' : 'text-red-600'}`"
-        >
-          {{ props.p1Score > props.p2Score ? 'Win' : 'Loss' }}
+        <h2 :class="`card-title ${leftWon ? 'text-green-500' : 'text-red-600'}`">
+          {{ leftPlayerDisconnected ? 'D/C' : leftWon ? 'Win' : 'Loss' }}
         </h2>
-        <h2 class="card-title">{{ props.p1Score }}</h2>
+        <h2 class="card-title">{{ leftPlayerScore }}</h2>
         <h2 class="card-title">/</h2>
-        <h2 class="card-title">{{ props.p2Score }}</h2>
-        <h2
-          :class="`card-title ${props.p1Score > props.p2Score ? 'text-red-600' : 'text-green-500'}`"
-        >
-          {{ props.p1Score > props.p2Score ? 'Loss' : 'Win' }}
+        <h2 class="card-title">{{ rightPlayerScore }}</h2>
+        <h2 :class="`card-title ${leftWon ? 'text-red-600' : 'text-green-500'}`">
+          {{ rightPlayerDisconnected ? 'D/C' : leftWon ? 'Loss' : 'Win' }}
         </h2>
       </div>
-      <br />
-      <br />
+      <p class="text-center py-4 first-letter:capitalize">{{ gamemode }} match</p>
       <div class="flex justify-between">
-        <p class="text-justify text-blue-500">{{ props.player }}</p>
+        <p class="text-justify text-blue-500">{{ leftPlayerName }}</p>
         <p class="text-justify">VS</p>
-        <p class="text-justify">{{ props.opponent }}</p>
+        <p class="text-justify">{{ rightPlayerName }}</p>
       </div>
     </div>
   </div>
@@ -29,10 +24,43 @@
 
 <!-- Misschien nog datum/tijd van de match saven en displayen -->
 <script setup lang="ts">
-const props = defineProps({
-  player: String,
-  opponent: String,
-  p1Score: Number,
-  p2Score: Number
+let props = defineProps({
+  leftPlayerName: String,
+  rightPlayerName: String,
+  leftPlayerDisconnected: Boolean,
+  rightPlayerDisconnected: Boolean,
+  leftPlayerIntraId: Number,
+  myIntraId: Number,
+  leftPlayerScore: Number,
+  rightPlayerScore: Number,
+  gamemode: String
 })
+
+let leftPlayerName = props.leftPlayerName
+let rightPlayerName = props.rightPlayerName
+let leftPlayerDisconnected = props.leftPlayerDisconnected
+let rightPlayerDisconnected = props.rightPlayerDisconnected
+let leftPlayerIntraId = props.leftPlayerIntraId
+let myIntraId = props.myIntraId
+let leftPlayerScore = props.leftPlayerScore
+let rightPlayerScore = props.rightPlayerScore
+const gamemode = props.gamemode
+
+// Make sure that we are always on the left side of the match history
+if (myIntraId != leftPlayerIntraId) {
+  const tempName = leftPlayerName
+  leftPlayerName = rightPlayerName
+  rightPlayerName = tempName
+
+  const tempDisconnected = leftPlayerDisconnected
+  leftPlayerDisconnected = rightPlayerDisconnected
+  rightPlayerDisconnected = tempDisconnected
+
+  const tempScore = leftPlayerScore
+  leftPlayerScore = rightPlayerScore
+  rightPlayerScore = tempScore
+}
+
+let leftWon =
+  rightPlayerDisconnected || (!leftPlayerDisconnected && leftPlayerScore > rightPlayerScore)
 </script>

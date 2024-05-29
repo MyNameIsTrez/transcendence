@@ -83,11 +83,26 @@
           <input type="checkbox" />
           <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="7" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="5" :p2Score="10" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="3" />
+            <!-- TODO: Add css padding between the MatchReports -->
+            <MatchReport
+              v-for="match in matchHistory"
+              :key="match.id"
+              :leftPlayerName="match.players[0].username"
+              :rightPlayerName="match.players[1].username"
+              :leftPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[0].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :rightPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[1].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :leftPlayerIntraId="match.players[0].intra_id"
+              :myIntraId="me.intra_id"
+              :leftPlayerScore="match.leftScore"
+              :rightPlayerScore="match.rightScore"
+              :gamemode="match.gamemode"
+            />
           </div>
         </div>
       </div>
@@ -107,7 +122,7 @@ import { get, getImage, post } from '../../httpRequests'
 import { ref } from 'vue'
 
 const me = await get(`api/user/me`)
-// console.log('me', me)
+
 const username = me.username
 const wins = me.wins
 const losses = me.losses
@@ -116,16 +131,18 @@ const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
 
+const alertVisibility = ref('invisible')
+
+const alertMessage = ref('Name change failed')
+
+const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
+
 function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
   post('api/user/profilePicture', data).then(() => location.reload())
 }
-
-const alertVisibility = ref('invisible')
-
-const alertMessage = ref('Name change failed')
 
 function changeUsername() {
   post('api/user/setUsername', { username: newUsername.value })

@@ -1,15 +1,14 @@
 import {
   APong,
   Ball,
-  Player,
   Pos,
   Rect,
   Sides,
   Size,
-  Velocity,
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
 } from './APong';
+import { Gamemode } from '../users/match.entity';
 
 abstract class Item extends Rect {
   constructor(x: number, y: number, c: string) {
@@ -175,7 +174,7 @@ class SmallerPaddleItem extends Item {
 export default class SpecialPong extends APong {
   constructor(winScore: number) {
     super(winScore);
-    this.type = 'special';
+    this.gamemode = Gamemode.SPECIAL;
   }
 
   private readonly _availableItems: Array<Function> = [

@@ -22,9 +22,10 @@ export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt-2fa') {
     const database_creation_date = await this.creationService.getCreationDate();
 
     if (payload.iat < Math.floor(database_creation_date.getTime() / 1000)) {
-      throw new BadRequestException(
-        'JWT was issued before the database existed',
-      );
+      throw new BadRequestException({
+        message: 'JWT was issued before the database existed',
+        resetJwt: true,
+      });
     }
 
     const user: User = await this.usersService.findOne(payload.sub);
