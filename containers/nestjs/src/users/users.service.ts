@@ -133,7 +133,7 @@ export class UsersService {
     );
   }
 
-  getMyChats(intra_id: number): Promise<Chat[]> {
+  async chats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
         where: { intra_id },

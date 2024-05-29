@@ -2,9 +2,21 @@
   <div>
     <button @click="changeChatButton"> {{ chatButtonText }} </button><br/><br/>
     <div v-if="chatButton">
-      <div class="scrollable-container">
+      CHANNELS <br/><br/>
+      <div class="scrollable-container-half">
         <div
-          v-for="(chat, index) in chatsOnIndex"
+          v-for="(chat, index) in channelsOnIndex"
+          :key="index"
+          class="line"
+          @click="validateLock(chat)"
+          >
+          {{ chat }}
+        </div>
+      </div><br/><br/>
+      DIRECT MESSAGES <br/><br/>
+      <div class="scrollable-container-half">
+        <div
+          v-for="(chat, index) in directMessagesOnIndex"
           :key="index"
           class="line"
           @click="validateLock(chat)"
@@ -12,7 +24,6 @@
           {{ chat }}
         </div>
       </div>
-
       <div v-if="locked"><br/><br/>
         Password of {{ currentChat }}: 
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" /><br/><br/>
@@ -87,8 +98,10 @@ const chatSocket = props.chatSocket
 const blockStatus = ref('Block')
 const chat = ref()
 const chatName = ref('')
-const chatsOnIndex = ref<string[]>([]);
-const chatIdsOnIndex = ref<string[]>([]);
+const directMessagesOnIndex = ref<string[]>([]);
+const directMessageIdsOnIndex = ref<string[]>([]);
+const channelsOnIndex = ref<string[]>([]);
+const channelIdsOnIndex = ref<string[]>([]);
 const chatHistory = ref<string[]>([]);
 const chatHistorySender = ref<string[]>([]);
 const chatButtonText = ref('== OPEN CHATS ==')
@@ -105,7 +118,7 @@ const isProtected = ref(false)
 const locked = ref(false)
 const myIntraId = ref('')
 const myUsername = ref('')
-const myChats = ref('')
+const chats = ref('')
 const newPassword = ref('')
 const otherIntraId = ref('')
 const otherUser = ref('')
@@ -268,7 +281,7 @@ async function createChat() {
   console.log('chat', chat)
   passwordChat.value = ''
   chatName.value = ''
-  getMyChats()
+  getChats()
 }
 
 async function getInfo() {
@@ -344,15 +357,21 @@ async function getChat(chat_str: string) {
   chat.value.scrollTop = chat.value.scrollHeight;
 }
 
-async function getMyChats() {
-  myChats.value = await get('api/user/myChats')
+async function getChats() {
+  chats.value = await get('api/user/chats')
   let i: number = 0
-  chatsOnIndex.value = []
-  chatIdsOnIndex.value = []
+  directMessagesOnIndex.value = []
+  directMessageIdsOnIndex.value = []
 
-  while (myChats.value[i]) {
-    chatsOnIndex.value.push(myChats.value[i].name)
-    chatIdsOnIndex.value.push(myChats.value[i].chat_id)
+  while (chats.value[i]) {
+    if (chats.value[i].visibility == "PRIVATE") {
+      directMessagesOnIndex.value.push(chats.value[i].name)
+      directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
+    }
+    if (chats.value[i].visibility == "PUBLIC" || chats.value[i].visibility == "PROTECTED") {
+      channelsOnIndex.value.push(chats.value[i].name)
+      channelIdsOnIndex.value.push(chats.value[i].chat_id)
+    }
     i++
   }
 }
@@ -396,13 +415,23 @@ function chatVisibility() {
 
 getMyUsername()
 getMyIntraId()
-getMyChats()
+getChats()
 </script>
 
 <style scoped>
 .scrollable-container {
   width: 100%;
   height: 900px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  overflow-y: auto;
+  word-break: break-all;
+}
+
+.scrollable-container-half {
+  width: 100%;
+  height: 450px;
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;
