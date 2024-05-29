@@ -20,21 +20,34 @@
       </div>
 
       <div style="clear: both; padding-top: 50px">
-        <!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
         <div class="collapse w-auto bg-base-200">
           <input type="checkbox" />
           <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="7" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="5" :p2Score="10" />
-            <br />
-            <MatchReport player="mforstho" opponent="safoh" :p1Score="10" :p2Score="3" />
+            <MatchReport
+              v-for="match in matchHistory"
+              :key="match.id"
+              :leftPlayerName="match.players[0].username"
+              :rightPlayerName="match.players[1].username"
+              :leftPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[0].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :rightPlayerDisconnected="
+                match.disconnectedPlayer &&
+                match.players[1].intra_id === match.disconnectedPlayer.intra_id
+              "
+              :leftPlayerIntraId="match.players[0].intra_id"
+              :myIntraId="user.intra_id"
+              :leftPlayerScore="match.leftScore"
+              :rightPlayerScore="match.rightScore"
+              :gamemode="match.gamemode"
+            />
           </div>
         </div>
       </div>
       <br />
-      <Achievements />
+      <Achievements :intraId="intraId" />
     </div>
   </div>
 </template>
@@ -56,6 +69,7 @@ const username = user.username
 const wins = user.wins
 const losses = user.losses
 const profilePicture = await getImage(`api/user/profilePicture/${user.intra_id}.png`)
+const matchHistory = await get(`api/user/matchHistory/${user.intra_id}`)
 </script>
 
 <!--
