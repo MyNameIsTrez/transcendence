@@ -331,4 +331,20 @@ export class ChatService {
         this.chatRepository.save(chat);
       });
   }
+
+  public async addToChannels(intra_id: number) {
+    return this.chatRepository
+      .findOne({ relations: ['visibility']})
+      .then(async (chat) => {
+        if (chat.visibility == Visibility.PUBLIC || chat.visibility == Visibility.PROTECTED) {
+          chat.users.push(await this.usersService.findOne(intra_id))
+          this.chatRepository.save(chat)
+        }
+      })
+  }
+   
+  public async channels() {
+    let chats = this.chatRepository.find()
+    return chats
+  }
 }

@@ -9,7 +9,6 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { privateDecrypt } from 'crypto';
-import { ChatService } from 'src/chat/chat.service';
 import { Achievements } from './achievements';
 
 @Injectable()

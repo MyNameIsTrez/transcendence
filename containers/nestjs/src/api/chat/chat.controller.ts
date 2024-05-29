@@ -163,7 +163,6 @@ export class ChatController {
     return await this.chatService.isPassword(dto.chat_id, dto.password, dto.intra_id)
   }
 
-  // could have problems now PasswordDto also contains intra_id
   @Post('changePassword')
   changePassword(@Request() req, @Body() dto: PasswordDto) {
     return this.chatService.changePassword(dto.chat_id, dto.password);
@@ -172,5 +171,10 @@ export class ChatController {
   @Post('changeVisibility')
   changeVisibility(@Request() req, @Body() dto: ChangeVisibilityDto) {
     return this.chatService.changeVisibility(dto.chat_id, dto.visibility, dto.password);
+  }
+
+  @Get('channels')
+  channels(@Request() req) {
+    return this.chatService.channels()
   }
 }

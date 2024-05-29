@@ -142,7 +142,8 @@ async function openProfile() {
 async function changePassword() {
   await post('api/chat/changePassword', {
     chat_id: currentChatId.value,
-    password: newPassword.value
+    password: newPassword.value,
+    intra_id: "foo"
   })
   newPassword.value = ''
 }
@@ -286,6 +287,7 @@ async function createChat() {
 }
 
 async function getInfo() {
+  getChats()
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
   iAmAdmin.value = info.isAdmin
   direct.value = info.isDirect
@@ -369,20 +371,36 @@ async function getChats() {
   let i: number = 0
   directMessagesOnIndex.value = []
   directMessageIdsOnIndex.value = []
+  // channelsOnIndex.value = []
+  // channelIdsOnIndex.value = []
+
+  while (chats.value[i]) {
+    // if (chats.value[i].visibility == "PRIVATE") {
+      directMessagesOnIndex.value.push(chats.value[i].name)
+      directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
+    // }
+    // if (chats.value[i].visibility == "PUBLIC" || chats.value[i].visibility == "PROTECTED") {
+    //   channelsOnIndex.value.push(chats.value[i].name)
+    //   channelIdsOnIndex.value.push(chats.value[i].chat_id)
+    // }
+    i++
+  }
+}
+
+async function getChannels() {
+  const channels = await get('api/chat/channels')
+  let i: number = 0
   channelsOnIndex.value = []
   channelIdsOnIndex.value = []
 
-  while (chats.value[i]) {
-    if (chats.value[i].visibility == "PRIVATE") {
-      directMessagesOnIndex.value.push(chats.value[i].name)
-      directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
-    }
-    if (chats.value[i].visibility == "PUBLIC" || chats.value[i].visibility == "PROTECTED") {
-      channelsOnIndex.value.push(chats.value[i].name)
-      channelIdsOnIndex.value.push(chats.value[i].chat_id)
+  while (channels[i]) {
+    if (channels[i].visibility == "PUBLIC" || channels[i].visibility == "PROTECTED") {
+      channelsOnIndex.value.push(channels[i].name)
+      channelIdsOnIndex.value.push(channels[i].chat_id)
     }
     i++
   }
+
 }
 
 chatSocket.on('confirm', async result => {
@@ -425,6 +443,7 @@ function chatVisibility() {
 getMyUsername()
 getMyIntraId()
 getChats()
+getChannels()
 </script>
 
 <style scoped>
