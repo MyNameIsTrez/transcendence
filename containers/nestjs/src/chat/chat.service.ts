@@ -279,16 +279,19 @@ export class ChatService {
   }
 
   public async isLocked(chat_id: string, intra_id: number) {
+    let ret = true
+    console.log
     return this.chatRepository
-      .findOne({ where: { chat_id } })
+      .findOne({ where: { chat_id }, relations: ['access_granted'] })
       .then(async (chat) => {
+        if (chat.visibility == Visibility.PUBLIC) { return false }
         if (chat.visibility == Visibility.PROTECTED) {
-          // if (chat.access_granted.find(this.usersService.getUser(intra_id)))
-          return true;
-        }
-        return false;
+          if (chat.access_granted.some(user => user.intra_id == intra_id))
+            return false
+          }
+        return true;
       });
-  }
+    }
 
   public async isPassword(chat_id: string, password: string) {
     return this.chatRepository

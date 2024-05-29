@@ -315,7 +315,7 @@ async function validateLock(chat_str: string) {
       currentChatId.value = channelIdsOnIndex.value[i]
     i++
   }
-  if (await get('api/chat/isLocked/' + currentChatId.value)) {
+  if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
     console.log("chat is locked");
     locked.value = true
   }
