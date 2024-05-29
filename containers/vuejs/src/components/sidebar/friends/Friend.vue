@@ -17,7 +17,7 @@
         >
           <li><router-link to="FriendProfile">View profile</router-link></li>
           <!-- <li><router-link :to="{ name: 'friendprofile', params: { id: intraId, intraId: intraId, name: name }}">View profile</router-link></li> -->
-		  <!-- <li><router-link v-slot="{ FriendProfile }">
+          <!-- <li><router-link v-slot="{ FriendProfile }">
 			<component :is="FriendProfile"></component>
 		</router-link></li> -->
           <li><a>Invite to game</a></li>
@@ -32,7 +32,6 @@
 
 <script setup lang="ts">
 import { post, getImage } from '../../../httpRequests'
-import FriendProfile from '../FriendProfile.vue'
 
 const props = defineProps({
   name: String,
@@ -43,11 +42,11 @@ const props = defineProps({
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 
 async function removeFriend() {
-  console.log('friend_id: ', props.intraId)
   post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
 }
 </script>
 
+<!-- TODO: Remove? -->
 <!--
 	<div class="card-body h-28">
       <div style="clear: both">

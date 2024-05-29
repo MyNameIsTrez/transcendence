@@ -36,7 +36,6 @@ export default class Lobby {
     private readonly matchService: MatchService,
   ) {
     console.log('Initializing lobby with gamemode:', gamemode);
-    // console.log('gamemodes', this.gamemodes);
     if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
     }
@@ -44,9 +43,6 @@ export default class Lobby {
   }
 
   public async addClient(client: Socket) {
-    // console.log(
-    //   `In Lobby ${this.id} its addClient(), user ${client.data.intra_id} was added`,
-    // );
     client.data.playerIndex = this.clients.size;
 
     if (client.data.playerIndex === 0) {
@@ -55,12 +51,10 @@ export default class Lobby {
       this.rightPlayerIntraId = client.data.intra_id;
     }
 
-    // console.log('Adding user', client.data);
     this.clients.set(client.data.intra_id, client);
 
     client.join(this.id);
 
-    // TODO: Maybe add a countdown when game starts?
     if (this.isFull()) {
       this.gameHasStarted = true;
       this.emit('gameStart');
@@ -68,9 +62,6 @@ export default class Lobby {
   }
 
   public removeClient(client: Socket) {
-    // console.log(
-    //   `In Lobby ${this.id} its removeClient(), user ${client.data.intra_id} was removed`,
-    // );
     this.clients.delete(client.data.intra_id);
     client.leave(this.id);
     client.data.lobby = undefined;
@@ -85,11 +76,9 @@ export default class Lobby {
   }
 
   public update() {
-    // console.log(this.clients.size);
     if (!this.gameHasStarted) {
       return;
     }
-    // console.log('In game loop');
 
     this.pong.update();
 
@@ -123,9 +112,6 @@ export default class Lobby {
   }
 
   public emit(event: string, payload?: any) {
-    // console.log(
-    //   `In Lobby ${this.id} its emit(), emitting to ${this.clients.size} clients`,
-    // );
     this.server.to(this.id).emit(event, payload);
   }
 

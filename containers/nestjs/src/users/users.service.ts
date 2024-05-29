@@ -264,7 +264,6 @@ export class UsersService {
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
-    console.log('intra_name: ', intra_name);
     return this.usersRepository.findOneBy({ intra_name: intra_name });
   }
 
@@ -362,16 +361,13 @@ export class UsersService {
     if (user) {
       const incomingRequests = await Promise.all(
         user.incoming_friend_requests.map(async (incoming) => {
-          console.log('incoming', incoming);
           const returned = {
             name: incoming.username,
             intraId: incoming.intra_id,
           };
-          console.log('returned', returned);
           return returned;
         }),
       );
-      console.log(incomingRequests);
       return incomingRequests;
     }
   }
@@ -390,13 +386,6 @@ export class UsersService {
         friends: true,
       },
     });
-    console.log('incoming_fr', receiver.incoming_friend_requests);
-    console.log(
-      'index: ',
-      receiver.incoming_friend_requests.findIndex(
-        (user) => user.intra_id === sender_id,
-      ),
-    );
     sender.friends.push(receiver);
     receiver.friends.push(sender);
     receiver.incoming_friend_requests.splice(

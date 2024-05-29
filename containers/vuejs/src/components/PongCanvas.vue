@@ -1,5 +1,5 @@
 <template>
-  <div class="pong-container" ref="pongContainer">
+  <div ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
     <ScoreBoard :game-socket="gameSocket" />
   </div>
@@ -109,9 +109,3 @@ const resizeCanvas = () => {
   }
 }
 </script>
-<style>
-.pong-container {
-  flex-grow: 6;
-  position: relative;
-}
-</style>

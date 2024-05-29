@@ -1,14 +1,15 @@
 <template>
   <div class="p-6">
-    <div class="grid justify-center">
+    <div class="grid">
       <span class="grid grid-flow-row-dense grid-cols-2">
         <div class="text text-base justify-self-start self-center text-yellow-200 w-64">
           {{ username }}
         </div>
-        <!-- The button to open modal -->
-        <button class="btn w-32 justify-self-end" onclick="my_modal_7.showModal()">Settings</button>
 
-        <dialog id="my_modal_7" class="modal">
+        <!-- Settings menu button -->
+        <button class="btn w-32 justify-self-end" onclick="settings.showModal()">Settings</button>
+
+        <dialog id="settings" class="modal">
           <span class="place-content-center" style="grid-column-start: 1; grid-row-start: 1">
             <div class="modal-box w-auto">
               <!-- Adds a little close button in the top-right corner -->
@@ -27,6 +28,7 @@
                 />
                 <button class="btn" @click="changeUsername">Save</button>
               </span>
+
               <br />
               <p class="py-4">Upload new avatar</p>
               <input
@@ -36,12 +38,15 @@
                 accept="image/*"
                 @change="uploadProfilePicture"
               />
+
               <div class="pt-5 grid">
                 <router-link to="twofactor" class="btn place-self-center"
                   >{{ isTwoFactorAuthenticationEnabled ? 'Disable' : 'Enable' }} 2fa</router-link
                 >
               </div>
             </div>
+
+            <!-- Warning message popup -->
             <div role="alert" :class="`alert alert-warning ${alertVisibility}`">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -59,11 +64,14 @@
               <span>{{ alertMessage }}</span>
             </div>
           </span>
+
+          <!-- Allows clicking outside of the modal to close it -->
           <form method="dialog" class="modal-backdrop">
             <button>close</button>
           </form>
         </dialog>
       </span>
+
       <br />
       <div class="flex justify-between">
         <div class="avatar justify-start">
@@ -71,6 +79,7 @@
             <img :src="profilePicture" />
           </div>
         </div>
+
         <div class="text">
           W/L ratio: <span class="text text-green-500">{{ wins }}</span
           >/<span class="text text-red-600">{{ losses }} </span>
@@ -148,7 +157,7 @@ function changeUsername() {
   post('api/user/setUsername', { username: newUsername.value })
     .then(() => location.reload())
     .catch((err) => {
-      console.log('catch test', err.response.data.message)
+      console.error('setUsername error', err)
       alertMessage.value = err.response.data.message[0]
       alertVisibility.value = 'visible'
       setTimeout(() => {
@@ -162,5 +171,3 @@ function logout() {
   window.location.href = '/'
 }
 </script>
-
-<style lang="scss" scoped></style>
