@@ -92,7 +92,6 @@ export class UsersService {
   }
 
   async getUsername(intra_id: number): Promise<string> {
-    console.log("getUsername")
     return this.findOne(intra_id).then((user) => {
       return user.username;
     });
@@ -260,7 +259,6 @@ export class UsersService {
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
-    console.log('intra_name: ', intra_name);
     return this.usersRepository.findOneBy({ intra_name: intra_name });
   }
 

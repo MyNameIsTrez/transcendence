@@ -55,6 +55,9 @@ class PasswordDto {
 
   @IsNotEmpty()
   password: string;
+
+  @IsNotEmpty()
+  intra_id: number;
 }
 
 class ChangeVisibilityDto {
@@ -155,11 +158,12 @@ export class ChatController {
     return await this.chatService.isLocked(dto.chat_id, dto.intra_id)
   }
 
-  @Get('validatePassword/:chat_id/:password')
+  @Get('validatePassword/:chat_id/:password/:intra_id')
   async isPassword(@Request() req, @Param() dto: PasswordDto) {
-    return await this.chatService.isPassword(dto.chat_id, dto.password)
+    return await this.chatService.isPassword(dto.chat_id, dto.password, dto.intra_id)
   }
 
+  // could have problems now PasswordDto also contains intra_id
   @Post('changePassword')
   changePassword(@Request() req, @Body() dto: PasswordDto) {
     return this.chatService.changePassword(dto.chat_id, dto.password);

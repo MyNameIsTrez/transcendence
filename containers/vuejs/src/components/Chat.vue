@@ -159,6 +159,7 @@ async function changeVisibility() {
     password: passwordChat.value
   })
   passwordChat.value = ''
+  getChats();
 }
 
 function openProfileButton(index: number) {
@@ -295,7 +296,7 @@ async function getInfo() {
 
 async function validatePassword() {
   console.log("password", password.value);
-  const result = await get('api/chat/validatePassword/' + currentChatId.value + '/' + password.value)
+  const result = await get('api/chat/validatePassword/' + currentChatId.value + '/' + password.value + '/' + myIntraId.value)
   console.log("result in validatePassword", result)
   if (result) {
     getChat(currentChat.value)
@@ -310,9 +311,15 @@ async function validateLock(chat_str: string) {
   currentChat.value = chat_str
   let i: number = 0
 
-  while (channelsOnIndex.value[i]) {
+  while (channelIdsOnIndex.value[i]) {
     if (channelsOnIndex.value[i] == chat_str)
       currentChatId.value = channelIdsOnIndex.value[i]
+    i++
+  }
+  i = 0;
+  while (directMessageIdsOnIndex.value[i]) {
+    if (directMessagesOnIndex.value[i] == chat_str)
+      currentChatId.value = directMessageIdsOnIndex.value[i]
     i++
   }
   if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
@@ -362,6 +369,8 @@ async function getChats() {
   let i: number = 0
   directMessagesOnIndex.value = []
   directMessageIdsOnIndex.value = []
+  channelsOnIndex.value = []
+  channelIdsOnIndex.value = []
 
   while (chats.value[i]) {
     if (chats.value[i].visibility == "PRIVATE") {

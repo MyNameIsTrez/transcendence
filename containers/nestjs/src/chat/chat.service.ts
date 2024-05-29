@@ -279,12 +279,11 @@ export class ChatService {
   }
 
   public async isLocked(chat_id: string, intra_id: number) {
-    let ret = true
     console.log
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: ['access_granted'] })
       .then(async (chat) => {
-        if (chat.visibility == Visibility.PUBLIC) { return false }
+        if (chat.visibility == Visibility.PUBLIC || chat.visibility == Visibility.PRIVATE) { return false }
         if (chat.visibility == Visibility.PROTECTED) {
           if (chat.access_granted.some(user => user.intra_id == intra_id))
             return false
@@ -293,12 +292,15 @@ export class ChatService {
       });
     }
 
-  public async isPassword(chat_id: string, password: string) {
+  public async isPassword(chat_id: string, password: string, intra_id: number) {
     return this.chatRepository
-      .findOne({ where: { chat_id } })
+      .findOne({ where: { chat_id }, relations: ['access_granted'] })
       .then(async (chat) => {
         try {
-          return await bcrypt.compare(password, chat.hashed_password);
+          if (await bcrypt.compare(password, chat.hashed_password)) {
+            chat.access_granted.push(await this.usersService.findOne(intra_id))
+            return this.chatRepository.save(chat)
+          }  
         } catch (err) {
           console.log(err);
           throw new InternalServerErrorException('Comparing password failed');
