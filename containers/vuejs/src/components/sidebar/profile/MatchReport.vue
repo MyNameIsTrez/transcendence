@@ -51,7 +51,7 @@ let rightPlayerScore = props.rightPlayerScore
 const gamemode = props.gamemode
 
 // Make sure that we are always on the left side of the match history
-if (myIntraId != leftPlayerIntraId) {
+if (myIntraId !== leftPlayerIntraId) {
   const tempName = leftPlayerName
   leftPlayerName = rightPlayerName
   rightPlayerName = tempName

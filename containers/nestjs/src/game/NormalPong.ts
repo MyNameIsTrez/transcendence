@@ -17,11 +17,11 @@ export default class NormalPong extends APong {
       this._rightPlayer,
     );
 
-    if (this.collidedWithBorder == Sides.Left) {
+    if (this.collidedWithBorder === Sides.Left) {
       this._rightPlayer.addPoint();
       this.reset();
       return;
-    } else if (this.collidedWithBorder == Sides.Right) {
+    } else if (this.collidedWithBorder === Sides.Right) {
       this._leftPlayer.addPoint();
       this.reset();
       return;

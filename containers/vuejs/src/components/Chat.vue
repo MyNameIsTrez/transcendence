@@ -156,9 +156,9 @@ async function changePassword() {
 }
 
 async function changeVisibility() {
-  if (passwordChat.value == '' && visibility.value == 'PROTECTED') return
+  if (passwordChat.value === '' && visibility.value === 'PROTECTED') return
   console.log('visibility', visibility.value)
-  if (passwordChat.value == '') passwordChat.value = 'foo'
+  if (passwordChat.value === '') passwordChat.value = 'foo'
   await post('api/chat/changeVisibility', {
     chat_id: currentChatId.value,
     visibility: visibility.value,
@@ -169,7 +169,7 @@ async function changeVisibility() {
 
 function openProfileButton(index: number) {
   otherProfile.value = chatHistorySender.value[index]
-  if (otherProfile.value != myUsername.value) {
+  if (otherProfile.value !== myUsername.value) {
     openOtherProfile.value = true
   } else {
     openOtherProfile.value = false
@@ -178,13 +178,13 @@ function openProfileButton(index: number) {
 
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
-  if (optionsButton.value == false) optionsButtonText.value = '~ open options ~'
+  if (optionsButton.value === false) optionsButtonText.value = '~ open options ~'
   else optionsButtonText.value = '~ close options ~'
 }
 
 function changeChatButton() {
   chatButton.value = !chatButton.value
-  if (chatButton.value == false) {
+  if (chatButton.value === false) {
     chatButtonText.value = '== OPEN CHATS =='
     openChat.value = true
   } else {
@@ -219,7 +219,7 @@ async function getOtherIntraId() {
 }
 
 async function handleBlock() {
-  if (blockStatus.value == 'Block') {
+  if (blockStatus.value === 'Block') {
     blockUser()
     blockStatus.value = 'Unblock'
   } else {
@@ -248,7 +248,7 @@ async function banUser() {
 }
 
 async function addAdmin() {
-  if (iAmAdmin.value == false) {
+  if (iAmAdmin.value === false) {
     console.log('No admin authorization')
     return
   }
@@ -270,7 +270,7 @@ async function addUser() {
 }
 
 async function createChat() {
-  if (passwordChat.value == '') passwordChat.value = 'foo'
+  if (passwordChat.value === '') passwordChat.value = 'foo'
   console.log('password', passwordChat.value)
   const chat = await post('api/chat/create', {
     name: chatName.value,
@@ -310,7 +310,7 @@ async function validateLock(chat_str: string) {
   let i: number = 0
 
   while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] == chat_str) currentChatId.value = chatIdsOnIndex.value[i]
+    if (chatsOnIndex.value[i] === chat_str) currentChatId.value = chatIdsOnIndex.value[i]
     i++
   }
   if (await get('api/chat/isLocked/' + currentChatId.value)) {
@@ -326,7 +326,7 @@ async function getChat(chat_str: string) {
   let i: number = 0
   let history: string[] = []
   locked.value = false
-  if (openChat.value == false) changeChatButton()
+  if (openChat.value === false) changeChatButton()
 
   await getInfo()
   if (direct.value) {
@@ -386,10 +386,10 @@ function chatVisibility() {
   protectedChat.value = false
   visibilityNum.value += 1
   if (visibilityNum.value > 3) visibilityNum.value = 1
-  if (visibilityNum.value == 1) {
+  if (visibilityNum.value === 1) {
     privateButtonClass.value = 'btn btn-warning mb-3'
     visibility.value = 'PUBLIC'
-  } else if (visibilityNum.value == 2) {
+  } else if (visibilityNum.value === 2) {
     privateButtonClass.value = 'btn btn-primary mx-3 mb-3'
     visibility.value = 'PRIVATE'
   } else {

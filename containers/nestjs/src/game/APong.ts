@@ -151,7 +151,7 @@ export class Velocity {
   }
 
   setRandomVelocity(speed: number) {
-    if (speed == 0) {
+    if (speed === 0) {
       this._dx = 0;
       this._dy = 0;
       return;
@@ -263,7 +263,7 @@ export class Ball extends Rect {
 
     const borderCollide: Sides = this.collideWithBorder();
 
-    return paddleColide != Sides.None ? paddleColide : borderCollide;
+    return paddleColide !== Sides.None ? paddleColide : borderCollide;
   }
 
   collideWithBorder(): Sides {
@@ -370,7 +370,7 @@ export abstract class APong {
     if (playerIndex < 0 || playerIndex > 1) {
       return;
     }
-    return playerIndex == 0 ? this._leftPlayer : this._rightPlayer;
+    return playerIndex === 0 ? this._leftPlayer : this._rightPlayer;
   }
 
   public getLeftPlayerScore() {
