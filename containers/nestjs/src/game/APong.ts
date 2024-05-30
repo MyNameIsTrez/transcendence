@@ -35,20 +35,25 @@ export class Rect {
   _pos: Pos;
   _size: Size;
   _color: string;
+
   constructor(w: number, h: number, x: number, y: number, c: string) {
     this._pos = new Pos(x, y);
     this._size = new Size(w, h);
     this._color = c;
   }
+
   get left() {
     return this._pos.x;
   }
+
   get right() {
     return this._pos.x + this._size.w;
   }
+
   get top() {
     return this._pos.y;
   }
+
   get bottom() {
     return this._pos.y + this._size.h;
   }
@@ -57,85 +62,102 @@ export class Rect {
 export class Velocity {
   _dx: number;
   _dy: number;
+
   constructor(dx: number = 0, dy: number = 0) {
     this._dx = dx;
     this._dy = dy;
   }
+
   invertdX() {
     this._dx = -this._dx;
   }
+
   invertdY() {
     this._dy = -this._dy;
   }
+
   get dx() {
     return this._dx;
   }
+
   get dy() {
     return this._dy;
   }
+
   set dx(dx) {
     this._dx = dx;
   }
+
   set dy(dy) {
     this._dy = dy;
   }
+
   get len() {
     return Math.sqrt(this._dx * this._dx + this._dy * this._dy);
   }
+
   set len(value: number) {
-    {
-      let fact = value / this.len;
-      // The if statement is put here to prevent the ball from gaining too much speed and going through the player paddle
-      if (this._dx * fact <= 25) {
-        this._dx *= fact;
-        this._dy *= fact;
-      } else {
-        fact = 25 / this._dx;
-        this._dx *= fact;
-        this._dy *= fact;
-      }
+    let fact = value / this.len;
+
+    // The if-statement here prevents the ball from gaining too much speed,
+    // going through the player paddle
+    if (this._dx * fact <= 25) {
+      this._dx *= fact;
+      this._dy *= fact;
+    } else {
+      fact = 25 / this._dx;
+      this._dx *= fact;
+      this._dy *= fact;
     }
   }
+
   adjustAngle(multiplier: number) {
     const angleRange = Math.PI / 3;
     const adjustedAngle = Math.abs(multiplier) * (angleRange / 2);
+
     if (multiplier > 1) {
       multiplier = 1;
     }
     if (multiplier < -1) {
       multiplier = -1;
     }
+
     if (multiplier < 0 && this._dy < 0) {
       this.invertdY();
     } else if (multiplier > 0 && this._dy > 0) {
       this.invertdY();
     }
+
     const currentSpeed = this.len;
+
     if (this._dx < 0) {
       this._dx = -currentSpeed * Math.cos(adjustedAngle);
     } else {
       this._dx = currentSpeed * Math.cos(adjustedAngle);
     }
+
     if (this._dy < 0) {
       this._dy = -currentSpeed * Math.sin(adjustedAngle);
     } else {
       this._dy = currentSpeed * Math.sin(adjustedAngle);
     }
+
     this.len = currentSpeed;
   }
+
   calculateRandomAngle() {
     const angleRange = Math.PI / 4;
     return Math.random() * angleRange;
   }
+
   setRandomVelocity(speed: number) {
-    if (speed == 0) {
+    if (speed === 0) {
       this._dx = 0;
       this._dy = 0;
       return;
     }
 
     const randomAngle = this.calculateRandomAngle();
-    console.log({ randomAngle });
 
     const leftOrRight = Math.random() < 0.5 ? 1 : -1;
     this._dx = leftOrRight * Math.cos(randomAngle);
@@ -186,6 +208,7 @@ export class Player {
   readonly id: number;
   _score: number;
   paddle: Paddle;
+
   constructor(id: number, x: number) {
     this.id = id;
     this._score = 0;
@@ -217,6 +240,7 @@ export class Ball extends Rect {
   _speed: number;
   _vel: Velocity;
   _hidden: boolean;
+
   constructor(size = 30, x = WINDOW_WIDTH / 2, y = WINDOW_HEIGHT / 2) {
     super(size, size, x - size / 2, y - size / 2, 'white');
     this._speed = 10;
@@ -224,12 +248,12 @@ export class Ball extends Rect {
     this._vel.setRandomVelocity(this._speed);
     this._hidden = true;
   }
+
   updatePos() {
     this._pos.x += this._vel.dx;
     this._pos.y += this._vel.dy;
   }
 
-  // TODO: Maybe don't pass this method the players?
   collide(leftPlayer: Player, rightPlayer: Player): Sides {
     const paddleColide: Sides = this.collideWithPaddle(leftPlayer.paddle)
       ? Sides.LeftPaddle
@@ -237,35 +261,28 @@ export class Ball extends Rect {
         ? Sides.RightPaddle
         : Sides.None;
 
-    const borderCollide: Sides = this.collideWithBorder(
-      leftPlayer,
-      rightPlayer,
-    );
-    return paddleColide != Sides.None ? paddleColide : borderCollide;
+    const borderCollide: Sides = this.collideWithBorder();
+
+    return paddleColide !== Sides.None ? paddleColide : borderCollide;
   }
 
-  collideWithBorder(leftPlayer: Player, rightPlayer: Player): Sides {
+  collideWithBorder(): Sides {
     if (this.left <= 0 || this.right >= WINDOW_WIDTH) {
-      if (this.left <= 0) {
-        return Sides.Left;
-      } else {
-        return Sides.Right;
-      }
+      return this.left <= 0 ? Sides.Left : Sides.Right;
     }
 
     if (this.top <= 0 || this.bottom >= WINDOW_HEIGHT) {
       this._pos.y = this.top < 0 ? 0 : WINDOW_HEIGHT - this._size.h;
       this._vel.invertdY();
-      if (this.top <= 0) {
-        return Sides.Top;
-      } else {
-        return Sides.Bottom;
-      }
+      return this.top <= 0 ? Sides.Top : Sides.Bottom;
     }
+
     return Sides.None;
   }
+
   collideWithPaddle(paddle: Paddle): boolean {
     const SPEED_MULTIPLIER = 1.05;
+
     if (
       this.left <= paddle.right &&
       this.right >= paddle.left &&
@@ -290,6 +307,7 @@ export class Ball extends Rect {
       this._vel.len *= SPEED_MULTIPLIER;
       return true;
     }
+
     return false;
   }
 
@@ -299,13 +317,6 @@ export class Ball extends Rect {
 
     this._vel.setRandomVelocity(this._speed);
   }
-
-  // get ballCenter() {
-  //   return new Pos(
-  //     this._pos.x + this._size.w / 2,
-  //     this._pos.y + this._size.h / 2,
-  //   );
-  // }
 }
 
 export abstract class APong {
@@ -359,7 +370,7 @@ export abstract class APong {
     if (playerIndex < 0 || playerIndex > 1) {
       return;
     }
-    return playerIndex == 0 ? this._leftPlayer : this._rightPlayer;
+    return playerIndex === 0 ? this._leftPlayer : this._rightPlayer;
   }
 
   public getLeftPlayerScore() {

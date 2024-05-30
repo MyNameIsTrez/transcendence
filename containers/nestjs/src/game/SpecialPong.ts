@@ -16,15 +16,12 @@ abstract class Item extends Rect {
   }
 
   collidesWithBall(ball: Ball): boolean {
-    if (
+    return (
       this.left <= ball.right &&
       this.right >= ball.left &&
       this.bottom >= ball.top &&
       this.top <= ball.bottom
-    ) {
-      return true;
-    }
-    return false;
+    );
   }
 
   static standardSize: Size = { w: 35, h: 35 };
@@ -39,10 +36,9 @@ abstract class Item extends Rect {
     return { x, y };
   }
 
-  abstract onItemPickup(itemOwnerId: number): void;
-  abstract hookFunction(game: APong): boolean;
+  abstract onPickup(game: APong, itemOwnerId: number): void;
   abstract onPaddleHit(game: APong): boolean;
-  abstract onItemEnd(game: APong): void;
+  abstract onDestroy(game: APong): void;
 }
 
 class ReverseControlItem extends Item {
@@ -53,12 +49,10 @@ class ReverseControlItem extends Item {
   private _affectedPlayerId: number;
   private _remainingTurns: number = 3;
 
-  onItemPickup(itemOwnerId: number): void {
+  onPickup(game: APong, itemOwnerId: number): void {
     // Set affectedPlayerId to opponent id
     this._affectedPlayerId = 1 - itemOwnerId;
-  }
 
-  hookFunction(game: APong): boolean {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._color = 'purple';
       game._leftPlayer.paddle.dyNorth = Math.max(
@@ -80,7 +74,6 @@ class ReverseControlItem extends Item {
         game._rightPlayer.paddle.dySouth,
       );
     }
-    return true;
   }
 
   onPaddleHit(game: APong): boolean {
@@ -93,10 +86,10 @@ class ReverseControlItem extends Item {
         this._remainingTurns--;
       }
     }
-    return !!this._remainingTurns;
+    return this._remainingTurns > 0;
   }
 
-  onItemEnd(game: APong): void {
+  onDestroy(game: APong): void {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._color = 'white';
     } else {
@@ -112,18 +105,15 @@ class InvisibleBallItem extends Item {
 
   private static readonly _originalBallColor = 'white';
 
-  onItemPickup(itemOwnerId: number): void {}
-
-  hookFunction(game: APong): boolean {
+  onPickup(game: APong, itemOwnerId: number): void {
     game._ball._color = 'transparent';
-    return true;
   }
 
   onPaddleHit(game: APong): boolean {
     return false;
   }
 
-  onItemEnd(game: APong): void {
+  onDestroy(game: APong): void {
     game._ball._color = InvisibleBallItem._originalBallColor;
   }
 }
@@ -136,17 +126,14 @@ class SmallerPaddleItem extends Item {
   private _affectedPlayerId: number;
   private _remainingTurns: number = 3;
 
-  onItemPickup(itemOwnerId: number): void {
+  onPickup(game: APong, itemOwnerId: number): void {
     this._affectedPlayerId = 1 - itemOwnerId;
-  }
 
-  hookFunction(game: APong): boolean {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
     } else {
       game._rightPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
     }
-    return true;
   }
 
   onPaddleHit(game: APong): boolean {
@@ -159,10 +146,10 @@ class SmallerPaddleItem extends Item {
         this._remainingTurns--;
       }
     }
-    return !!this._remainingTurns;
+    return this._remainingTurns > 0;
   }
 
-  onItemEnd(game: APong): void {
+  onDestroy(game: APong): void {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.2;
     } else {
@@ -177,7 +164,7 @@ export default class SpecialPong extends APong {
     this.gamemode = Gamemode.SPECIAL;
   }
 
-  private readonly _availableItems: Array<Function> = [
+  private readonly _availableItems: Array<(x: number, y: number) => Item> = [
     (x: number, y: number) => new ReverseControlItem(x, y),
     (x: number, y: number) => new InvisibleBallItem(x, y),
     (x: number, y: number) => new SmallerPaddleItem(x, y),
@@ -195,22 +182,10 @@ export default class SpecialPong extends APong {
       if (item.collidesWithBall(this._ball)) {
         // Decides who should be the item owner
         const id = this._ball._vel.dx > 0 ? 0 : 1;
-        item.onItemPickup(id);
+        item.onPickup(this, id);
         this._itemsPickedUp.push(item);
         this._itemsOnMap.splice(i, 1);
-        // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
-        i--;
-      }
-    }
-
-    // Do item effects of picked up items
-    for (let i: number = 0; i < this._itemsPickedUp.length; i++) {
-      const item: Item = this._itemsPickedUp[i];
-      const doesItemContinue: boolean = item.hookFunction(this);
-      if (!doesItemContinue) {
-        item.onItemEnd(this);
-        this._itemsPickedUp.splice(i, 1);
-        // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
+        // To accommodate for the i++ that happens in the for loop while all the items get pushed to the left, due to the splice()
         i--;
       }
     }
@@ -224,11 +199,11 @@ export default class SpecialPong extends APong {
       this._leftPlayer,
       this._rightPlayer,
     );
-    if (this.collidedWithBorder == Sides.Left) {
+    if (this.collidedWithBorder === Sides.Left) {
       this._rightPlayer.addPoint();
       this.reset();
       return;
-    } else if (this.collidedWithBorder == Sides.Right) {
+    } else if (this.collidedWithBorder === Sides.Right) {
       this._leftPlayer.addPoint();
       this.reset();
       return;
@@ -240,11 +215,11 @@ export default class SpecialPong extends APong {
       this.collidedWithBorder === Sides.RightPaddle
     ) {
       // Apply item onPaddleHit function
-      for (let i: number = 0; i < this._itemsPickedUp.length; i++) {
-        const item: Item = this._itemsPickedUp[i];
-        const doesItemContinue: boolean = item.onPaddleHit(this);
+      for (let i = 0; i < this._itemsPickedUp.length; i++) {
+        const item = this._itemsPickedUp[i];
+        const doesItemContinue = item.onPaddleHit(this);
         if (!doesItemContinue) {
-          item.onItemEnd(this);
+          item.onDestroy(this);
           this._itemsPickedUp.splice(i, 1);
           // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
           i--;
@@ -297,7 +272,7 @@ export default class SpecialPong extends APong {
 
   reset(): void {
     for (const item of this._itemsPickedUp) {
-      item.onItemEnd(this);
+      item.onDestroy(this);
     }
     this._itemsPickedUp = [];
     this._itemsOnMap = [];

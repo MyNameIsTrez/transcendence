@@ -33,7 +33,7 @@ export class Chat {
   hashed_password: string;
 
   @Column()
-  owner: number;
+  owner: number; // TODO: Replace with User
 
   @ManyToMany(() => User, (user) => user.adminChats)
   admins: User[];
