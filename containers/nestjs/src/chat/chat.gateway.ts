@@ -69,13 +69,12 @@ export class ChatGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client ${client.id} disconnected from chat socket`);
     this.connectedClients.delete(client);
   }
 
   letClientsUpdateTheirChats() {
     for (const client of this.connectedClients.values()) {
-      console.log('item:', client.id);
       client.emit('confirm', true);
     }
   }

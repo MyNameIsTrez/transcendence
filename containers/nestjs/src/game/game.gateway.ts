@@ -61,7 +61,7 @@ export class GameGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log(`Client ${client.id} disconnected game socket`);
+    console.log(`Client ${client.id} disconnected from game socket`);
     this.lobbyManager.removeClient(client);
   }
 
@@ -102,7 +102,6 @@ export class GameGateway {
   // TODO: Move this to the ChatGateway?
   @SubscribeMessage('heartbeat')
   heartbeat(client: Socket) {
-    // console.log(`Got heartbeat from client ${client.data.intra_id}`);
     this.usersService.updateLastOnline(client.data.intra_id);
   }
 }
