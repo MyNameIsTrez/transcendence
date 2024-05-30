@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { post, getImage } from '../../../httpRequests'
+import { getImage } from '../../../httpRequests'
 
 const props = defineProps({
   name: String,

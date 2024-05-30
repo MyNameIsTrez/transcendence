@@ -19,7 +19,7 @@
             >/<span class="text text-red-600">{{ losses }}</span>
           </div>
           <br />
-          <button class="btn justify-self-end w-60">Invite to game</button>
+          <button class="btn justify-self-end w-60" @click="inviteToGame">Invite to game</button>
         </div>
       </div>
 
@@ -51,7 +51,7 @@
         </div>
       </div>
       <br />
-      <Achievements :intraId="intraId" />
+      <Achievements :intraId="intra_id" />
     </div>
   </div>
 </template>
@@ -59,24 +59,25 @@
 <script setup lang="ts">
 import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
-
 import { get, getImage } from '../../httpRequests'
-import { ref } from 'vue'
+import { Socket } from 'socket.io-client'
 
-const props = defineProps({
-  intraId: Number
-})
+const props = defineProps({ intraId: String, gameSocket: Socket })
+const intra_id = parseInt(props.intraId)
+const gameSocket = props.gameSocket
 
-const user = await get(`api/user/other/${props.intraId}`)
-// console.log('user', user)
+console.log('gameSocket', gameSocket)
+console.log('intraId', intra_id, typeof intra_id)
+
+const user = await get(`api/user/other/${intra_id}`)
 const username = user.username
 const wins = user.wins
 const losses = user.losses
 const profilePicture = await getImage(`api/user/profilePicture/${user.intra_id}.png`)
 const matchHistory = await get(`api/user/matchHistory/${user.intra_id}`)
-</script>
 
-<!--
-91418
-76657
- -->
+function inviteToGame() {
+  // TODO: Don't hardcode the gamemode
+  gameSocket.emit('createPrivateLobby', { invitedUser: intra_id, gamemode: 'normal' })
+}
+</script>
