@@ -102,21 +102,21 @@ export class UserController {
 
   @Get('allUsers')
   getAllUsers() {
-	return this.usersService.getAllUsers();
+    return this.usersService.getAllUsers();
   }
 
   @Get('block/:my_intra_id/:other_intra_id')
-  blockUser(@Request() req, @Param() dto: BlockDto) {
+  blockUser(@Param() dto: BlockDto) {
     return this.usersService.block(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('unblock/:my_intra_id/:other_intra_id')
-  unblockUser(@Request() req, @Param() dto: BlockDto) {
+  unblockUser(@Param() dto: BlockDto) {
     return this.usersService.unblock(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('blockStatus/:my_intra_id/:other_intra_id')
-  async iAmBlocked(@Request() req, @Param() dto: BlockDto) {
+  async iAmBlocked(@Param() dto: BlockDto) {
     return await this.usersService.iAmBlocked(
       dto.my_intra_id,
       dto.other_intra_id,

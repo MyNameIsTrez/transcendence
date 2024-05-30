@@ -60,24 +60,24 @@ export class AuthController {
   }
 
   @Post('2fa/generate')
-  async generate(@Response() response, @Request() request) {
-    return this.authService.generate(request.user.intra_id, response);
+  async generate(@Request() req, @Response() res) {
+    return this.authService.generate(req.user.intra_id, res);
   }
 
   @Post('2fa/turn-on')
-  async turnOn(@Request() request, @Body() body) {
+  async turnOn(@Request() req, @Body() body) {
     this.authService.turnOn(
-      request.user.intra_id,
-      request.user.twoFactorAuthenticationSecret,
+      req.user.intra_id,
+      req.user.twoFactorAuthenticationSecret,
       body.twoFactorAuthenticationCode,
     );
   }
 
   @Post('2fa/turn-off')
-  async turnOff(@Request() request, @Body() body) {
+  async turnOff(@Request() req, @Body() body) {
     return this.authService.turnOff(
-      request.user.intra_id,
-      request.user.twoFactorAuthenticationSecret,
+      req.user.intra_id,
+      req.user.twoFactorAuthenticationSecret,
       body.twoFactorAuthenticationCode,
     );
   }
@@ -86,19 +86,19 @@ export class AuthController {
   @HttpCode(200)
   @Public()
   @UseGuards(JwtAuthGuard)
-  isEnabled(@Request() request) {
-    return this.authService.isEnabled(request.user.intra_id);
+  isEnabled(@Request() req) {
+    return this.authService.isEnabled(req.user.intra_id);
   }
 
   @Post('2fa/authenticate')
   @HttpCode(200)
   @Public()
   @UseGuards(JwtAuthGuard)
-  authenticate(@Request() request, @Body() body) {
+  authenticate(@Request() req, @Body() body) {
     return this.authService.authenticate(
-      request.user.intra_id,
-      request.user.isTwoFactorAuthenticated,
-      request.user.twoFactorAuthenticationSecret,
+      req.user.intra_id,
+      req.user.isTwoFactorAuthenticated,
+      req.user.twoFactorAuthenticationSecret,
       body.twoFactorAuthenticationCode,
     );
   }
