@@ -17,9 +17,6 @@ export class Chat {
   @Column()
   name: string;
 
-  @Column()
-  number_of_users: number;
-
   @ManyToMany(() => User, (user) => user.chats)
   users: User[];
 

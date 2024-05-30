@@ -133,6 +133,7 @@ const currentChatId = ref('')
 const daysToMute = ref('')
 const direct = ref(false)
 const iAmAdmin = ref(false)
+const iAmBanned = ref(false)
 const iAmBlocked = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
@@ -305,11 +306,13 @@ async function getInfo() {
   getChats()
   getChannels()
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
+  console.log("info", info)
   iAmAdmin.value = info.isAdmin
   direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
   isProtected.value = info.isProtected
+  iAmBanned.value = info.isBanned
 }
 
 async function validatePassword() {
@@ -351,17 +354,20 @@ async function getChat(chat_str: string) {
   let i: number = 0
   let history: string[] = []
   locked.value = false
-  if (openChat.value == false) changeChatButton()
-
+  
   await getInfo()
-  if (direct.value) {
-    otherIntraId.value = await getOtherIntraId()
+  if (iAmBanned.value)
+  return ;
+if (direct.value) {
+  otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
   } else {
     otherIntraId.value = ''
     iAmBlocked.value = false
   }
-
+  
+  if (openChat.value == false) changeChatButton()
+  
   chatHistory.value = []
   history = await get('api/chat/history/' + currentChatId.value)
 

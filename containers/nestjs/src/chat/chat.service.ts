@@ -15,6 +15,7 @@ import { v4 as uuid } from 'uuid';
 
 class Info {
   isAdmin: boolean;
+  isBanned: boolean;
   isDirect: boolean;
   isMute: boolean;
   isOwner: boolean;
@@ -46,18 +47,11 @@ export class ChatService {
     const chat_id = uuid();
 
     const current_user = await this.usersService.findOne(intra_id);
-    let all_users = [];
-    if (visibility === Visibility.PUBLIC || visibility === Visibility.PROTECTED)
-      all_users = await this.usersService.getAllUsers();
-    else all_users = [current_user];
-
-    const number_of_users = all_users.length;
 
     return this.chatRepository.save({
       chat_id,
       name,
-      number_of_users,
-      users: all_users,
+      users: [current_user],
       visibility: visibility,
       hashed_password,
       owner: intra_id,
@@ -74,7 +68,6 @@ export class ChatService {
         if (chat.users.some(user => user.username == username))
           return ;
         chat.users.push(user);
-        chat.number_of_users += 1;
         await this.chatRepository.save(chat);
       });
   }
@@ -126,7 +119,6 @@ export class ChatService {
         if (chat.admins.some(admin => admin.username == username))
           return false;
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
-        chat.number_of_users -= 1;
         const result = await this.chatRepository.save(chat);
         if (result) return true;
       });
@@ -159,12 +151,27 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { admins: true } })
       .then(async (chat) => {
-        let isAdmin = false;
-        const admins = chat.admins;
-        admins.forEach((admin) => {
-          if (admin.intra_id == intra_id) isAdmin = true;
-        });
-        return isAdmin;
+
+        if (chat.admins.some((admin) => admin.intra_id == intra_id))
+          return true;
+        return false;
+
+        // let isAdmin = false;
+        // const admins = chat.admins;
+        // admins.forEach((admin) => {
+        //   if (admin.intra_id == intra_id) isAdmin = true;
+        // });
+        // return isAdmin;
+      });
+  }
+
+  public async isBanned(chat_id: string, intra_id: number) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { banned: true } })
+      .then(async (chat) => {
+        if (chat.banned.some((user) => user.intra_id == intra_id))
+          return true;
+        return false;
       });
   }
 
@@ -179,9 +186,9 @@ export class ChatService {
 
   public async isDirect(chat_id: string) {
     return this.chatRepository
-      .findOne({ where: { chat_id } })
+      .findOne({ where: { chat_id }, relations: ['users'] })
       .then(async (chat) => {
-        if (chat.number_of_users === 2) return true;
+        if (chat.users.length === 2) return true;
         return false;
       });
   }
@@ -269,6 +276,7 @@ export class ChatService {
   public async getInfo(chat_id: string, intra_id: number) {
     const info = new Info();
     info.isAdmin = await this.isAdmin(chat_id, intra_id);
+    info.isBanned = await this.isBanned(chat_id, intra_id);
     info.isDirect = await this.isDirect(chat_id);
     info.isMute = await this.isMute(chat_id, intra_id);
     info.isOwner = await this.isOwner(chat_id, intra_id);
