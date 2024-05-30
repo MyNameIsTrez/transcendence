@@ -67,7 +67,7 @@ export class ChatService {
   }
 
   async addUser(chat_id: string, username: string) {
-    let user = await this.usersService.findOneByUsername(username);
+    const user = await this.usersService.findOneByUsername(username);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
@@ -80,7 +80,7 @@ export class ChatService {
   }
 
   async addAdmin(chat_id: string, username: string) {
-    let user = await this.usersService.findOneByUsername(username);
+    const user = await this.usersService.findOneByUsername(username);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
@@ -113,7 +113,7 @@ export class ChatService {
       .then(async (chat) => {
         const user = await this.usersService.findOneByUsername(username);
         chat.banned.push(user);
-        let result = await this.chatRepository.save(chat);
+        const result = await this.chatRepository.save(chat);
         if (result) return true;
       });
   }
@@ -127,7 +127,7 @@ export class ChatService {
           return false;
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
         chat.number_of_users -= 1;
-        let result = await this.chatRepository.save(chat);
+        const result = await this.chatRepository.save(chat);
         if (result) return true;
       });
   }
@@ -215,16 +215,18 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then((chat) => {
-        const user = chat.users.find((user) => user.intra_id != intra_id)
+        const user = chat.users.find((user) => user.intra_id != intra_id);
         if (!user) {
-          throw new BadRequestException("Couldn't find another user in this chat");
+          throw new BadRequestException(
+            "Couldn't find another user in this chat",
+          );
         }
         return user.intra_id;
       });
   }
 
   public getTimeOfUnmute(days: number) {
-    let date = new Date();
+    const date = new Date();
     const current_time = date.getTime();
     const new_time = current_time + days * 24 * 60 * 60 * 1000;
     date.setTime(new_time);
@@ -232,7 +234,7 @@ export class ChatService {
   }
 
   public timeIsPassed(date: Date) {
-    let current_date = new Date();
+    const current_date = new Date();
     return date < current_date;
   }
 

@@ -7,9 +7,18 @@ export async function get(path: string) {
 
   const options = { headers: { Authorization: `Bearer ${jwt}` } }
 
-  return await axios.get(api_url + path, options).then((response) => {
-    return response.data
-  })
+  return await axios
+    .get(api_url + path, options)
+    .then((response) => {
+      return response.data
+    })
+    .catch((e) => {
+      if (e.response.data.resetJwt) {
+        localStorage.removeItem('jwt')
+        location.reload()
+      }
+      throw e
+    })
 }
 
 export async function post(path: string, body: any) {
@@ -21,6 +30,13 @@ export async function post(path: string, body: any) {
     })
     .then((response) => {
       return response.data
+    })
+    .catch((e) => {
+      if (e.response.data.resetJwt) {
+        localStorage.removeItem('jwt')
+        location.reload()
+      }
+      throw e
     })
 }
 

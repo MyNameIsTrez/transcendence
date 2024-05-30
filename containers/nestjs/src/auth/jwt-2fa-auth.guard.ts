@@ -27,7 +27,7 @@ export class Jwt2faAuthGuard extends AuthGuard('jwt-2fa') {
   handleRequest(err, user, info) {
     info;
     if (err || !user) {
-      throw err || new UnauthorizedException();
+      throw err || new UnauthorizedException({ resetJwt: true });
     }
     return user;
   }

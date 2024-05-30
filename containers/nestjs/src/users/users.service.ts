@@ -10,15 +10,25 @@ import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { privateDecrypt } from 'crypto';
 import { Achievements } from './achievements';
+import { AchievementsService } from './achievements.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @InjectRepository(Chat) private readonly chatRepository: Repository<Chat>,
-    @InjectRepository(Achievements)
-    private readonly achievementsRepository: Repository<Achievements>,
-  ) {}
+    private readonly achievementsService: AchievementsService,
+  ) {
+    this.createFooUser();
+  }
+
+  // Adds a dummy user that is used to play against oneself during development
+  async createFooUser() {
+    const foo_intra_id = 42;
+
+    if (!(await this.hasUser(foo_intra_id))) {
+      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+    }
+  }
 
   async create(
     intra_id: number,
@@ -32,8 +42,7 @@ export class UsersService {
       intra_name,
       email,
       lastOnline: new Date(),
-      achievements: await this.achievementsRepository.save({}),
-      blocked: [],
+      achievements: await this.achievementsService.create(),
     });
   }
 
@@ -56,10 +65,26 @@ export class UsersService {
     };
   }
 
-  // TODO: Remove?
-  // findAll(): Promise<User[]> {
-  //   return this.usersRepository.find();
-  // }
+  async getAllUsers() { // TODO: console.logs uitzetten
+    const users = await this.usersRepository.find();
+
+    const returnUsers = await Promise.all(
+      users.map(async (user) => {
+        console.log('gAU user: ', user);
+        const returned = {
+          name: user.username,
+          intraId: user.intra_id,
+          wins: user.wins,
+          losses: user.losses,
+        };
+        console.log('returned: ', returned);
+        return returned;
+      }),
+    );
+    returnUsers.sort((a,b) => b.wins - a.wins);
+    console.log('returnUsers: ', returnUsers);
+    return returnUsers;
+  }
 
   async findOne(intra_id: number): Promise<User> {
     const user = await this.usersRepository.findOneBy({ intra_id });
@@ -76,15 +101,6 @@ export class UsersService {
     }
     return user;
   }
-
-  async getAllUsers(): Promise<User[]> {
-    return await this.usersRepository.find()
-  }
-  
-  // TODO: Remove?
-  // async remove(intra_id: number): Promise<void> {
-  //   await this.usersRepository.delete(intra_id);
-  // }
 
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
@@ -182,27 +198,40 @@ export class UsersService {
   }
 
   async block(my_intra_id: number, other_intra_id: number) {
-    const user = await this.findOne(my_intra_id)
-    user.blocked.push(other_intra_id)
-    return this.usersRepository.save(user)
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    const other = await this.findOne(other_intra_id);
+
+    me.blocked.push(other);
+
+    return this.usersRepository.save(me);
   }
 
-  async deblock(my_intra_id: number, other_intra_id: number) {
-    const user = await this.findOne(my_intra_id)
-    user.blocked = user.blocked.filter(u => u != other_intra_id)
-    return this.usersRepository.save(user)
+  async unblock(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    me.blocked = me.blocked.filter((user) => user.intra_id != other_intra_id);
+    return this.usersRepository.save(me);
   }
 
   async iAmBlocked(my_intra_id: number, other_intra_id: number) {
-    const other_user = await this.findOne(other_intra_id)
-    let is_blocked = false
-    other_user.blocked.forEach(user => {
-      if (user == my_intra_id)
-        is_blocked = true
-    })
-    return is_blocked
+    const other_user = await this.usersRepository.findOne({
+      where: { intra_id: other_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+    return other_user.blocked.some((user) => user.intra_id == my_intra_id);
   }
-  
+
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
 
@@ -212,9 +241,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (wins === 1) {
-        this.updateAchievement(achievements.id, { wonOnce: true });
+        this.achievementsService.wonOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { wonOneHundredTimes: true });
+        this.achievementsService.wonOneHundredTimes(achievements.id);
       }
     }
   }
@@ -228,9 +257,9 @@ export class UsersService {
       const achievements = await this.getAchievements(intra_id);
 
       if (losses === 1) {
-        this.updateAchievement(achievements.id, { lostOnce: true });
+        this.achievementsService.lostOnce(achievements.id);
       } else {
-        this.updateAchievement(achievements.id, { lostOneHundredTimes: true });
+        this.achievementsService.lostOneHundredTimes(achievements.id);
       }
     }
   }
@@ -251,10 +280,6 @@ export class UsersService {
       },
     });
     return user.achievements;
-  }
-
-  async updateAchievement(achievement_id: number, achievement: any) {
-    this.achievementsRepository.update({ id: achievement_id }, achievement);
   }
 
   findOneByName(intra_name: string): Promise<User | null> {
@@ -450,5 +475,20 @@ export class UsersService {
     return this.findOne(intra_id).then((user) => {
       return user.lastOnline;
     });
+  }
+
+  getMatchHistory(intra_id: number) {
+    return this.usersRepository
+      .findOne({
+        where: { intra_id },
+        relations: [
+          'matchHistory',
+          'matchHistory.players',
+          'matchHistory.disconnectedPlayer',
+        ],
+      })
+      .then((user) => {
+        return user?.matchHistory;
+      });
   }
 }

@@ -23,8 +23,8 @@ clean: rmvol
 
 .PHONY: rmvol
 rmvol: down
+	find containers/nestjs/profile_pictures -type f ! -name 42.png -delete
 	docker volume rm $$(docker volume ls -q) 2> /dev/null || exit 0
-	rm -rf containers/nestjs/profile_pictures
 
 .PHONY: test
 test:

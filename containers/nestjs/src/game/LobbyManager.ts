@@ -1,8 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
-import { UsersService } from 'src/users/users.service';
 import { WsException } from '@nestjs/websockets';
-import { ConfigService } from '@nestjs/config';
+import { UsersService } from '../users/users.service';
+import { MatchService } from '../users/match.service';
+import { Gamemode } from '../users/match.entity';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -11,21 +12,21 @@ export default class LobbyManager {
 
   constructor(
     private readonly server: Server,
-    private configService: ConfigService,
     private readonly usersService: UsersService,
+    private readonly matchService: MatchService,
   ) {}
 
-  public queue(client: Socket, mode: string) {
-    if (
-      this.isUserAlreadyInLobby(client.data) &&
-      this.configService.get('DEBUG') == 0
-    ) {
+  public async queue(client: Socket, gamemode: Gamemode) {
+    if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException('Already in a lobby');
+      throw new WsException({
+        message: 'Already in a lobby',
+        alreadyInALobby: true,
+      });
     }
 
-    const lobby = this.getLobby(mode);
-    lobby.addClient(client);
+    const lobby = this.getLobby(gamemode);
+    await lobby.addClient(client);
     this.lobbies.set(lobby.id, lobby);
     client.data.lobby = lobby;
   }
@@ -41,10 +42,10 @@ export default class LobbyManager {
   // and checking if the last lobby only has 1 player.
   // This is because join() could accidentally join the wrong lobby
   // if it took a lobby_index instead of a lobby_id.
-  private getLobby(mode: string): Lobby {
-    // TODO: Update this to look for corrrect gamemode lobby
+  private getLobby(gamemode: Gamemode): Lobby {
+    // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => lobby.getPong().type === mode && !lobby.isFull(),
+      (lobby) => lobby.pong.gamemode === gamemode && !lobby.isFull(),
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
@@ -52,30 +53,38 @@ export default class LobbyManager {
     }
 
     const newLobby = new Lobby(
-      mode,
+      gamemode,
       this.server,
-      this.configService,
       this.usersService,
+      this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
   }
 
-  public removeClient(client: Socket) {
+  public async removeClient(client: Socket) {
     const lobby: Lobby | undefined = client.data.lobby;
 
     if (lobby) {
-      this.usersService.addLoss(client.data.intra_id);
+      // If a client disconnect while queueing, lobby.clients.size is 1
+      const client_count = lobby.clients.size;
+
+      if (client_count >= 2) {
+        lobby.saveMatch(await this.usersService.findOne(client.data.intra_id));
+        this.usersService.addLoss(client.data.intra_id);
+      }
 
       lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
-      lobby.clients.forEach((otherClient) => {
-        this.usersService.addWin(otherClient.data.intra_id);
-      });
+      if (client_count >= 2) {
+        lobby.clients.forEach((otherClient) => {
+          this.usersService.addWin(otherClient.data.intra_id);
+        });
+      }
 
       this.removeLobby(lobby);
     }

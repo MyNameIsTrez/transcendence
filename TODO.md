@@ -10,5 +10,6 @@
 # Before handing in
 
 - Get rid of all redundant comments, like commented out `console.log()` lines
+- Get rid of `console.log()` lines that were for debugging
 - Make sure that SQL injections are impossible
 - Make sure that using our chair's seat as the URL also works when logging in (not just localhost)

@@ -1,41 +1,38 @@
 <template>
   <tr>
     <th>
-      <div>{{ rank }}</div>
+      <div class="text text-center">{{ props.rank }}.</div>
     </th>
     <td>
       <div class="flex items-center gap-3">
         <div class="avatar">
           <div class="mask mask-squircle w-12 h-12">
-            <img :src="`${this.image}`" alt="Avatar Tailwind CSS Component" />
+            <img :src="`${profilePicture}`" alt="Avatar Tailwind CSS Component" />
           </div>
         </div>
         <div>
-          <div class="font-bold">{{ username }}</div>
-          <!-- naam clickable maken om profiel te bezoeken -->
+          <div class="text font-bold">{{ props.username }}</div>
+          <!-- TODO: naam clickable maken om profiel te bezoeken -->
         </div>
       </div>
     </td>
     <th class="align-middle">
       <!-- <div class="grid grid-cols-3 place-items-center"> -->
-      <div>{{ wins }}/{{ losses }}</div>
-      <!-- <div>/</div> -->
-      <!-- <div>{{ losses }}</div> -->
-      <!-- </div> -->
+      <div class="text text-center">{{ props.wins }}/{{ props.losses }}</div>
     </th>
   </tr>
 </template>
 
-<script>
-export default {
-  props: {
-    username: String,
-    rank: String,
-    wins: Number,
-    losses: Number,
-    image: String
-  }
-}
-</script>
+<script setup lang="ts">
+import { getImage } from '../../../httpRequests'
 
-<style lang="scss" scoped></style>
+const props = defineProps({
+  username: String,
+  intraId: Number,
+  rank: Number,
+  wins: Number,
+  losses: Number
+})
+
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+</script>

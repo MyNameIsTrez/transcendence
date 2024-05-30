@@ -30,7 +30,11 @@
 import Achievement from './Achievement.vue'
 import { get } from '../../../httpRequests'
 
-const user = await get('api/user/me')
+const props = defineProps({
+  intraId: Number
+})
+
+const user = await get(`api/user/other/${props.intraId}`)
 
 const { wonOnce, wonHundred, lostOnce, lostHundred } = user.achievements
 </script>

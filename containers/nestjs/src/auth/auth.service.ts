@@ -6,12 +6,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { existsSync, mkdirSync, writeFile } from 'fs';
+import { writeFile } from 'fs';
 import { UsersService } from '../users/users.service';
 import { authenticator } from 'otplib';
 import { User } from '../users/user.entity';
 import { toDataURL } from 'qrcode';
-import { Chat } from 'src/chat/chat.entity';
 import TransJwtService from './trans-jwt-service';
 import { Response } from 'express';
 
@@ -85,10 +84,6 @@ export class AuthService {
               responseType: 'arraybuffer',
             }),
           );
-          
-          if (!existsSync('profile_pictures')) {
-            mkdirSync('profile_pictures');
-          }
 
           writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
             if (err) throw err;
@@ -112,6 +107,11 @@ export class AuthService {
             user.isTwoFactorAuthenticationEnabled,
         };
       });
+  }
+
+  public getFooJwt() {
+    const foo_intra_id = 42;
+    return this.transJwtService.sign(foo_intra_id, false, false); // TODO: Are the `false` correct?
   }
 
   async generate(intra_id: number, response: Response) {

@@ -57,9 +57,11 @@
         </div>
       </div>
     </div>
-    <h1 class="text-center">---- Online ----</h1>
-    <template v-for="friend in friends">
-      <!-- getFriendPicture(friend.intraId) -->
+    <h1 class="text-center">-- Game invites --</h1>
+    <GameInvite name="Milan Forsthovel" :intraId="91418" gamemode="Special" />
+    <!-- TODO: zelfde zoals hieronder met een v-for door de invites loopen -->
+    <h1 class="text-center pt-2">----- Online -----</h1>
+    <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="friend.isOnline"
         :name="friend.name"
@@ -67,8 +69,8 @@
         :intraId="friend.intraId"
       />
     </template>
-    <h1 class="text-center">---- Offline ----</h1>
-    <template v-for="friend in friends">
+    <h1 class="text-center pt-2">----- Offline -----</h1>
+    <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="!friend.isOnline"
         :name="friend.name"
@@ -76,7 +78,7 @@
         :intraId="friend.intraId"
       />
     </template>
-    <h1 class="text-center">---- Incoming ----</h1>
+    <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming v-for="request in incomingRequests" :name="request.name" :intraId="request.intraId" />
   </div>
 </template>
@@ -84,11 +86,14 @@
 <script setup lang="ts">
 import Friend from './friends/Friend.vue'
 import Incoming from './friends/Incoming.vue'
+import GameInvite from './friends/GameInvite.vue'
 import { get, post } from '../../httpRequests'
 import { ref } from 'vue'
 
 const friends = await get('api/user/friends')
 const incomingRequests = await get('api/user/incomingFriendRequests')
+
+// const incomingGameInvites = await get('api/user/incomingGamesInvites') //TODO: aanpassen aan de hand van wat Victor maakt
 
 const friendSearch = ref('')
 

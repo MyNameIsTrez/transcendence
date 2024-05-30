@@ -1,15 +1,14 @@
 import {
   APong,
   Ball,
-  Player,
   Pos,
   Rect,
   Sides,
   Size,
-  Velocity,
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
 } from './APong';
+import { Gamemode } from '../users/match.entity';
 
 abstract class Item extends Rect {
   constructor(x: number, y: number, c: string) {
@@ -175,7 +174,7 @@ class SmallerPaddleItem extends Item {
 export default class SpecialPong extends APong {
   constructor(winScore: number) {
     super(winScore);
-    this.type = 'special';
+    this.gamemode = Gamemode.SPECIAL;
   }
 
   private readonly _availableItems: Array<Function> = [
@@ -198,7 +197,7 @@ export default class SpecialPong extends APong {
         const id = this._ball._vel.dx > 0 ? 0 : 1;
         item.onItemPickup(id);
         this._itemsPickedUp.push(item);
-        this._itemsOnMap.splice(i, i + 1);
+        this._itemsOnMap.splice(i, 1);
         // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
       }
@@ -210,7 +209,7 @@ export default class SpecialPong extends APong {
       const doesItemContinue: boolean = item.hookFunction(this);
       if (!doesItemContinue) {
         item.onItemEnd(this);
-        this._itemsPickedUp.splice(i, i + 1);
+        this._itemsPickedUp.splice(i, 1);
         // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
       }
@@ -246,13 +245,13 @@ export default class SpecialPong extends APong {
         const doesItemContinue: boolean = item.onPaddleHit(this);
         if (!doesItemContinue) {
           item.onItemEnd(this);
-          this._itemsPickedUp.splice(i, i + 1);
+          this._itemsPickedUp.splice(i, 1);
           // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
           i--;
         }
       }
       // 1/4 chance to spawn an item
-      if (Math.random() <= 0.25) {
+      if (Math.random() <= 0.33) {
         const pos = Item.generateRandomPos();
         this._itemsOnMap.push(
           this._availableItems[
@@ -264,7 +263,7 @@ export default class SpecialPong extends APong {
   }
 
   getData() {
-    let rects: Array<any> = [];
+    const rects: Array<any> = [];
     rects.push({
       color: this._leftPlayer.paddle._color,
       pos: this._leftPlayer.paddle._pos,
