@@ -82,7 +82,7 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         chat.users.forEach(async (user) => {
-          if (username == user.username) {
+          if (username === user.username) {
             chat.admins.push(user);
             await this.chatRepository.save(chat);
           }
@@ -130,14 +130,15 @@ export class ChatService {
   }
 
   public async banUser(chat_id: string, username: string) {
-    if ((await this.kickUser(chat_id, username)) == false) return false;
+    if (!(await this.kickUser(chat_id, username))) return false;
+
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
         const user = await this.usersService.findOneByUsername(username);
         chat.banned.push(user);
         const result = await this.chatRepository.save(chat);
-        if (result) return true;
+        return !!result;
       });
   }
 
@@ -153,11 +154,15 @@ export class ChatService {
             stop = true;
           }
         });
+
         if (stop) return false;
+
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
         chat.number_of_users -= 1;
+
         const result = await this.chatRepository.save(chat);
-        if (result) return true;
+
+        return !!result;
       });
   }
 
@@ -191,7 +196,7 @@ export class ChatService {
         let isAdmin = false;
         const admins = chat.admins;
         admins.forEach((admin) => {
-          if (admin.intra_id == intra_id) isAdmin = true;
+          if (admin.intra_id === intra_id) isAdmin = true;
         });
         return isAdmin;
       });
@@ -201,8 +206,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
-        if (chat.owner == intra_id) return true;
-        return false;
+        return chat.owner === intra_id;
       });
   }
 
@@ -210,8 +214,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
-        if (chat.number_of_users === 2) return true;
-        return false;
+        return chat.number_of_users === 2;
       });
   }
 
@@ -219,8 +222,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
-        if (chat.visibility === Visibility.PROTECTED) return true;
-        return false;
+        return chat.visibility === Visibility.PROTECTED;
       });
   }
 
@@ -244,7 +246,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then((chat) => {
-        const user = chat.users.find((user) => user.intra_id != intra_id);
+        const user = chat.users.find((user) => user.intra_id !== intra_id);
         if (!user) {
           throw new BadRequestException(
             "Couldn't find another user in this chat",
@@ -273,7 +275,7 @@ export class ChatService {
       .then(async (chat) => {
         let is_mute = false;
         chat.muted.forEach((mute) => {
-          if (mute.intra_id == intra_id) {
+          if (mute.intra_id === intra_id) {
             if (!this.timeIsPassed(mute.time_of_unmute)) is_mute = true;
           }
         });
@@ -309,8 +311,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
-        if (chat.visibility == Visibility.PROTECTED) return true;
-        return false;
+        return chat.visibility === Visibility.PROTECTED;
       });
   }
 
@@ -345,7 +346,7 @@ export class ChatService {
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
         chat.visibility = visibility;
-        if (chat.visibility == Visibility.PROTECTED)
+        if (chat.visibility === Visibility.PROTECTED)
           chat.hashed_password = await this.hashPassword(password);
         this.chatRepository.save(chat);
       });

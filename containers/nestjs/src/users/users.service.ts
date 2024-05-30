@@ -63,7 +63,8 @@ export class UsersService {
     };
   }
 
-  async getAllUsers() { // TODO: console.logs uitzetten
+  async getAllUsers() {
+    // TODO: console.logs uitzetten
     const users = await this.usersRepository.find();
 
     const returnUsers = await Promise.all(
@@ -79,7 +80,7 @@ export class UsersService {
         return returned;
       }),
     );
-    returnUsers.sort((a,b) => b.wins - a.wins);
+    returnUsers.sort((a, b) => b.wins - a.wins);
     console.log('returnUsers: ', returnUsers);
     return returnUsers;
   }
@@ -216,7 +217,7 @@ export class UsersService {
         blocked: true,
       },
     });
-    me.blocked = me.blocked.filter((user) => user.intra_id != other_intra_id);
+    me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
     return this.usersRepository.save(me);
   }
 
@@ -227,7 +228,7 @@ export class UsersService {
         blocked: true,
       },
     });
-    return other_user.blocked.some((user) => user.intra_id == my_intra_id);
+    return other_user.blocked.some((user) => user.intra_id === my_intra_id);
   }
 
   async addWin(intra_id: number) {
@@ -295,6 +296,7 @@ export class UsersService {
         incoming_friend_requests: true,
       },
     });
+
     const receiver = await this.usersRepository.findOne({
       where: { intra_name: receiver_name },
       relations: {
@@ -302,17 +304,21 @@ export class UsersService {
         incoming_friend_requests: true,
       },
     });
+
     if (!receiver) {
       throw new BadRequestException('User does not exist');
     }
+
     if (
       sender.friends.some((friend) => friend.intra_id === receiver.intra_id)
     ) {
       throw new BadRequestException('You are already friends with this user');
     }
-    if (receiver.intra_id == sender_id) {
+
+    if (receiver.intra_id === sender_id) {
       throw new BadRequestException('You cannot add yourself as a friend');
     }
+
     if (
       receiver.incoming_friend_requests.some(
         (friendRequest) => friendRequest.intra_id === sender_id,
@@ -320,6 +326,7 @@ export class UsersService {
     ) {
       throw new BadRequestException('Friend request already sent');
     }
+
     if (
       sender.incoming_friend_requests.some(
         (friendRequest) => friendRequest.intra_id === receiver.intra_id,
@@ -327,17 +334,20 @@ export class UsersService {
     ) {
       sender.friends.push(receiver);
       receiver.friends.push(sender);
+
       sender.incoming_friend_requests.splice(
         sender.incoming_friend_requests.findIndex(
           (user) => user.intra_id === receiver.intra_id,
         ),
         1,
       );
+
       this.usersRepository.save([sender, receiver]);
     } else {
       receiver.incoming_friend_requests.push(sender);
       this.usersRepository.save(receiver);
     }
+
     return true;
   }
 
