@@ -264,6 +264,8 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
         const user = await this.usersService.findOneByUsername(username);
+        if (chat.muted.some((mute) => mute.intra_id == user.intra_id))
+          return ;
         const mute = new Mute();
         mute.intra_id = user.intra_id;
         mute.time_of_unmute = this.getTimeOfUnmute(days);

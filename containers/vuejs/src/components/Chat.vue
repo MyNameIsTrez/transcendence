@@ -130,7 +130,7 @@ const chatButtonText = ref('== OPEN CHATS ==')
 const chatButton = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
-const daysToMute = ref('')
+const daysToMute = ref(0)
 const direct = ref(false)
 const iAmAdmin = ref(false)
 const iAmBanned = ref(false)
@@ -215,9 +215,9 @@ async function muteUser() {
   const mute = await post('api/chat/mute', {
     chat_id: currentChatId.value,
     username: otherUser.value,
-    days: daysToMute.value
+    days: parseInt(daysToMute.value)
   })
-  daysToMute.value = ''
+  daysToMute.value = 0
 }
 
 async function getBlockStatus() {
@@ -342,10 +342,8 @@ async function validateLock(chat_str: string) {
     i++
   }
   if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
-    console.log("chat is locked");
     locked.value = true
   } else {
-    console.log('chat is not locked')
     getChat(chat_str)
   }
 }

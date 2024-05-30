@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
 import { UsersService } from 'src/users/users.service';
-import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsInt, IsEnum, IsNotEmpty, IsUUID, IsPositive } from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
@@ -45,7 +45,8 @@ class MuteDto {
   @IsNotEmpty()
   username: string;
 
-  @IsNotEmpty()
+  @IsInt()
+  @IsPositive()
   days: number;
 }
 
