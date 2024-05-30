@@ -72,7 +72,6 @@ export class ChatService {
   }
 
   async addAdmin(chat_id: string, username: string) {
-    const user = await this.usersService.findOneByUsername(username);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
@@ -126,8 +125,7 @@ export class ChatService {
   }
 
   public async getName(chat_id: string) {
-    const chat = await this.getChat(chat_id);
-    return chat.name;
+    return (await this.getChat(chat_id)).name;
   }
 
   private getChat(chat_id: string) {
@@ -353,7 +351,6 @@ export class ChatService {
   }
 
   public async channels() {
-    const chats = this.chatRepository.find();
-    return chats;
+    return this.chatRepository.find();
   }
 }
