@@ -61,13 +61,11 @@ import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
+import { inject } from 'vue'
 
-const props = defineProps({ intraId: String, gameSocket: Socket })
-const intra_id = parseInt(props.intraId)
-const gameSocket = props.gameSocket
-
-console.log('gameSocket', gameSocket)
-console.log('intraId', intra_id, typeof intra_id)
+const props = defineProps({ intraId: String })
+const intra_id = parseInt(props.intraId!)
+const gameSocket: Socket = inject('gameSocket')!
 
 const user = await get(`api/user/other/${intra_id}`)
 const username = user.username
