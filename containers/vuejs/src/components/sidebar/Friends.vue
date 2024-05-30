@@ -58,7 +58,15 @@
       </div>
     </div>
     <h1 class="text-center">-- Game invites --</h1>
-    <GameInvite name="foo" :intraId="42" gamemode="Special" />
+
+    <GameInvite
+      v-for="invite in invitations"
+      :key="invite.inviterIntraId"
+      :name="invite.inviterName"
+      :intraId="invite.inviterIntraId"
+      :gamemode="invite.gamemode"
+    />
+
     <!-- TODO: zelfde zoals hieronder met een v-for door de invites loopen -->
     <h1 class="text-center pt-2">----- Online -----</h1>
     <template v-for="friend in friends" :key="friend.intraId">
@@ -93,7 +101,10 @@ import Friend from './friends/Friend.vue'
 import Incoming from './friends/Incoming.vue'
 import GameInvite from './friends/GameInvite.vue'
 import { get, post } from '../../httpRequests'
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
+import { Socket } from 'socket.io-client'
+
+const gameSocket: Socket = inject('gameSocket')!
 
 const friends = await get('api/user/friends')
 const incomingRequests = await get('api/user/incomingFriendRequests')
@@ -109,6 +120,8 @@ const alertColor = ref('alert-success')
 const alertMessage = ref('Friend request sent')
 
 const isError = ref(true)
+
+const invitations = new ref([])
 
 function reloadFriends() {
   location.reload()
@@ -136,4 +149,10 @@ async function addFriend() {
       }, 3500)
     })
 }
+
+gameSocket.on('updateInvitations', (invites) => {
+  invitations.value = invites
+})
+
+gameSocket.emit('requestInvitations')
 </script>

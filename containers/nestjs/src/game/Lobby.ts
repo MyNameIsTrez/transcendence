@@ -16,6 +16,9 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
+  public inviterIntraId = -1;
+  public invitedIntraId = -1;
+
   private leftPlayerIntraId: number;
   private rightPlayerIntraId: number;
 

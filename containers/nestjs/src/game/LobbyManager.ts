@@ -1,6 +1,5 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
-import PrivateLobby from './PrivateLobby';
 import { WsException } from '@nestjs/websockets';
 import { UsersService } from '../users/users.service';
 import { MatchService } from '../users/match.service';
@@ -22,10 +21,7 @@ export default class LobbyManager {
   public async queue(client: Socket, gamemode: Gamemode) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException({
-        message: 'Already in a lobby',
-        exitQueue: true,
-      });
+      throw new WsException('Already in a lobby');
     }
 
     const lobby = this.getLobby(gamemode);
@@ -41,20 +37,14 @@ export default class LobbyManager {
   ) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException({
-        message: 'Already in a lobby',
-        exitQueue: true,
-      });
+      throw new WsException('Already in a lobby');
     }
 
     if (!(await this.usersService.hasUser(invitedIntraId))) {
-      throw new WsException({
-        message: 'Could not find user',
-        exitQueue: true,
-      });
+      throw new WsException('Could not find user');
     }
 
-    const lobby = new PrivateLobby(
+    const lobby = new Lobby(
       gamemode,
       true,
       this.server,
@@ -65,6 +55,7 @@ export default class LobbyManager {
     await lobby.addClient(client);
     client.data.lobby = lobby;
 
+    lobby.inviterIntraId = client.data.intra_id;
     lobby.invitedIntraId = invitedIntraId;
 
     const clientSockets = clients.get(invitedIntraId);
@@ -150,5 +141,23 @@ export default class LobbyManager {
   private removeLobby(lobby: Lobby) {
     lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
+  }
+
+  public async getInvitations(intra_id: number) {
+    const lobbiesArray = await Array.from(this.lobbies.values());
+
+    return await Promise.all(
+      lobbiesArray.flatMap(async (lobby) =>
+        lobby.isPrivate && lobby.invitedIntraId === intra_id
+          ? {
+              inviterIntraId: lobby.inviterIntraId,
+              inviterName: await this.usersService.getUsername(
+                lobby.inviterIntraId,
+              ),
+              gamemode: lobby.gamemode,
+            }
+          : [],
+      ),
+    );
   }
 }

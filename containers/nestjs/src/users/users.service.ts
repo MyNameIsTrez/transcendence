@@ -66,22 +66,16 @@ export class UsersService {
   }
 
   async getAllUsers() {
-    // TODO: console.logs uitzetten
     const users = await this.usersRepository.find();
 
-    const returnUsers = await Promise.all(
-      users.map(async (user) => {
-        console.log('gAU user: ', user);
-        const returned = {
-          name: user.username,
-          intraId: user.intra_id,
-          wins: user.wins,
-          losses: user.losses,
-        };
-        console.log('returned: ', returned);
-        return returned;
-      }),
-    );
+    const returnUsers = users.map((user) => {
+      return {
+        name: user.username,
+        intraId: user.intra_id,
+        wins: user.wins,
+        losses: user.losses,
+      };
+    });
     returnUsers.sort((a, b) => b.wins - a.wins);
     console.log('returnUsers: ', returnUsers);
     return returnUsers;
@@ -388,16 +382,12 @@ export class UsersService {
       },
     });
     if (user) {
-      const incomingRequests = await Promise.all(
-        user.incoming_friend_requests.map(async (incoming) => {
-          const returned = {
-            name: incoming.username,
-            intraId: incoming.intra_id,
-          };
-          return returned;
-        }),
-      );
-      return incomingRequests;
+      return user.incoming_friend_requests.map((incoming) => {
+        return {
+          name: incoming.username,
+          intraId: incoming.intra_id,
+        };
+      });
     }
   }
 

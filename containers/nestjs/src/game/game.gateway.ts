@@ -70,6 +70,16 @@ export class GameGateway {
     }
   }
 
+  private async emitInvitations(client: Socket) {
+    const test = await this.lobbyManager.getInvitations(client.data.intra_id);
+    client.emit('updateInvitations', test);
+  }
+
+  @SubscribeMessage('requestInvitations')
+  async requestInvitations(@ConnectedSocket() client: Socket) {
+    await this.emitInvitations(client);
+  }
+
   handleDisconnect(@ConnectedSocket() client: Socket) {
     // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
     console.log(`Client ${client.id} disconnected from game socket`);
@@ -105,11 +115,19 @@ export class GameGateway {
   ) {
     // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
+
+    client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
+    if (client.data.lobby.isPrivate) {
+      console.log('private lobby');
+      // TODO: Remove invited user's invite
+    }
+
     this.lobbyManager.removeClient(client);
+    client.emit('inQueue', { inQueue: false });
   }
 
   @SubscribeMessage('createPrivateLobby')
@@ -126,6 +144,7 @@ export class GameGateway {
       gamemode,
       this.clients,
     );
+    client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('movePaddle')

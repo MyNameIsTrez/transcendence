@@ -36,7 +36,7 @@ const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.
 
 async function acceptGameInvite() {
   // TODO: Hier een daadwerkelijk werkende functie van maken
-  console.log('Accpeted game invite: ', props.intraId)
+  console.log('Accepted game invite: ', props.intraId)
 }
 
 async function declineGameInvite() {

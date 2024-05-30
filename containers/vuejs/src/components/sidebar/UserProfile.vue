@@ -75,7 +75,9 @@ const profilePicture = await getImage(`api/user/profilePicture/${user.intra_id}.
 const matchHistory = await get(`api/user/matchHistory/${user.intra_id}`)
 
 function inviteToGame() {
-  // TODO: Don't hardcode the gamemode
-  gameSocket.emit('createPrivateLobby', { invitedUser: intra_id, gamemode: 'normal' })
+  gameSocket.emit('createPrivateLobby', {
+    invitedUser: intra_id,
+    gamemode: localStorage.getItem('gamemode')
+  })
 }
 </script>

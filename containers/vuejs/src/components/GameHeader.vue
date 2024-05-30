@@ -26,8 +26,8 @@
     <!-- TODO: Make the button prettier -->
     <form v-if="!endOfGame && !queueing" class="max-w-sm mx-auto">
       <select
-        id="gamemode"
         v-model="gamemode"
+        @change="updateGamemode"
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       >
         <option selected value="normal">Normal game</option>
@@ -48,22 +48,28 @@ const gameSocket = props.gameSocket
 
 const alertVisibility = ref('invisible')
 
-const emit = defineEmits(['resetCanvas'])
+const emit = defineEmits(['resetCanvas']) // TODO: Can this be removed?
 const gameTitle = ref('PONG')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
 const queueing = ref(false)
 
-const gamemode = ref('normal')
+if (!localStorage.getItem('gamemode')) {
+  localStorage.setItem('gamemode', 'normal')
+}
+
+const gamemode = ref(localStorage.getItem('gamemode')!)
+
+const updateGamemode = () => {
+  localStorage.setItem('gamemode', gamemode.value)
+}
 
 const joinGame = () => {
-  queueing.value = true
   gameSocket.emit('queue', { gamemode: gamemode.value })
 }
 
 const leaveQueue = () => {
   gameSocket.emit('leaveQueue')
-  reset()
 }
 
 const reset = () => {
@@ -71,7 +77,7 @@ const reset = () => {
   endOfGame.value = false
   startOfGame.value = false
   queueing.value = false
-  emit('resetCanvas')
+  emit('resetCanvas') // TODO: Can this be removed?
 }
 
 gameSocket.on('gameOver', (won: boolean) => {
@@ -82,15 +88,15 @@ gameSocket.on('gameOver', (won: boolean) => {
 gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
+gameSocket.on('inQueue', (data) => {
+  queueing.value = data.inQueue
+})
 
 gameSocket.on('exception', (error) => {
-  if (error.exitQueue) {
-    reset()
-    alertVisibility.value = 'visible'
-    setTimeout(() => {
-      alertVisibility.value = 'invisible'
-    }, 2500)
-  }
+  alertVisibility.value = 'visible'
+  setTimeout(() => {
+    alertVisibility.value = 'invisible'
+  }, 2500)
 })
 </script>
 
