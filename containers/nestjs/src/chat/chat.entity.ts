@@ -17,9 +17,6 @@ export class Chat {
   @Column()
   name: string;
 
-  @Column()
-  number_of_users: number;
-
   @ManyToMany(() => User, (user) => user.chats)
   users: User[];
 
@@ -46,4 +43,7 @@ export class Chat {
 
   @OneToMany(() => Mute, (mute) => mute.chat)
   muted: Mute[];
+
+  @ManyToMany(() => User, (user) => user.accessGrantedChats)
+  access_granted: User[];
 }

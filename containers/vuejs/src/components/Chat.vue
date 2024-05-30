@@ -2,9 +2,22 @@
   <div>
     <button @click="changeChatButton">{{ chatButtonText }}</button><br /><br />
     <div v-if="chatButton">
-      <div class="scrollable-container">
+      CHANNELS <br /><br />
+      <div class="scrollable-container-half">
         <div
-          v-for="(chat, index) in chatsOnIndex"
+          v-for="(chat, index) in channelsOnIndex"
+          :key="index"
+          class="line"
+          @click="validateLock(chat)"
+        >
+          {{ chat }}
+        </div>
+      </div>
+      <br /><br />
+      DIRECT MESSAGES <br /><br />
+      <div class="scrollable-container-half">
+        <div
+          v-for="(chat, index) in directMessagesOnIndex"
           :key="index"
           class="line"
           @click="validateLock(chat)"
@@ -108,17 +121,20 @@ const chatSocket = props.chatSocket
 const blockStatus = ref('Block')
 const chat = ref()
 const chatName = ref('')
-const chatsOnIndex = ref<string[]>([])
-const chatIdsOnIndex = ref<string[]>([])
+const directMessagesOnIndex = ref<string[]>([])
+const directMessageIdsOnIndex = ref<string[]>([])
+const channelsOnIndex = ref<string[]>([])
+const channelIdsOnIndex = ref<string[]>([])
 const chatHistory = ref<string[]>([])
 const chatHistorySender = ref<string[]>([])
 const chatButtonText = ref('== OPEN CHATS ==')
 const chatButton = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
-const daysToMute = ref('')
+const daysToMute = ref(0)
 const direct = ref(false)
 const iAmAdmin = ref(false)
+const iAmBanned = ref(false)
 const iAmBlocked = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
@@ -126,7 +142,7 @@ const isProtected = ref(false)
 const locked = ref(false)
 const myIntraId = ref('')
 const myUsername = ref('')
-const myChats = ref('')
+const chats = ref('')
 const newPassword = ref('')
 const otherIntraId = ref('')
 const otherUser = ref('')
@@ -150,7 +166,8 @@ async function openProfile() {
 async function changePassword() {
   await post('api/chat/changePassword', {
     chat_id: currentChatId.value,
-    password: newPassword.value
+    password: newPassword.value,
+    intra_id: 'foo'
   })
   newPassword.value = ''
 }
@@ -165,6 +182,8 @@ async function changeVisibility() {
     password: passwordChat.value
   })
   passwordChat.value = ''
+  getChats()
+  getChannels()
 }
 
 function openProfileButton(index: number) {
@@ -197,9 +216,9 @@ async function muteUser() {
   const mute = await post('api/chat/mute', {
     chat_id: currentChatId.value,
     username: otherUser.value,
-    days: daysToMute.value
+    days: parseInt(daysToMute.value)
   })
-  daysToMute.value = ''
+  daysToMute.value = 0
 }
 
 async function getBlockStatus() {
@@ -280,22 +299,32 @@ async function createChat() {
   console.log('chat', chat)
   passwordChat.value = ''
   chatName.value = ''
-  getMyChats()
+  getChats()
+  getChannels()
 }
 
 async function getInfo() {
+  getChats()
+  getChannels()
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
+  console.log('info', info)
   iAmAdmin.value = info.isAdmin
   direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
   isProtected.value = info.isProtected
+  iAmBanned.value = info.isBanned
 }
 
 async function validatePassword() {
   console.log('password', password.value)
   const result = await get(
-    'api/chat/validatePassword/' + currentChatId.value + '/' + password.value
+    'api/chat/validatePassword/' +
+      currentChatId.value +
+      '/' +
+      password.value +
+      '/' +
+      myIntraId.value
   )
   console.log('result in validatePassword', result)
   if (result) {
@@ -309,15 +338,19 @@ async function validateLock(chat_str: string) {
   currentChat.value = chat_str
   let i: number = 0
 
-  while (chatsOnIndex.value[i]) {
-    if (chatsOnIndex.value[i] === chat_str) currentChatId.value = chatIdsOnIndex.value[i]
+  while (channelIdsOnIndex.value[i]) {
+    if (channelsOnIndex.value[i] == chat_str) currentChatId.value = channelIdsOnIndex.value[i]
     i++
   }
-  if (await get('api/chat/isLocked/' + currentChatId.value)) {
-    console.log('chat is locked')
+  i = 0
+  while (directMessageIdsOnIndex.value[i]) {
+    if (directMessagesOnIndex.value[i] == chat_str)
+      currentChatId.value = directMessageIdsOnIndex.value[i]
+    i++
+  }
+  if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
     locked.value = true
   } else {
-    console.log('chat is not locked')
     getChat(chat_str)
   }
 }
@@ -326,9 +359,8 @@ async function getChat(chat_str: string) {
   let i: number = 0
   let history: string[] = []
   locked.value = false
-  if (openChat.value === false) changeChatButton()
-
   await getInfo()
+  if (iAmBanned.value) return
   if (direct.value) {
     otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
@@ -337,8 +369,15 @@ async function getChat(chat_str: string) {
     iAmBlocked.value = false
   }
 
+  if (openChat.value == false) changeChatButton()
+
   chatHistory.value = []
   history = await get('api/chat/history/' + currentChatId.value)
+
+  await post('api/chat/addUserToChat', {
+    chat_id: currentChatId.value,
+    username: myUsername.value
+  })
 
   i = 0
   while (history[i]) {
@@ -348,19 +387,41 @@ async function getChat(chat_str: string) {
   }
 
   await nextTick()
-
+  getChats()
+  getChannels()
   chat.value.scrollTop = chat.value.scrollHeight
 }
 
-async function getMyChats() {
-  myChats.value = await get('api/user/myChats')
+async function getChats() {
+  chats.value = await get('api/user/chats')
   let i: number = 0
-  chatsOnIndex.value = []
-  chatIdsOnIndex.value = []
+  directMessagesOnIndex.value = []
+  directMessageIdsOnIndex.value = []
 
-  while (myChats.value[i]) {
-    chatsOnIndex.value.push(myChats.value[i].name)
-    chatIdsOnIndex.value.push(myChats.value[i].chat_id)
+  while (chats.value[i]) {
+    if (chats.value[i].visibility == 'PROTECTED') {
+      if (await get('api/chat/isLocked/' + chats.value[i].chat_id + '/' + myIntraId.value)) {
+        i++
+        continue
+      }
+    }
+    directMessagesOnIndex.value.push(chats.value[i].name)
+    directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
+    i++
+  }
+}
+
+async function getChannels() {
+  const channels = await get('api/chat/channels')
+  let i: number = 0
+  channelsOnIndex.value = []
+  channelIdsOnIndex.value = []
+
+  while (channels[i]) {
+    if (channels[i].visibility == 'PUBLIC' || channels[i].visibility == 'PROTECTED') {
+      channelsOnIndex.value.push(channels[i].name)
+      channelIdsOnIndex.value.push(channels[i].chat_id)
+    }
     i++
   }
 }
@@ -401,13 +462,24 @@ function chatVisibility() {
 
 getMyUsername()
 getMyIntraId()
-getMyChats()
+getChats()
+getChannels()
 </script>
 
 <style scoped>
 .scrollable-container {
   width: 100%;
   height: 900px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  overflow-y: auto;
+  word-break: break-all;
+}
+
+.scrollable-container-half {
+  width: 100%;
+  height: 450px;
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;

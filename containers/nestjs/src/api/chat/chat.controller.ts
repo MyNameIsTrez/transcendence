@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import { v4 as uuid } from 'uuid';
 import { UsersService } from 'src/users/users.service';
-import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsInt, IsEnum, IsNotEmpty, IsUUID, IsPositive } from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
@@ -45,7 +45,8 @@ class MuteDto {
   @IsNotEmpty()
   username: string;
 
-  @IsNotEmpty()
+  @IsInt()
+  @IsPositive()
   days: number;
 }
 
@@ -55,6 +56,9 @@ class PasswordDto {
 
   @IsNotEmpty()
   password: string;
+
+  @IsNotEmpty()
+  intra_id: number;
 }
 
 class ChangeVisibilityDto {
@@ -150,14 +154,14 @@ export class ChatController {
     return await this.chatService.getInfo(dto.chat_id, dto.intra_id)
   }
 
-  @Get('isLocked/:chat_id')
-  async isLocked(@Request() req, @Param() dto: NameDto) {
-    return await this.chatService.isLocked(dto.chat_id)
+  @Get('isLocked/:chat_id/:intra_id')
+  async isLocked(@Request() req, @Param() dto: OtherUserDto) {
+    return await this.chatService.isLocked(dto.chat_id, dto.intra_id)
   }
 
-  @Get('validatePassword/:chat_id/:password')
+  @Get('validatePassword/:chat_id/:password/:intra_id')
   async isPassword(@Request() req, @Param() dto: PasswordDto) {
-    return await this.chatService.isPassword(dto.chat_id, dto.password)
+    return await this.chatService.isPassword(dto.chat_id, dto.password, dto.intra_id)
   }
 
   @Post('changePassword')
@@ -168,5 +172,10 @@ export class ChatController {
   @Post('changeVisibility')
   changeVisibility(@Request() req, @Body() dto: ChangeVisibilityDto) {
     return this.chatService.changeVisibility(dto.chat_id, dto.visibility, dto.password);
+  }
+
+  @Get('channels')
+  channels(@Request() req) {
+    return this.chatService.channels()
   }
 }
