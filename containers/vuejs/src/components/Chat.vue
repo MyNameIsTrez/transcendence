@@ -82,8 +82,9 @@
         <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
       </div>
       <div v-if="openOtherProfile">
-        <button @click="openProfile">* Checkout profile of {{ otherProfile }} *</button><br /><br />
+        <router-link :to="`/user/${otherIntraId}`">View profile of {{ otherProfile }} </router-link>
       </div>
+      <br/>
 
       CURRENT CHAT: {{ currentChat }} <br /><br />
       <div ref="chat" class="scrollable-container">
@@ -157,9 +158,10 @@ const passwordChat = ref('')
 const typedMessage = ref('')
 const visibility = ref('PUBLIC')
 const visibilityNum = ref(1)
+const visitProfile = ref(false)
 
 async function openProfile() {
-  console.log('open profile of ', otherProfile.value)
+  visitProfile.value = true
 }
 
 async function changePassword() {
@@ -356,14 +358,16 @@ async function getChat(chat_str: string) {
   await getInfo()
   if (iAmBanned.value)
   return ;
-if (direct.value) {
-  otherIntraId.value = await getOtherIntraId()
+  if (direct.value) {
+    otherIntraId.value = await getOtherIntraId()
     iAmBlocked.value = await getBlockStatus()
   } else {
     otherIntraId.value = ''
     iAmBlocked.value = false
   }
   
+  console.log("iAmBlocked.value", iAmBlocked.value)
+
   if (openChat.value == false) changeChatButton()
   
   chatHistory.value = []
