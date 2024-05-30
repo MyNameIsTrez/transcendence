@@ -75,9 +75,9 @@ export class UserController {
     await this.usersService.setUsername(req.user.intra_id, dto.username);
   }
 
-  @Get('myChats')
-  myChats(@Request() req) {
-    return this.usersService.getMyChats(req.user.intra_id);
+  @Get('chats')
+  chats(@Request() req) {
+    return this.usersService.chats(req.user.intra_id);
   }
 
   @Get('profilePicture/:intra_id.png')
