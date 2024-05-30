@@ -168,8 +168,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { banned: true } })
       .then(async (chat) => {
-        if (chat.banned.some((user) => user.intra_id == intra_id)) return true;
-        return false;
+        return chat.banned.some((user) => user.intra_id == intra_id);
       });
   }
 
