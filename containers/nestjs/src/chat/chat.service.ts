@@ -130,7 +130,8 @@ export class ChatService {
   }
 
   public async banUser(chat_id: string, username: string) {
-    if ((await this.kickUser(chat_id, username)) === false) return false;
+    if (!(await this.kickUser(chat_id, username))) return false;
+
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
@@ -153,10 +154,14 @@ export class ChatService {
             stop = true;
           }
         });
+
         if (stop) return false;
+
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
         chat.number_of_users -= 1;
+
         const result = await this.chatRepository.save(chat);
+
         return !!result;
       });
   }
