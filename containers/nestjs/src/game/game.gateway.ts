@@ -72,7 +72,7 @@ export class GameGateway {
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
-    console.log(`Client ${client.id} disconnected game socket`);
+    console.log(`Client ${client.id} disconnected from game socket`);
     this.lobbyManager.removeClient(client);
     this.removeClient(client);
   }
@@ -143,7 +143,6 @@ export class GameGateway {
   // TODO: Move this to the ChatGateway?
   @SubscribeMessage('heartbeat')
   heartbeat(client: Socket) {
-    // console.log(`Got heartbeat from client ${client.data.intra_id}`);
     this.usersService.updateLastOnline(client.data.intra_id);
   }
 }

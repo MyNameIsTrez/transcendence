@@ -94,7 +94,6 @@ async function turn2faOn() {
 async function authenticateWith2fa() {
   await post('2fa/authenticate', { twoFactorAuthenticationCode: authCode.value })
     .then((newJWT) => {
-      console.log('authentication success')
       localStorage.setItem('jwt', newJWT)
       router.replace({ path: '/' })
     })

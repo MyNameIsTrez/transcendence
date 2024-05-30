@@ -135,7 +135,6 @@ export class Velocity {
     }
 
     const randomAngle = this.calculateRandomAngle();
-    console.log({ randomAngle });
 
     const leftOrRight = Math.random() < 0.5 ? 1 : -1;
     this._dx = leftOrRight * Math.cos(randomAngle);

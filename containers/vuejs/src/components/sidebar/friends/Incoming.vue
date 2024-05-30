@@ -31,12 +31,10 @@ const props = defineProps({
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 
 async function acceptFriendRequest() {
-  console.log('test_id: ', props.intraId)
   post('api/user/acceptFriendRequest', { sender_id: props.intraId }).then(() => location.reload())
 }
 
 async function declineFriendRequest() {
-  console.log('test_id: ', props.intraId)
   post('api/user/declineFriendRequest', { sender_id: props.intraId }).then(() => location.reload())
 }
 </script>
