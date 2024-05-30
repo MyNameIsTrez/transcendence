@@ -116,7 +116,7 @@
         </div>
       </div>
       <br />
-      <Achievements />
+      <Achievements :intraId="me.intra_id" />
 
       <br />
       <button class="btn w-auto text-xl" @click="logout">Logout</button>

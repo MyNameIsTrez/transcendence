@@ -13,10 +13,14 @@
         </h2>
       </div>
       <p class="text-center py-4 first-letter:capitalize">{{ gamemode }} match</p>
-      <div class="flex justify-between">
-        <p class="text-justify text-blue-500">{{ leftPlayerName }}</p>
-        <p class="text-justify">VS</p>
-        <p class="text-justify">{{ rightPlayerName }}</p>
+      <div class="grid grid-flow-row-dense grid-cols-3 place-items-center">
+        <div class="truncate w-24">
+          <p class="text text-justify text-blue-500">{{ leftPlayerName }}</p>
+        </div>
+        <p class="text text-justify">VS</p>
+        <div class="truncate w-24">
+          <p class="text text-justify">{{ rightPlayerName }}</p>
+        </div>
       </div>
     </div>
   </div>
