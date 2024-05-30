@@ -58,7 +58,7 @@
       </div>
     </div>
     <h1 class="text-center">-- Game invites --</h1>
-    <GameInvite name="Milan Forsthovel" :intraId="91418" gamemode="Special" />
+    <GameInvite name="foo" :intraId="42" gamemode="Special" />
     <!-- TODO: zelfde zoals hieronder met een v-for door de invites loopen -->
     <h1 class="text-center pt-2">----- Online -----</h1>
     <template v-for="friend in friends" :key="friend.intraId">
@@ -79,7 +79,12 @@
       />
     </template>
     <h1 class="text-center pt-2">---- Incoming ----</h1>
-    <Incoming v-for="request in incomingRequests" :name="request.name" :intraId="request.intraId" />
+    <Incoming
+      v-for="request in incomingRequests"
+      :key="request.intraId"
+      :name="request.name"
+      :intraId="request.intraId"
+    />
   </div>
 </template>
 
