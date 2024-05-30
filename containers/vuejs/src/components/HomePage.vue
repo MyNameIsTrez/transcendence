@@ -56,19 +56,17 @@ const gameSocket = getSocket('/game', opts)
 const chatSocket = getSocket('/chat', opts)
 
 gameSocket.on('exception', (error) => {
-  console.log('In gameSocket exception handler')
-  console.error('exception', error)
+  console.error('In gameSocket exception handler', error)
   if (error.redirectToLoginPage) {
-    console.log('Redirecting to /login')
+    console.error('Redirecting to /login')
     router.replace({ path: '/login' })
   }
 })
 
 chatSocket.on('exception', (error) => {
-  console.log('In chatSocket exception handler')
-  console.error('exception', error)
+  console.error('In chatSocket exception handler', error)
   if (error.redirectToLoginPage) {
-    console.log('Redirecting to /login')
+    console.error('Redirecting to /login')
     router.replace({ path: '/login' })
   }
 })

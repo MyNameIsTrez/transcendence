@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 import { post, getImage } from '../../../httpRequests'
-// import UserProfile from '../UserProfile.vue'
 
 const props = defineProps({
   name: String,
@@ -39,11 +38,11 @@ const props = defineProps({
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 
 async function removeFriend() {
-  console.log('friend_id: ', props.intraId)
   post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
 }
 </script>
 
+<!-- TODO: Remove? -->
 <!--
 	<div class="card-body h-28">
       <div style="clear: both">

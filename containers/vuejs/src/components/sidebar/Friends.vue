@@ -106,13 +106,11 @@ const alertMessage = ref('Friend request sent')
 const isError = ref(true)
 
 function reloadFriends() {
-  console.log('reloaded')
   location.reload()
 }
 
 async function addFriend() {
-  console.log(friendSearch.value)
-  const foundUser = await post('api/user/sendFriendRequest', { intra_name: friendSearch.value }) //TODO: waarschijnlijk dit niet meer in een variabele stoppen
+  await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
     .then(() => {
       alertColor.value = 'alert-success'
       alertMessage.value = 'Friend request sent'
@@ -123,7 +121,7 @@ async function addFriend() {
       }, 3500)
     })
     .catch((err) => {
-      console.log('catch test', err.response.data.message)
+      console.error('sendFriendRequest error', err)
       alertColor.value = 'alert-warning'
       alertMessage.value = err.response.data.message
       alertVisibility.value = 'visible'
