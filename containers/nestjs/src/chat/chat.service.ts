@@ -71,6 +71,8 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
+        if (chat.users.some(user => user.username == username))
+          return ;
         chat.users.push(user);
         chat.number_of_users += 1;
         await this.chatRepository.save(chat);
@@ -120,15 +122,9 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
-        let stop = false;
-
         const user = await this.usersService.findOneByUsername(username);
-        chat.admins.forEach((admin) => {
-          if (admin.intra_id === user.intra_id) {
-            stop = true;
-          }
-        });
-        if (stop) return false;
+        if (chat.admins.some(admin => admin.username == username))
+          return false;
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
         chat.number_of_users -= 1;
         let result = await this.chatRepository.save(chat);

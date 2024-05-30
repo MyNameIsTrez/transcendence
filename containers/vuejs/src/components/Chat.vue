@@ -161,6 +161,7 @@ async function changeVisibility() {
   })
   passwordChat.value = ''
   getChats();
+  getChannels()
 }
 
 function openProfileButton(index: number) {
@@ -284,10 +285,12 @@ async function createChat() {
   passwordChat.value = ''
   chatName.value = ''
   getChats()
+  getChannels()
 }
 
 async function getInfo() {
   getChats()
+  getChannels()
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
   iAmAdmin.value = info.isAdmin
   direct.value = info.isDirect
@@ -353,6 +356,11 @@ async function getChat(chat_str: string) {
   
   chatHistory.value = []
   history = await get('api/chat/history/' + currentChatId.value)
+
+  await post('api/chat/addUserToChat', {
+    chat_id: currentChatId.value,
+    username: myUsername.value,
+  })
   
   i = 0
   while (history[i]) {
@@ -362,7 +370,8 @@ async function getChat(chat_str: string) {
   }
   
   await nextTick();
-
+  getChats()
+  getChannels()
   chat.value.scrollTop = chat.value.scrollHeight;
 }
 
@@ -371,18 +380,16 @@ async function getChats() {
   let i: number = 0
   directMessagesOnIndex.value = []
   directMessageIdsOnIndex.value = []
-  // channelsOnIndex.value = []
-  // channelIdsOnIndex.value = []
 
   while (chats.value[i]) {
-    // if (chats.value[i].visibility == "PRIVATE") {
-      directMessagesOnIndex.value.push(chats.value[i].name)
-      directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
-    // }
-    // if (chats.value[i].visibility == "PUBLIC" || chats.value[i].visibility == "PROTECTED") {
-    //   channelsOnIndex.value.push(chats.value[i].name)
-    //   channelIdsOnIndex.value.push(chats.value[i].chat_id)
-    // }
+    if (chats.value[i].visibility == "PROTECTED") {
+      if (await get('api/chat/isLocked/' + chats.value[i].chat_id + '/' + myIntraId.value)) {
+        i++;
+        continue
+      }
+    }
+    directMessagesOnIndex.value.push(chats.value[i].name)
+    directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
     i++
   }
 }
@@ -400,7 +407,6 @@ async function getChannels() {
     }
     i++
   }
-
 }
 
 chatSocket.on('confirm', async result => {

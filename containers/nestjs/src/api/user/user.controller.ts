@@ -46,7 +46,6 @@ export class UserController {
 
   @Get('username')
   username(@Request() req) {
-    console.log("username")
     return this.usersService.getUsername(req.user.intra_id);
   }
 
