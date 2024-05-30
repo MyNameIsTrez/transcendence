@@ -16,6 +16,7 @@ export default class NormalPong extends APong {
       this._leftPlayer,
       this._rightPlayer,
     );
+
     if (this.collidedWithBorder == Sides.Left) {
       this._rightPlayer.addPoint();
       this.reset();
@@ -52,6 +53,7 @@ export default class NormalPong extends APong {
       },
     };
   }
+
   reset(): void {
     this._ball.reset();
   }
