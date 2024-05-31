@@ -59,10 +59,11 @@ export default class LobbyManager {
     lobby.invitedIntraId = invitedIntraId;
 
     const clientSockets = clients.get(invitedIntraId);
+
+    const invitations = await this.getInvitations(invitedIntraId);
+
     clientSockets.forEach((socket) => {
-      socket.emit('invitation', {
-        invitedBy: client.data.intra_id,
-      });
+      socket.emit('updateInvitations', invitations);
     });
   }
 

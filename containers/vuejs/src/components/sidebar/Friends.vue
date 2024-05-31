@@ -121,7 +121,19 @@ const alertMessage = ref('Friend request sent')
 
 const isError = ref(true)
 
-const invitations = new ref([])
+class Invitation {
+  inviterIntraId: number
+  inviterName: string
+  gamemode: string
+
+  constructor(inviterIntraId: number, inviterName: string, gamemode: string) {
+    this.inviterIntraId = inviterIntraId
+    this.inviterName = inviterName
+    this.gamemode = gamemode
+  }
+}
+
+const invitations = ref<Invitation[]>([])
 
 function reloadFriends() {
   location.reload()
@@ -150,7 +162,7 @@ async function addFriend() {
     })
 }
 
-gameSocket.on('updateInvitations', (invites) => {
+gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
 

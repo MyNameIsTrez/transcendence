@@ -71,8 +71,10 @@ export class GameGateway {
   }
 
   private async emitInvitations(client: Socket) {
-    const test = await this.lobbyManager.getInvitations(client.data.intra_id);
-    client.emit('updateInvitations', test);
+    const invitations = await this.lobbyManager.getInvitations(
+      client.data.intra_id,
+    );
+    client.emit('updateInvitations', invitations);
   }
 
   @SubscribeMessage('requestInvitations')
