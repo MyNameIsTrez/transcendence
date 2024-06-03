@@ -170,4 +170,31 @@ export default class LobbyManager {
       ),
     );
   }
+
+  public async declineInvitation(
+    client: Socket,
+    declinedIntraId: number,
+    clients: Map<number, Socket[]>,
+  ) {
+    console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
+
+    if (!(await this.usersService.hasUser(declinedIntraId))) {
+      throw new WsException('Could not find user');
+    }
+
+    const declinedSockets = clients.get(declinedIntraId);
+    if (!declinedSockets || declinedSockets.length < 1) {
+      throw new WsException('Declined user is not online');
+    }
+
+    this.removeClient(declinedSockets[0]);
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    clients.get(declinedIntraId).forEach((socket) => {
+      socket.emit('inQueue', { inQueue: false });
+    });
+
+    const invitations = await this.getInvitations(client.data.intra_id);
+    client.emit('updateInvitations', invitations);
+  }
 }

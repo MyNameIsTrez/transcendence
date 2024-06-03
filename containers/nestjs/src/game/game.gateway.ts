@@ -165,7 +165,14 @@ export class GameGateway {
   }
 
   @SubscribeMessage('declineInvitation')
-  declineInvitation(@ConnectedSocket() client: Socket) {
-    console.log('In declineInvitation');
+  async declineInvitation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('declinedIntraId') declinedIntraId: number,
+  ) {
+    await this.lobbyManager.declineInvitation(
+      client,
+      declinedIntraId,
+      this.clients,
+    );
   }
 }

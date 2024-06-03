@@ -52,7 +52,7 @@
       v-for="invite in invitations"
       :key="invite.inviterIntraId"
       :name="invite.inviterName"
-      :intraId="invite.inviterIntraId"
+      :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
     />
 
@@ -99,8 +99,6 @@ const gameSocket: Socket = inject('gameSocket')!
 
 const friends = await get('api/user/friends')
 const incomingRequests = await get('api/user/incomingFriendRequests')
-
-// const incomingGameInvites = await get('api/user/incomingGamesInvites') //TODO: aanpassen aan de hand van wat Victor maakt
 
 const friendSearch = ref('')
 
