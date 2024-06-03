@@ -160,8 +160,15 @@ export class GameGateway {
   }
 
   @SubscribeMessage('acceptInvitation')
-  acceptInvitation(@ConnectedSocket() client: Socket) {
-    console.log('In acceptInvitation');
+  async acceptInvitation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('acceptedIntraId') acceptedIntraId: number,
+  ) {
+    await this.lobbyManager.acceptInvitation(
+      client,
+      acceptedIntraId,
+      this.clients,
+    );
   }
 
   @SubscribeMessage('declineInvitation')
