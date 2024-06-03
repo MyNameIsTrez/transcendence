@@ -40,7 +40,6 @@ const gameSocket = props.gameSocket
 
 const alertVisible = ref(false)
 
-const emit = defineEmits(['resetCanvas']) // TODO: Can this be removed?
 const gameTitle = ref('PONG')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
@@ -71,7 +70,6 @@ const reset = () => {
   endOfGame.value = false
   startOfGame.value = false
   queueing.value = false
-  emit('resetCanvas') // TODO: Can this be removed?
 }
 
 gameSocket.on('gameOver', (won: boolean) => {
@@ -83,6 +81,7 @@ gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
 gameSocket.on('inQueue', (data: any) => {
+  reset()
   queueing.value = data.inQueue
 })
 

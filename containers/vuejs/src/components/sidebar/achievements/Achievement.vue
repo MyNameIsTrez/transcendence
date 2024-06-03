@@ -1,6 +1,6 @@
 <template>
-  <div class="tooltip tooltip-top" :data-tip="`${props.description}`">
-    <p>{{ props.name }}</p>
+  <div class="tooltip tooltip-top" :data-tip="`${description}`">
+    <p>{{ name }}</p>
   </div>
 </template>
 

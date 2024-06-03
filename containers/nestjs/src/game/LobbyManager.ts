@@ -23,9 +23,35 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
+    client.emit('inQueue', { inQueue: true });
+
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
+  }
+
+  public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
+    const lobby = this.intraIdToLobby.get(client.data.intra_id);
+
+    if (!lobby) {
+      throw new WsException("Can't leave queue when not in a lobby");
+    }
+
+    this.removeClient(client);
+    client.emit('inQueue', { inQueue: false });
+
+    // Remove the invited user's invite
+    if (lobby.isPrivate) {
+      const invitedSockets = clients.get(lobby.invitedIntraId);
+      if (!invitedSockets) {
+        throw new WsException('Invited user is not online');
+      }
+
+      const invitations = await this.getInvitations(lobby.invitedIntraId);
+      invitedSockets.forEach((socket) => {
+        socket.emit('updateInvitations', invitations);
+      });
+    }
   }
 
   public async createPrivateLobby(
@@ -56,22 +82,18 @@ export default class LobbyManager {
       this.matchService,
     );
 
+    lobby.inviterIntraId = client.data.intra_id;
+    lobby.invitedIntraId = invitedIntraId;
+
+    client.emit('inQueue', { inQueue: true });
+
     this.lobbies.set(lobby.id, lobby);
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
 
-    lobby.inviterIntraId = client.data.intra_id;
-    lobby.invitedIntraId = invitedIntraId;
-
     const invitations = await this.getInvitations(invitedIntraId);
-    // TODO: This fails when the invited user is offline, since they won't have a socket active
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
-    });
-
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
-    clients.get(lobby.inviterIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: true });
     });
   }
 
@@ -133,7 +155,6 @@ export default class LobbyManager {
       }
 
       this.removeLobby(lobby);
-      this.intraIdToLobby.delete(client.data.intra_id);
     }
   }
 
@@ -149,6 +170,10 @@ export default class LobbyManager {
   }
 
   private removeLobby(lobby: Lobby) {
+    lobby.clients.forEach((client) => {
+      this.intraIdToLobby.delete(client.data.intra_id);
+    });
+
     lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
   }
@@ -169,5 +194,64 @@ export default class LobbyManager {
           : [],
       ),
     );
+  }
+
+  public async acceptInvitation(
+    client: Socket,
+    acceptedIntraId: number,
+    clients: Map<number, Socket[]>,
+  ) {
+    console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
+
+    if (!(await this.usersService.hasUser(acceptedIntraId))) {
+      throw new WsException('Could not find user');
+    }
+
+    const acceptedSockets = clients.get(acceptedIntraId);
+    if (!acceptedSockets || acceptedSockets.length < 1) {
+      throw new WsException('Accepted user is not online');
+    }
+
+    client.emit('inQueue', { inQueue: true });
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    const invitations = await this.getInvitations(client.data.intra_id);
+    clients.get(client.data.intra_id).forEach((socket) => {
+      socket.emit('updateInvitations', invitations);
+    });
+
+    const lobby = this.intraIdToLobby.get(acceptedIntraId);
+
+    await lobby.addClient(client);
+    this.intraIdToLobby.set(client.data.intra_id, lobby);
+  }
+
+  public async declineInvitation(
+    client: Socket,
+    declinedIntraId: number,
+    clients: Map<number, Socket[]>,
+  ) {
+    console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
+
+    if (!(await this.usersService.hasUser(declinedIntraId))) {
+      throw new WsException('Could not find user');
+    }
+
+    const declinedSockets = clients.get(declinedIntraId);
+    if (!declinedSockets || declinedSockets.length < 1) {
+      throw new WsException('Declined user is not online');
+    }
+
+    this.removeClient(declinedSockets[0]);
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    clients.get(declinedIntraId).forEach((socket) => {
+      socket.emit('inQueue', { inQueue: false });
+    });
+
+    const invitations = await this.getInvitations(client.data.intra_id);
+    clients.get(client.data.intra_id).forEach((socket) => {
+      socket.emit('updateInvitations', invitations);
+    });
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <button class="play-button" @click="emit('clicked')">
-    {{ props.buttonText }}
+    {{ buttonText }}
   </button>
 </template>
 <script setup lang="ts">

@@ -113,19 +113,11 @@ export class GameGateway {
   ) {
     // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
-    client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
-    const lobby = this.lobbyManager.intraIdToLobby.get(client.data.intra_id);
-
-    if (lobby?.isPrivate) {
-      console.log('private lobby');
-      // TODO: Remove invited user's invite
-    }
-    this.lobbyManager.removeClient(client);
-    client.emit('inQueue', { inQueue: false });
+    await this.lobbyManager.leaveQueue(client, this.clients);
   }
 
   @SubscribeMessage('createPrivateLobby')
@@ -160,12 +152,26 @@ export class GameGateway {
   }
 
   @SubscribeMessage('acceptInvitation')
-  acceptInvitation(@ConnectedSocket() client: Socket) {
-    console.log('In acceptInvitation');
+  async acceptInvitation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('acceptedIntraId') acceptedIntraId: number,
+  ) {
+    await this.lobbyManager.acceptInvitation(
+      client,
+      acceptedIntraId,
+      this.clients,
+    );
   }
 
   @SubscribeMessage('declineInvitation')
-  declineInvitation(@ConnectedSocket() client: Socket) {
-    console.log('In declineInvitation');
+  async declineInvitation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody('declinedIntraId') declinedIntraId: number,
+  ) {
+    await this.lobbyManager.declineInvitation(
+      client,
+      declinedIntraId,
+      this.clients,
+    );
   }
 }

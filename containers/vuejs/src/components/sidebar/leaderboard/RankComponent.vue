@@ -1,7 +1,7 @@
 <template>
   <tr>
     <th>
-      <div class="text text-center">{{ props.rank }}.</div>
+      <div class="text text-center">{{ rank }}.</div>
     </th>
     <td>
       <div class="flex items-center gap-3">
@@ -11,14 +11,14 @@
           </div>
         </div>
         <div>
-          <div class="text font-bold">{{ props.username }}</div>
+          <div class="text font-bold">{{ username }}</div>
           <!-- TODO: naam clickable maken om profiel te bezoeken -->
         </div>
       </div>
     </td>
     <th class="align-middle">
       <!-- <div class="grid grid-cols-3 place-items-center"> -->
-      <div class="text text-center">{{ props.wins }}/{{ props.losses }}</div>
+      <div class="text text-center">{{ wins }}/{{ losses }}</div>
     </th>
   </tr>
 </template>

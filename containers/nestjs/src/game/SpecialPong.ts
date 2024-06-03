@@ -36,7 +36,8 @@ abstract class Item extends Rect {
     return { x, y };
   }
 
-  abstract onPickup(game: APong, itemOwnerId: number): void;
+  abstract onPickup(itemOwnerId: number): void;
+  abstract activeLoopHook(game: APong): boolean;
   abstract onPaddleHit(game: APong): boolean;
   abstract onDestroy(game: APong): void;
 }
@@ -47,12 +48,14 @@ class ReverseControlItem extends Item {
   }
 
   private _affectedPlayerId: number;
-  private _remainingTurns: number = 3;
+  private _remainingTurns = 3;
 
-  onPickup(game: APong, itemOwnerId: number): void {
+  onPickup(itemOwnerId: number) {
     // Set affectedPlayerId to opponent id
     this._affectedPlayerId = 1 - itemOwnerId;
+  }
 
+  activeLoopHook(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._color = 'purple';
       game._leftPlayer.paddle.dyNorth = Math.max(
@@ -74,9 +77,10 @@ class ReverseControlItem extends Item {
         game._rightPlayer.paddle.dySouth,
       );
     }
+    return true;
   }
 
-  onPaddleHit(game: APong): boolean {
+  onPaddleHit(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       if (game.collidedWithBorder === Sides.LeftPaddle) {
         this._remainingTurns--;
@@ -89,7 +93,7 @@ class ReverseControlItem extends Item {
     return this._remainingTurns > 0;
   }
 
-  onDestroy(game: APong): void {
+  onDestroy(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._color = 'white';
     } else {
@@ -105,15 +109,18 @@ class InvisibleBallItem extends Item {
 
   private static readonly _originalBallColor = 'white';
 
-  onPickup(game: APong, itemOwnerId: number): void {
+  onPickup(itemOwnerId: number) {}
+
+  activeLoopHook(game: APong) {
     game._ball._color = 'transparent';
+    return true;
   }
 
-  onPaddleHit(game: APong): boolean {
+  onPaddleHit(game: APong) {
     return false;
   }
 
-  onDestroy(game: APong): void {
+  onDestroy(game: APong) {
     game._ball._color = InvisibleBallItem._originalBallColor;
   }
 }
@@ -126,17 +133,20 @@ class SmallerPaddleItem extends Item {
   private _affectedPlayerId: number;
   private _remainingTurns: number = 3;
 
-  onPickup(game: APong, itemOwnerId: number): void {
+  onPickup(itemOwnerId: number) {
     this._affectedPlayerId = 1 - itemOwnerId;
+  }
 
+  activeLoopHook(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
     } else {
       game._rightPlayer.paddle._size.h = WINDOW_HEIGHT * 0.15;
     }
+    return true;
   }
 
-  onPaddleHit(game: APong): boolean {
+  onPaddleHit(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       if (game.collidedWithBorder === Sides.LeftPaddle) {
         this._remainingTurns--;
@@ -149,7 +159,7 @@ class SmallerPaddleItem extends Item {
     return this._remainingTurns > 0;
   }
 
-  onDestroy(game: APong): void {
+  onDestroy(game: APong) {
     if (game._leftPlayer.id === this._affectedPlayerId) {
       game._leftPlayer.paddle._size.h = WINDOW_HEIGHT * 0.2;
     } else {
@@ -182,10 +192,22 @@ export default class SpecialPong extends APong {
       if (item.collidesWithBall(this._ball)) {
         // Decides who should be the item owner
         const id = this._ball._vel.dx > 0 ? 0 : 1;
-        item.onPickup(this, id);
+        item.onPickup(id);
         this._itemsPickedUp.push(item);
         this._itemsOnMap.splice(i, 1);
         // To accommodate for the i++ that happens in the for loop while all the items get pushed to the left, due to the splice()
+        i--;
+      }
+    }
+
+    // Do item effects of picked up items
+    for (let i: number = 0; i < this._itemsPickedUp.length; i++) {
+      const item: Item = this._itemsPickedUp[i];
+      const doesItemContinue: boolean = item.activeLoopHook(this);
+      if (!doesItemContinue) {
+        item.onDestroy(this);
+        this._itemsPickedUp.splice(i, 1);
+        // To accommodate for the i++ that happens in the for loop while all the items gets pushed to the left because of the splice()
         i--;
       }
     }
