@@ -10,12 +10,12 @@
       </div>
       <div class="justify-self-end">
         <div class="tooltip tooltip-left" data-tip="Add friend">
-          <button class="btn btn-primary btn-square self-auto" onclick="my_modal_2.showModal()">
+          <button class="btn btn-primary btn-square self-auto" onclick="addFriend.showModal()">
             <span class="material-symbols-outlined">person_add</span>
           </button>
-          <dialog id="my_modal_2" class="modal">
-            <span class="place-content-center" style="grid-column-start: 1; grid-row-start: 1">
-              <div class="modal-box w-auto">
+          <dialog id="addFriend" class="modal">
+            <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+              <div class="modal-box w-auto justify-self-center">
                 <!-- Adds a little close button in the top-right corner -->
                 <form method="dialog">
                   <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
