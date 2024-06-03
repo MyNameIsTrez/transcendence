@@ -61,10 +61,7 @@ export default class LobbyManager {
     lobby.inviterIntraId = client.data.intra_id;
     lobby.invitedIntraId = invitedIntraId;
 
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
-    clients.get(lobby.inviterIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: true });
-    });
+    client.emit('inQueue', { inQueue: true });
 
     this.lobbies.set(lobby.id, lobby);
     await lobby.addClient(client);
@@ -135,7 +132,6 @@ export default class LobbyManager {
       }
 
       this.removeLobby(lobby);
-      this.intraIdToLobby.delete(client.data.intra_id);
     }
   }
 
@@ -151,6 +147,10 @@ export default class LobbyManager {
   }
 
   private removeLobby(lobby: Lobby) {
+    lobby.clients.forEach((client) => {
+      this.intraIdToLobby.delete(client.data.intra_id);
+    });
+
     lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
   }
@@ -189,10 +189,11 @@ export default class LobbyManager {
       throw new WsException('Accepted user is not online');
     }
 
+    client.emit('inQueue', { inQueue: true });
+
     // TODO: Why does this only update every browser tab of the user when the server was just restarted?
     const invitations = await this.getInvitations(client.data.intra_id);
     clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: true });
       socket.emit('updateInvitations', invitations);
     });
 
