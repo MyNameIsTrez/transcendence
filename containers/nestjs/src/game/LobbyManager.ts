@@ -23,6 +23,8 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
+    client.emit('inQueue', { inQueue: true });
+
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
@@ -56,22 +58,22 @@ export default class LobbyManager {
       this.matchService,
     );
 
+    lobby.inviterIntraId = client.data.intra_id;
+    lobby.invitedIntraId = invitedIntraId;
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    clients.get(lobby.inviterIntraId).forEach((socket) => {
+      socket.emit('inQueue', { inQueue: true });
+    });
+
     this.lobbies.set(lobby.id, lobby);
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
-
-    lobby.inviterIntraId = client.data.intra_id;
-    lobby.invitedIntraId = invitedIntraId;
 
     const invitations = await this.getInvitations(invitedIntraId);
     // TODO: This fails when the invited user is offline, since they won't have a socket active
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
-    });
-
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
-    clients.get(lobby.inviterIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: true });
     });
   }
 

@@ -113,7 +113,6 @@ export class GameGateway {
   ) {
     // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
-    client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('leaveQueue')
