@@ -68,7 +68,6 @@ export default class Lobby {
   public removeClient(client: Socket) {
     this.clients.delete(client.data.intra_id);
     client.leave(this.id);
-    client.data.lobby = undefined;
   }
 
   public hasUser(user: any) {

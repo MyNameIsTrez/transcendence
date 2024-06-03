@@ -4,11 +4,10 @@ import { WsException } from '@nestjs/websockets';
 import { UsersService } from '../users/users.service';
 import { MatchService } from '../users/match.service';
 import { Gamemode } from '../users/match.entity';
-import { User } from 'src/users/user.entity';
-import { BadRequestException } from '@nestjs/common';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
+  public readonly intraIdToLobby = new Map<number, Lobby>();
 
   private readonly updateIntervalMs = 1000 / 60;
 
@@ -26,7 +25,7 @@ export default class LobbyManager {
 
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
-    client.data.lobby = lobby;
+    this.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
   public async createPrivateLobby(
@@ -44,6 +43,11 @@ export default class LobbyManager {
       throw new WsException('Could not find user');
     }
 
+    const invitedSockets = clients.get(invitedIntraId);
+    if (!invitedSockets) {
+      throw new WsException('Invited user is not online');
+    }
+
     const lobby = new Lobby(
       gamemode,
       true,
@@ -51,19 +55,23 @@ export default class LobbyManager {
       this.usersService,
       this.matchService,
     );
+
     this.lobbies.set(lobby.id, lobby);
     await lobby.addClient(client);
-    client.data.lobby = lobby;
+    this.intraIdToLobby.set(client.data.intra_id, lobby);
 
     lobby.inviterIntraId = client.data.intra_id;
     lobby.invitedIntraId = invitedIntraId;
 
-    const clientSockets = clients.get(invitedIntraId);
-
     const invitations = await this.getInvitations(invitedIntraId);
-
-    clientSockets.forEach((socket) => {
+    // TODO: This fails when the invited user is offline, since they won't have a socket active
+    invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
+    });
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    clients.get(lobby.inviterIntraId).forEach((socket) => {
+      socket.emit('inQueue', { inQueue: true });
     });
   }
 
@@ -102,7 +110,7 @@ export default class LobbyManager {
   }
 
   public async removeClient(client: Socket) {
-    const lobby: Lobby | undefined = client.data.lobby;
+    const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
     if (lobby) {
       // If a client disconnect while queueing, lobby.clients.size is 1
@@ -125,6 +133,7 @@ export default class LobbyManager {
       }
 
       this.removeLobby(lobby);
+      this.intraIdToLobby.delete(client.data.intra_id);
     }
   }
 

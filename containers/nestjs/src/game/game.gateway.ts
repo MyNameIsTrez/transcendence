@@ -70,26 +70,22 @@ export class GameGateway {
     }
   }
 
-  private async emitInvitations(client: Socket) {
+  @SubscribeMessage('requestInvitations')
+  async requestInvitations(@ConnectedSocket() client: Socket) {
     const invitations = await this.lobbyManager.getInvitations(
       client.data.intra_id,
     );
     client.emit('updateInvitations', invitations);
   }
 
-  @SubscribeMessage('requestInvitations')
-  async requestInvitations(@ConnectedSocket() client: Socket) {
-    await this.emitInvitations(client);
-  }
-
   handleDisconnect(@ConnectedSocket() client: Socket) {
     // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
     console.log(`Client ${client.id} disconnected from game socket`);
     this.lobbyManager.removeClient(client);
-    this.removeClient(client);
+    this.disconnected(client);
   }
 
-  private removeClient(client: Socket) {
+  private disconnected(client: Socket) {
     const intra_id = client.data.intra_id;
     const clientSockets = this.clients.get(intra_id);
     const index = clientSockets.indexOf(client);
@@ -117,17 +113,17 @@ export class GameGateway {
   ) {
     // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
-
     client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
-    if (client.data.lobby.isPrivate) {
+    const lobby = this.lobbyManager.intraIdToLobby.get(client.data.intra_id);
+
+    if (lobby?.isPrivate) {
       console.log('private lobby');
       // TODO: Remove invited user's invite
     }
-
     this.lobbyManager.removeClient(client);
     client.emit('inQueue', { inQueue: false });
   }
@@ -146,7 +142,6 @@ export class GameGateway {
       gamemode,
       this.clients,
     );
-    client.emit('inQueue', { inQueue: true });
   }
 
   @SubscribeMessage('movePaddle')
@@ -155,15 +150,22 @@ export class GameGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean,
   ) {
-    client.data.lobby?.movePaddle(client.data.playerIndex, keydown, north);
+    const lobby = this.lobbyManager.intraIdToLobby.get(client.data.intra_id);
+    lobby?.movePaddle(client.data.playerIndex, keydown, north);
   }
 
-  // This assumes a ChatGateway connection is always present,
-  // so it might be worth it to make a new socket connection
-  // just for checking if the user is online
-  // TODO: Move this to the ChatGateway?
   @SubscribeMessage('heartbeat')
   heartbeat(client: Socket) {
     this.usersService.updateLastOnline(client.data.intra_id);
+  }
+
+  @SubscribeMessage('acceptInvitation')
+  acceptInvitation(@ConnectedSocket() client: Socket) {
+    console.log('In acceptInvitation');
+  }
+
+  @SubscribeMessage('declineInvitation')
+  declineInvitation(@ConnectedSocket() client: Socket) {
+    console.log('In declineInvitation');
   }
 }
