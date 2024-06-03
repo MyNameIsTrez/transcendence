@@ -24,7 +24,11 @@
 </template>
 
 <script setup lang="ts">
-import { post, getImage } from '../../../httpRequests'
+import { getImage } from '../../../httpRequests'
+import { Socket } from 'socket.io-client'
+import { inject } from 'vue'
+
+const gameSocket: Socket = inject('gameSocket')!
 
 const props = defineProps({
   name: String,
@@ -35,12 +39,12 @@ const props = defineProps({
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 
 async function acceptGameInvite() {
-  // TODO: Hier een daadwerkelijk werkende functie van maken
-  console.log('Accpeted game invite: ', props.intraId)
+  console.log('Accepting game invite from intra id', props.intraId)
+  gameSocket.emit('acceptInvitation', { inviterIntraId: props.intraId })
 }
 
 async function declineGameInvite() {
-  // TODO: Hier een daadwerkelijk werkende functie van maken
-  console.log('Declined game invite: ', props.intraId)
+  console.log('Declining game invite from intra id', props.intraId)
+  gameSocket.emit('declineInvitation', { inviterIntraId: props.intraId })
 }
 </script>

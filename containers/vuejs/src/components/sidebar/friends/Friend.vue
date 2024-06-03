@@ -15,7 +15,9 @@
           tabindex="0"
           class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
         >
-          <li><router-link :to="`user/${intraId}`">View profile</router-link></li>
+          <li>
+            <router-link :to="{ path: `user/${intraId}` }">View profile</router-link>
+          </li>
           <li><a>Invite to game</a></li>
           <li><a>Open chat</a></li>
           <li><a @click="removeFriend">Remove friend</a></li>

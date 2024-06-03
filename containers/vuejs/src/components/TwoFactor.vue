@@ -12,22 +12,11 @@
       />
       <button class="btn" @click="sendAuthCode">Send</button>
     </span>
-    <div role="alert" :class="`alert alert-warning ${alertVisibility}`">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="stroke-current shrink-0 h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-        />
-      </svg>
-      <span>Code is invalid</span>
-    </div>
+    <AlertPopup
+      :alertType="AlertType.ALERT_WARNING"
+      :visible="alertVisible"
+      alertMessage="Code is invalid"
+    />
   </div>
 </template>
 
@@ -35,6 +24,8 @@
 import { ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { useRouter } from 'vue-router'
+import AlertPopup from './AlertPopup.vue'
+import { AlertType } from '../types'
 
 const router = useRouter()
 
@@ -48,7 +39,7 @@ if (jwt) {
 
 const isTwoFactorAuthenticationEnabled = await get(`2fa/isEnabled`)
 
-const alertVisibility = ref('invisible')
+const alertVisible = ref(false)
 
 const qr = ref('')
 if (!isTwoFactorAuthenticationEnabled) {
@@ -73,20 +64,18 @@ async function turn2faOff() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      console.error('failed') // TODO: popup alert maken voor failed
-      alertVisibility.value = 'visible'
+      alertVisible.value = true
       setTimeout(() => {
-        alertVisibility.value = 'invisible'
+        alertVisible.value = false
       }, 3500)
     })
 }
 
 async function turn2faOn() {
   await post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value }).catch(() => {
-    console.error('failed') // TODO: popup alert maken voor failed
-    alertVisibility.value = 'visible'
+    alertVisible.value = true
     setTimeout(() => {
-      alertVisibility.value = 'invisible'
+      alertVisible.value = false
     }, 3500)
   })
 }
@@ -98,10 +87,9 @@ async function authenticateWith2fa() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      console.error('failed') // TODO: popup alert maken voor failed
-      alertVisibility.value = 'visible'
+      alertVisible.value = true
       setTimeout(() => {
-        alertVisibility.value = 'invisible'
+        alertVisible.value = false
       }, 3500)
     })
 }

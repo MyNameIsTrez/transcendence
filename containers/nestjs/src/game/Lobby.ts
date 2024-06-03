@@ -16,6 +16,9 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
+  public inviterIntraId = -1;
+  public invitedIntraId = -1;
+
   private leftPlayerIntraId: number;
   private rightPlayerIntraId: number;
 
@@ -31,6 +34,7 @@ export default class Lobby {
 
   constructor(
     readonly gamemode: Gamemode,
+    readonly isPrivate: boolean,
     private readonly server: Server,
     private readonly usersService: UsersService,
     private readonly matchService: MatchService,
@@ -53,7 +57,7 @@ export default class Lobby {
 
     this.clients.set(client.data.intra_id, client);
 
-    client.join(this.id);
+    await client.join(this.id);
 
     if (this.isFull()) {
       this.gameHasStarted = true;
@@ -64,7 +68,6 @@ export default class Lobby {
   public removeClient(client: Socket) {
     this.clients.delete(client.data.intra_id);
     client.leave(this.id);
-    client.data.lobby = undefined;
   }
 
   public hasUser(user: any) {

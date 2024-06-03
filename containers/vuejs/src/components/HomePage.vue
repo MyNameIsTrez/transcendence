@@ -20,7 +20,7 @@ import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
 
 import { useRouter } from 'vue-router'
-import { onUnmounted } from 'vue'
+import { onUnmounted, provide } from 'vue'
 import { io } from 'socket.io-client'
 
 const router = useRouter()
@@ -52,6 +52,8 @@ const opts = {
 
 const gameSocket = getSocket('/game', opts)
 const chatSocket = getSocket('/chat', opts)
+
+provide('gameSocket', gameSocket)
 
 gameSocket.on('exception', (error) => {
   console.error('In gameSocket exception handler', error)

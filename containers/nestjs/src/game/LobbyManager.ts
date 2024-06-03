@@ -7,6 +7,7 @@ import { Gamemode } from '../users/match.entity';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
+  public readonly intraIdToLobby = new Map<number, Lobby>();
 
   private readonly updateIntervalMs = 1000 / 60;
 
@@ -19,16 +20,59 @@ export default class LobbyManager {
   public async queue(client: Socket, gamemode: Gamemode) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException({
-        message: 'Already in a lobby',
-        alreadyInALobby: true,
-      });
+      throw new WsException('Already in a lobby');
     }
 
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
+    this.intraIdToLobby.set(client.data.intra_id, lobby);
+  }
+
+  public async createPrivateLobby(
+    client: Socket,
+    invitedIntraId: number,
+    gamemode: Gamemode,
+    clients: Map<number, Socket[]>,
+  ) {
+    if (this.isUserAlreadyInLobby(client.data)) {
+      console.error(`User ${client.data.intra_id} is already in a lobby`);
+      throw new WsException('Already in a lobby');
+    }
+
+    if (!(await this.usersService.hasUser(invitedIntraId))) {
+      throw new WsException('Could not find user');
+    }
+
+    const invitedSockets = clients.get(invitedIntraId);
+    if (!invitedSockets) {
+      throw new WsException('Invited user is not online');
+    }
+
+    const lobby = new Lobby(
+      gamemode,
+      true,
+      this.server,
+      this.usersService,
+      this.matchService,
+    );
+
     this.lobbies.set(lobby.id, lobby);
-    client.data.lobby = lobby;
+    await lobby.addClient(client);
+    this.intraIdToLobby.set(client.data.intra_id, lobby);
+
+    lobby.inviterIntraId = client.data.intra_id;
+    lobby.invitedIntraId = invitedIntraId;
+
+    const invitations = await this.getInvitations(invitedIntraId);
+    // TODO: This fails when the invited user is offline, since they won't have a socket active
+    invitedSockets.forEach((socket) => {
+      socket.emit('updateInvitations', invitations);
+    });
+
+    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
+    clients.get(lobby.inviterIntraId).forEach((socket) => {
+      socket.emit('inQueue', { inQueue: true });
+    });
   }
 
   private isUserAlreadyInLobby(user: any): boolean {
@@ -45,7 +89,8 @@ export default class LobbyManager {
   private getLobby(gamemode: Gamemode): Lobby {
     // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
-      (lobby) => lobby.pong.gamemode === gamemode && !lobby.isFull(),
+      (lobby) =>
+        lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
     );
     if (notFullLobby) {
       console.log("Found a lobby that wasn't full");
@@ -54,6 +99,7 @@ export default class LobbyManager {
 
     const newLobby = new Lobby(
       gamemode,
+      false,
       this.server,
       this.usersService,
       this.matchService,
@@ -64,7 +110,7 @@ export default class LobbyManager {
   }
 
   public async removeClient(client: Socket) {
-    const lobby: Lobby | undefined = client.data.lobby;
+    const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
     if (lobby) {
       // If a client disconnect while queueing, lobby.clients.size is 1
@@ -87,6 +133,7 @@ export default class LobbyManager {
       }
 
       this.removeLobby(lobby);
+      this.intraIdToLobby.delete(client.data.intra_id);
     }
   }
 
@@ -104,5 +151,23 @@ export default class LobbyManager {
   private removeLobby(lobby: Lobby) {
     lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
+  }
+
+  public async getInvitations(intra_id: number) {
+    const lobbiesArray = await Array.from(this.lobbies.values());
+
+    return await Promise.all(
+      lobbiesArray.flatMap(async (lobby) =>
+        lobby.isPrivate && lobby.invitedIntraId === intra_id
+          ? {
+              inviterIntraId: lobby.inviterIntraId,
+              inviterName: await this.usersService.getUsername(
+                lobby.inviterIntraId,
+              ),
+              gamemode: lobby.gamemode,
+            }
+          : [],
+      ),
+    );
   }
 }
