@@ -33,22 +33,11 @@
                   <button class="btn" @click="addFriend">Add</button>
                 </span>
               </div>
-              <div role="alert" :class="`alert ${alertColor} ${alertVisibility}`">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="stroke-current shrink-0 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    :d="`${isError ? 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}`"
-                  />
-                </svg>
-                <span>{{ alertMessage }}</span>
-              </div>
+              <AlertPopup
+                :alertType="alertType"
+                :visible="alertVisible"
+                :alertMessage="alertMessage"
+              />
             </span>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>
@@ -103,6 +92,8 @@ import GameInvite from './friends/GameInvite.vue'
 import { get, post } from '../../httpRequests'
 import { inject, ref } from 'vue'
 import { Socket } from 'socket.io-client'
+import AlertPopup from '../AlertPopup.vue'
+import { AlertType } from '../../types'
 
 const gameSocket: Socket = inject('gameSocket')!
 
@@ -113,9 +104,9 @@ const incomingRequests = await get('api/user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
-const alertVisibility = ref('invisible')
+const alertVisible = ref(false)
 
-const alertColor = ref('alert-success')
+const alertType = ref(AlertType.ALERT_SUCCESS)
 
 const alertMessage = ref('Friend request sent')
 
@@ -142,22 +133,22 @@ function reloadFriends() {
 async function addFriend() {
   await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
     .then(() => {
-      alertColor.value = 'alert-success'
+      alertType.value = AlertType.ALERT_SUCCESS
       alertMessage.value = 'Friend request sent'
-      alertVisibility.value = 'visible'
+      alertVisible.value = true
       isError.value = false
       setTimeout(() => {
-        alertVisibility.value = 'invisible'
+        alertVisible.value = false
       }, 3500)
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
-      alertColor.value = 'alert-warning'
+      alertType.value = AlertType.ALERT_WARNING
       alertMessage.value = err.response.data.message
-      alertVisibility.value = 'visible'
+      alertVisible.value = true
       isError.value = true
       setTimeout(() => {
-        alertVisibility.value = 'invisible'
+        alertVisible.value = false
       }, 3500)
     })
 }
