@@ -6,22 +6,11 @@
       </div>
     </figure>
     <div class="card-body w-64 h-28 grid justify-items-stretch">
-      <h2 class="text justify-self-start font-bold text-sm w-56">{{ name }}</h2>
-      <div class="dropdown justify-self-end dropdown-bottom dropdown-end">
-        <div tabindex="0" role="button" class="m-1 btn btn-primary w-8 h-8 min-h-0">
-          <span class="material-symbols-outlined" style="font-size: 20px">settings</span>
-        </div>
-        <ul
-          tabindex="0"
-          class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
-        >
-          <li>
-            <router-link :to="{ path: `user/${intraId}` }">View profile</router-link>
-          </li>
-          <li><a>Invite to game</a></li>
-          <li><a>Open chat</a></li>
-          <li><a @click="removeFriend">Remove friend</a></li>
-        </ul>
+      <h2 class="text justify-self-start font-bold text-sm w-56">
+        <router-link :to="{ path: `user/${intraId}` }">{{ name }}</router-link>
+      </h2>
+      <div class="btn m-1 btn-error w-8 h-8 min-h-0 justify-self-end" @click="removeFriend">
+        <span class="material-symbols-outlined" style="font-size: 20px">taunt</span>
       </div>
     </div>
   </div>
@@ -43,29 +32,3 @@ async function removeFriend() {
   post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
 }
 </script>
-
-<!-- TODO: Remove? -->
-<!--
-	<div class="card-body h-28">
-      <div style="clear: both">
-        <h2 style="float: left; padding-top: 10px" class="text font-bold text-sm w-36">
-          {{ name }}
-        </h2>
-
-        <div style="float: right" class="dropdown dropdown-bottom dropdown-end">
-			<div tabindex="0" role="button" class="m-1 btn btn-primary w-8 h-8 min-h-0">
-			  <span class="material-symbols-outlined" style="font-size: 20px">settings</span>
-			</div>
-			<ul
-			  tabindex="0"
-			  class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-max"
-			>
-			  <li><router-link to="UserProfile">View profile</router-link></li>
-			  <li><a>Invite to game</a></li>
-			  <li><a>Open chat</a></li>
-			  <li><a @click="removeFriend">Remove friend</a></li>
-			</ul>
-		  </div>
-		</div>
-	  </div>
--->
