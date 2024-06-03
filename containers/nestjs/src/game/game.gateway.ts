@@ -117,14 +117,7 @@ export class GameGateway {
 
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
-    const lobby = this.lobbyManager.intraIdToLobby.get(client.data.intra_id);
-
-    if (lobby?.isPrivate) {
-      console.log('private lobby');
-      // TODO: Remove invited user's invite
-    }
-    this.lobbyManager.removeClient(client);
-    client.emit('inQueue', { inQueue: false });
+    await this.lobbyManager.leaveQueue(client, this.clients);
   }
 
   @SubscribeMessage('createPrivateLobby')

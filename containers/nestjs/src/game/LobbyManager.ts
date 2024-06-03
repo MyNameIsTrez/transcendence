@@ -30,6 +30,30 @@ export default class LobbyManager {
     this.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
+  public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
+    const lobby = this.intraIdToLobby.get(client.data.intra_id);
+
+    if (!lobby) {
+      throw new WsException("Can't leave queue when not in a lobby");
+    }
+
+    this.removeClient(client);
+    client.emit('inQueue', { inQueue: false });
+
+    // Remove the invited user's invite
+    if (lobby.isPrivate) {
+      const invitedSockets = clients.get(lobby.invitedIntraId);
+      if (!invitedSockets) {
+        throw new WsException('Invited user is not online');
+      }
+
+      const invitations = await this.getInvitations(lobby.invitedIntraId);
+      invitedSockets.forEach((socket) => {
+        socket.emit('updateInvitations', invitations);
+      });
+    }
+  }
+
   public async createPrivateLobby(
     client: Socket,
     invitedIntraId: number,
@@ -68,7 +92,6 @@ export default class LobbyManager {
     this.intraIdToLobby.set(client.data.intra_id, lobby);
 
     const invitations = await this.getInvitations(invitedIntraId);
-    // TODO: This fails when the invited user is offline, since they won't have a socket active
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
     });
