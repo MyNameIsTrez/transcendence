@@ -66,7 +66,7 @@ export class AuthController {
 
   @Post('2fa/turn-on')
   async turnOn(@Request() req, @Body() body) {
-    this.authService.turnOn(
+    await this.authService.turnOn(
       req.user.intra_id,
       req.user.twoFactorAuthenticationSecret,
       body.twoFactorAuthenticationCode,

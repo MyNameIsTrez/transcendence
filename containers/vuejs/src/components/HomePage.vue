@@ -1,14 +1,12 @@
 <template>
   <div class="flex flex-col overflow-hidden w-full lg:flex-row">
-    <div
-      class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"
-    >
+    <div class="flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box">
       <Sidebar />
     </div>
     <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
       <PongCanvas :game-socket="gameSocket" />
     </div>
-    <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
+    <div class="flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
       <Chat :chat-socket="chatSocket" />
     </div>
   </div>
