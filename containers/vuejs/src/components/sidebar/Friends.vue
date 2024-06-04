@@ -28,9 +28,9 @@
                     v-model="friendSearch"
                     placeholder="Type here"
                     class="input input-bordered w-full max-w-xs"
-                    @keyup.enter="addFriend"
+                    @keyup.enter="sendFriendRequest"
                   />
-                  <button class="btn" @click="addFriend">Add</button>
+                  <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
               <AlertPopup
@@ -128,7 +128,7 @@ function reloadFriends() {
   location.reload()
 }
 
-async function addFriend() {
+async function sendFriendRequest() {
   await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
     .then(() => {
       alertType.value = AlertType.ALERT_SUCCESS
