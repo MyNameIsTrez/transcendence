@@ -1,7 +1,6 @@
 import { ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
