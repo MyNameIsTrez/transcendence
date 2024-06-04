@@ -72,7 +72,6 @@ export class ChatService {
   }
 
   async addAdmin(chat_id: string, username: string) {
-    const user = await this.userService.findOneByUsername(username);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {

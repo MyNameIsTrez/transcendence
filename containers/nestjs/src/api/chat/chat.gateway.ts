@@ -8,10 +8,10 @@ import {
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
-import { ChatService } from './chat.service';
+import { ChatService } from '../../chat/chat.service';
 import { JwtService } from '@nestjs/jwt';
 import { IsNotEmpty } from 'class-validator';
-import { BadRequestTransformFilter } from '../bad-request-transform.filter';
+import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 
 class HandleMessageDto {
   @IsNotEmpty()
