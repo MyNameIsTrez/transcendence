@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { CreationModule } from './creation/creation.module';
 import { GameModule } from './game/game.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -44,7 +44,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ChatModule,
     CreationModule,
     GameModule,
-    UsersModule,
+    UserModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

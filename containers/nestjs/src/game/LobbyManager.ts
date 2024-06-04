@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
 import { WsException } from '@nestjs/websockets';
-import { UsersService } from '../users/users.service';
-import { MatchService } from '../users/match.service';
-import { Gamemode } from '../users/match.entity';
+import { UserService } from '../user/user.service';
+import { MatchService } from '../user/match.service';
+import { Gamemode } from '../user/match.entity';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -13,7 +13,7 @@ export default class LobbyManager {
 
   constructor(
     private readonly server: Server,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {}
 
@@ -65,7 +65,7 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
-    if (!(await this.usersService.hasUser(invitedIntraId))) {
+    if (!(await this.userService.hasUser(invitedIntraId))) {
       throw new WsException('Could not find user');
     }
 
@@ -78,7 +78,7 @@ export default class LobbyManager {
       gamemode,
       true,
       this.server,
-      this.usersService,
+      this.userService,
       this.matchService,
     );
 
@@ -123,7 +123,7 @@ export default class LobbyManager {
       gamemode,
       false,
       this.server,
-      this.usersService,
+      this.userService,
       this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
@@ -139,8 +139,8 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch(await this.usersService.findOne(client.data.intra_id));
-        this.usersService.addLoss(client.data.intra_id);
+        lobby.saveMatch(await this.userService.findOne(client.data.intra_id));
+        this.userService.addLoss(client.data.intra_id);
       }
 
       lobby.removeClient(client);
@@ -150,7 +150,7 @@ export default class LobbyManager {
 
       if (client_count >= 2) {
         lobby.clients.forEach((otherClient) => {
-          this.usersService.addWin(otherClient.data.intra_id);
+          this.userService.addWin(otherClient.data.intra_id);
         });
       }
 
@@ -186,7 +186,7 @@ export default class LobbyManager {
         lobby.isPrivate && lobby.invitedIntraId === intra_id
           ? {
               inviterIntraId: lobby.inviterIntraId,
-              inviterName: await this.usersService.getUsername(
+              inviterName: await this.userService.getUsername(
                 lobby.inviterIntraId,
               ),
               gamemode: lobby.gamemode,
@@ -203,7 +203,7 @@ export default class LobbyManager {
   ) {
     console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
 
-    if (!(await this.usersService.hasUser(acceptedIntraId))) {
+    if (!(await this.userService.hasUser(acceptedIntraId))) {
       throw new WsException('Could not find user');
     }
 
@@ -232,7 +232,7 @@ export default class LobbyManager {
   ) {
     console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
 
-    if (!(await this.usersService.hasUser(declinedIntraId))) {
+    if (!(await this.userService.hasUser(declinedIntraId))) {
       throw new WsException('Could not find user');
     }
 

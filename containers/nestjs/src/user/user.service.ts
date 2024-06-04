@@ -8,12 +8,10 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
-import { privateDecrypt } from 'crypto';
-// import { Achievements } from './achievements';
 import { AchievementsService } from './achievements.service';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,

@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
 import { Jwt2faStrategy } from './jwt-2fa.strategy';
-import { UsersModule } from '../users/users.module';
+import { UserModule } from '../user/user.module';
 import TransJwtService from './trans-jwt-service';
 import { CreationModule } from '../creation/creation.module';
 
@@ -16,7 +16,7 @@ import { CreationModule } from '../creation/creation.module';
   imports: [
     ConfigModule,
     HttpModule,
-    UsersModule,
+    UserModule,
     CreationModule,
     JwtModule.register({
       global: true,

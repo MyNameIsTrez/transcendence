@@ -7,12 +7,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import LobbyManager from './LobbyManager';
 import { BadRequestTransformFilter } from '../bad-request-transform.filter';
 import TransJwtService from '../auth/trans-jwt-service';
-import { MatchService } from '../users/match.service';
-import { Gamemode } from '../users/match.entity';
+import { MatchService } from '../user/match.service';
+import { Gamemode } from '../user/match.entity';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -22,7 +22,7 @@ import { Gamemode } from '../users/match.entity';
 export class GameGateway {
   constructor(
     private transJwtService: TransJwtService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {}
 
@@ -99,7 +99,7 @@ export class GameGateway {
   afterInit() {
     this.lobbyManager = new LobbyManager(
       this.server,
-      this.usersService,
+      this.userService,
       this.matchService,
     );
     this.lobbyManager.updateLoop();
@@ -147,7 +147,7 @@ export class GameGateway {
 
   @SubscribeMessage('heartbeat')
   heartbeat(client: Socket) {
-    this.usersService.updateLastOnline(client.data.intra_id);
+    this.userService.updateLastOnline(client.data.intra_id);
   }
 
   @SubscribeMessage('acceptInvitation')

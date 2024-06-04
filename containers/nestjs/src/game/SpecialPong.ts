@@ -8,7 +8,7 @@ import {
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
 } from './APong';
-import { Gamemode } from '../users/match.entity';
+import { Gamemode } from '../user/match.entity';
 
 abstract class Item extends Rect {
   constructor(x: number, y: number, c: string) {

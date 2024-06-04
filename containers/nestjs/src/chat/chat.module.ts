@@ -6,12 +6,12 @@ import { Chat } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { ChatService } from './chat.service';
-import { UsersModule } from '../users/users.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
     ConfigModule,
-    UsersModule,
+    UserModule,
     TypeOrmModule.forFeature([Chat, Message, Mute]),
   ],
   providers: [ChatGateway, ChatService],
