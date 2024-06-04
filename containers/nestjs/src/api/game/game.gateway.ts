@@ -62,8 +62,6 @@ export class GameGateway {
         this.clients.set(intra_id, sockets);
       }
       sockets.push(client);
-
-      await this.gameService.updateInvitations(client);
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {

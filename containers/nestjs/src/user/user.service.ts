@@ -9,6 +9,7 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class UserService {
@@ -477,5 +478,10 @@ export class UserService {
       .then((user) => {
         return user?.matchHistory;
       });
+  }
+
+  public async updateIncomingFriendRequests(client: Socket) {
+    const requests = await this.getIncomingFriendRequests(client.data.intra_id);
+    client.emit('updateIncomingFriendRequests', requests);
   }
 }

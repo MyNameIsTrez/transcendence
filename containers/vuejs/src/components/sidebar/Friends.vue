@@ -77,7 +77,7 @@
     </template>
     <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming
-      v-for="request in incomingRequests"
+      v-for="request in incomingFriendRequests"
       :key="request.intraId"
       :name="request.name"
       :intraId="request.intraId"
@@ -96,9 +96,9 @@ import AlertPopup from '../AlertPopup.vue'
 import { AlertType } from '../../types'
 
 const gameSocket: Socket = inject('gameSocket')!
+const userSocket: Socket = inject('userSocket')!
 
 const friends = await get('api/user/friends')
-const incomingRequests = await get('api/user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
@@ -121,8 +121,25 @@ class Invitation {
     this.gamemode = gamemode
   }
 }
-
 const invitations = ref<Invitation[]>([])
+gameSocket.on('updateInvitations', (invites: Invitation[]) => {
+  invitations.value = invites
+})
+
+class IncomingFriendRequest {
+  intraId: number
+  name: string
+
+  constructor(intraId: number, name: string) {
+    this.intraId = intraId
+    this.name = name
+  }
+}
+const incomingFriendRequests = ref<IncomingFriendRequest[]>([])
+userSocket.on('updateIncomingFriendRequests', (requests: IncomingFriendRequest[]) => {
+  console.log('in updateIncomingFriendRequests')
+  incomingFriendRequests.value = requests
+})
 
 function reloadFriends() {
   location.reload()
@@ -150,8 +167,4 @@ async function sendFriendRequest() {
       }, 3500)
     })
 }
-
-gameSocket.on('updateInvitations', (invites: Invitation[]) => {
-  invitations.value = invites
-})
 </script>

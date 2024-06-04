@@ -128,11 +128,6 @@ export class UserController {
     return this.userService.getFriends(req.user.intra_id);
   }
 
-  @Get('incomingFriendRequests')
-  getIncomingFriendRequests(@Request() req) {
-    return this.userService.getIncomingFriendRequests(req.user.intra_id);
-  }
-
   @Post('sendFriendRequest')
   sendFriendRequest(@Request() req, @Body() body) {
     return this.userService.sendFriendRequest(
