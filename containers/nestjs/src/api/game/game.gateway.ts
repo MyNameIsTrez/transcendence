@@ -71,8 +71,8 @@ export class GameGateway {
     }
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.gameService.removeClient(client);
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+    await this.gameService.removeClient(client);
     this.disconnectSocket(client, client.data.intra_id);
   }
 

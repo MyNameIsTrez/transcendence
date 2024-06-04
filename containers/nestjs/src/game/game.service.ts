@@ -39,28 +39,36 @@ export class GameService {
     gamemode: Gamemode,
     clients: Map<number, Socket[]>,
   ) {
+    if (!(await this.userService.hasUser(invitedIntraId))) {
+      throw new WsException('Could not find user');
+    }
+
+    const invitedSockets = clients.get(invitedIntraId);
+    if (!invitedSockets) {
+      throw new WsException('Invited user is not online');
+    }
+
     // TODO: User can't invite person if person isn't online
     // TODO: Don't allow user to invite people while user is in queue
     await this.lobbyManager.createPrivateLobby(
       client,
       invitedIntraId,
       gamemode,
-      clients,
+      invitedSockets,
     );
   }
 
-  public async movePaddle(
+  public movePaddle(
     intra_id: number,
     playerIndex: number,
     keydown: boolean,
     north: boolean,
   ) {
-    const lobby = this.lobbyManager.intraIdToLobby.get(intra_id);
-    lobby?.movePaddle(playerIndex, keydown, north);
+    this.lobbyManager.movePaddle(intra_id, playerIndex, keydown, north);
   }
 
   public async removeClient(client: Socket) {
-    this.lobbyManager.removeClient(client);
+    await this.lobbyManager.removeClient(client);
   }
 
   public async requestInvitations(client: Socket) {

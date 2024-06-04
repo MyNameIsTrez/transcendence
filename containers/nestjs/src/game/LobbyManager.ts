@@ -40,38 +40,32 @@ export default class LobbyManager {
     this.removeClient(client);
     client.emit('inQueue', { inQueue: false });
 
-    // Remove the invited user's invite
     if (lobby.isPrivate) {
       const invitedSockets = clients.get(lobby.invitedIntraId);
       if (!invitedSockets) {
         throw new WsException('Invited user is not online');
       }
 
-      const invitations = await this.getInvitations(lobby.invitedIntraId);
-      invitedSockets.forEach((socket) => {
-        socket.emit('updateInvitations', invitations);
-      });
+      await this.removeInvite(invitedSockets, lobby.invitedIntraId);
     }
+  }
+
+  private async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+    const invitations = await this.getInvitations(invitedIntraId);
+    invitedSockets.forEach((socket) => {
+      socket.emit('updateInvitations', invitations);
+    });
   }
 
   public async createPrivateLobby(
     client: Socket,
     invitedIntraId: number,
     gamemode: Gamemode,
-    clients: Map<number, Socket[]>,
+    invitedSockets: Socket[],
   ) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
-    }
-
-    if (!(await this.userService.hasUser(invitedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const invitedSockets = clients.get(invitedIntraId);
-    if (!invitedSockets) {
-      throw new WsException('Invited user is not online');
     }
 
     const lobby = new Lobby(
@@ -123,6 +117,16 @@ export default class LobbyManager {
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
+  }
+
+  public movePaddle(
+    intra_id: number,
+    playerIndex: number,
+    keydown: boolean,
+    north: boolean,
+  ) {
+    const lobby = this.intraIdToLobby.get(intra_id);
+    lobby?.movePaddle(playerIndex, keydown, north);
   }
 
   public async removeClient(client: Socket) {
