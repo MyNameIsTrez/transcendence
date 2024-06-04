@@ -34,7 +34,7 @@ export class GameGateway {
   clients = new Map<number, Socket[]>();
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`Client ${client.id} connected to game socket`);
+    // console.log(`Client ${client.id} connected to game socket`);
 
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
@@ -79,8 +79,7 @@ export class GameGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
-    console.log(`Client ${client.id} disconnected from game socket`);
+    // console.log(`Client ${client.id} disconnected from game socket`);
     this.lobbyManager.removeClient(client);
     this.disconnected(client);
   }

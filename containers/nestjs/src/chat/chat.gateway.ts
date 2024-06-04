@@ -39,7 +39,7 @@ export class ChatGateway {
   ) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`Client ${client.id} connected to chat socket`);
+    // console.log(`Client ${client.id} connected to chat socket`);
 
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
@@ -69,7 +69,7 @@ export class ChatGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    console.log(`Client ${client.id} disconnected from chat socket`);
+    // console.log(`Client ${client.id} disconnected from chat socket`);
     this.connectedClients.delete(client);
   }
 

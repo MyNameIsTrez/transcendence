@@ -214,7 +214,6 @@ export default class LobbyManager {
 
     client.emit('inQueue', { inQueue: true });
 
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
     const invitations = await this.getInvitations(client.data.intra_id);
     clients.get(client.data.intra_id).forEach((socket) => {
       socket.emit('updateInvitations', invitations);
@@ -244,7 +243,6 @@ export default class LobbyManager {
 
     this.removeClient(declinedSockets[0]);
 
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
     clients.get(declinedIntraId).forEach((socket) => {
       socket.emit('inQueue', { inQueue: false });
     });
