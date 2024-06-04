@@ -44,10 +44,10 @@ let leftPlayerName = props.leftPlayerName
 let rightPlayerName = props.rightPlayerName
 let leftPlayerDisconnected = props.leftPlayerDisconnected
 let rightPlayerDisconnected = props.rightPlayerDisconnected
-let leftPlayerIntraId = props.leftPlayerIntraId
-let myIntraId = props.myIntraId
-let leftPlayerScore = props.leftPlayerScore
-let rightPlayerScore = props.rightPlayerScore
+const leftPlayerIntraId = props.leftPlayerIntraId
+const myIntraId = props.myIntraId
+let leftPlayerScore = props.leftPlayerScore!
+let rightPlayerScore = props.rightPlayerScore!
 const gamemode = props.gamemode
 
 // Make sure that we are always on the left side of the match history

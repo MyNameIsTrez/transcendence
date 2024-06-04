@@ -7,7 +7,8 @@
 import { defineProps } from 'vue'
 
 const emit = defineEmits(['clicked'])
-const props = defineProps({
+
+defineProps({
   buttonText: String
 })
 </script>

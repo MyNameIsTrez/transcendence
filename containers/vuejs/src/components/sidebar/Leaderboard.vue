@@ -1,7 +1,6 @@
 <template>
   <div class="overflow-x-auto">
     <table class="table">
-      <!-- head -->
       <thead>
         <tr>
           <th>Rank</th>
@@ -30,5 +29,3 @@ import { get } from '../../httpRequests'
 
 const users = await get('api/user/allUsers')
 </script>
-
-<style lang="scss" scoped></style>
