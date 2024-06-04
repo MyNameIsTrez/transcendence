@@ -7,12 +7,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserService } from '../user/user.service';
-import LobbyManager from './LobbyManager';
-import { BadRequestTransformFilter } from '../bad-request-transform.filter';
-import TransJwtService from '../auth/trans-jwt-service';
-import { MatchService } from '../user/match.service';
-import { Gamemode } from '../user/match.entity';
+import { UserService } from '../../user/user.service';
+import LobbyManager from '../../game/LobbyManager';
+import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
+import TransJwtService from '../../auth/trans-jwt-service';
+import { MatchService } from '../../user/match.service';
+import { Gamemode } from '../../user/match.entity';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
