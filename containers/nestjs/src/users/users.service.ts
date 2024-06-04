@@ -65,7 +65,7 @@ export class UsersService {
     };
   }
 
-  async getAllUsers() {
+  async getLeaderboard() {
     const users = await this.usersRepository.find();
 
     return users

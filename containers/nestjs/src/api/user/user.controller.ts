@@ -100,9 +100,9 @@ export class UserController {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
 
-  @Get('allUsers')
-  getAllUsers() {
-    return this.usersService.getAllUsers();
+  @Get('leaderboard')
+  getLeaderboard() {
+    return this.usersService.getLeaderboard();
   }
 
   @Get('block/:my_intra_id/:other_intra_id')

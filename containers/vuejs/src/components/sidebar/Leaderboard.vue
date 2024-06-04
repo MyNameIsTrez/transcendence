@@ -27,5 +27,5 @@
 import RankComponent from './leaderboard/RankComponent.vue'
 import { get } from '../../httpRequests'
 
-const users = await get('api/user/allUsers')
+const users = await get('api/user/leaderboard')
 </script>
