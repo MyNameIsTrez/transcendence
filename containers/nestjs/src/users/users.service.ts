@@ -68,17 +68,16 @@ export class UsersService {
   async getAllUsers() {
     const users = await this.usersRepository.find();
 
-    const returnUsers = users.map((user) => {
-      return {
-        name: user.username,
-        intraId: user.intra_id,
-        wins: user.wins,
-        losses: user.losses,
-      };
-    });
-    returnUsers.sort((a, b) => b.wins - a.wins);
-    console.log('returnUsers: ', returnUsers);
-    return returnUsers;
+    return users
+      .map((user) => {
+        return {
+          name: user.username,
+          intraId: user.intra_id,
+          wins: user.wins,
+          losses: user.losses,
+        };
+      })
+      .sort((a, b) => b.wins - a.wins);
   }
 
   async findOne(intra_id: number): Promise<User> {
