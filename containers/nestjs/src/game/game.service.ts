@@ -71,7 +71,7 @@ export class GameService {
     await this.lobbyManager.removeClient(client);
   }
 
-  public async requestInvitations(client: Socket) {
+  public async updateInvitations(client: Socket) {
     const invitations = await this.lobbyManager.getInvitations(
       client.data.intra_id,
     );

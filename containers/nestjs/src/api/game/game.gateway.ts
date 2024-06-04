@@ -36,7 +36,7 @@ export class GameGateway {
     this.gameService.init(this.server);
   }
 
-  handleConnection(@ConnectedSocket() client: Socket) {
+  async handleConnection(@ConnectedSocket() client: Socket) {
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
       console.error(
@@ -62,6 +62,8 @@ export class GameGateway {
         this.clients.set(intra_id, sockets);
       }
       sockets.push(client);
+
+      await this.gameService.updateInvitations(client);
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {
@@ -85,11 +87,6 @@ export class GameGateway {
     if (clientSockets.length === 0) {
       this.clients.delete(intra_id);
     }
-  }
-
-  @SubscribeMessage('requestInvitations')
-  async requestInvitations(@ConnectedSocket() client: Socket) {
-    await this.gameService.requestInvitations(client);
   }
 
   @SubscribeMessage('queue')

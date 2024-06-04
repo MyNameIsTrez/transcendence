@@ -154,6 +154,4 @@ async function sendFriendRequest() {
 gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
-
-gameSocket.emit('requestInvitations')
 </script>
