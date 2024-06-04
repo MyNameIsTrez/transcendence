@@ -103,13 +103,7 @@ export default class LobbyManager {
     );
   }
 
-  // Looping through all lobbies is theoretically inefficient,
-  // but we can't just use the old approach of using an array
-  // and checking if the last lobby only has 1 player.
-  // This is because join() could accidentally join the wrong lobby
-  // if it took a lobby_index instead of a lobby_id.
   private getLobby(gamemode: Gamemode): Lobby {
-    // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
       (lobby) =>
         lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
@@ -158,7 +152,7 @@ export default class LobbyManager {
     }
   }
 
-  public updateLoop() {
+  public startUpdateLoop() {
     setInterval(() => {
       this.lobbies.forEach((lobby) => {
         lobby.update();
@@ -194,62 +188,5 @@ export default class LobbyManager {
           : [],
       ),
     );
-  }
-
-  public async acceptInvitation(
-    client: Socket,
-    acceptedIntraId: number,
-    clients: Map<number, Socket[]>,
-  ) {
-    console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
-
-    if (!(await this.userService.hasUser(acceptedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const acceptedSockets = clients.get(acceptedIntraId);
-    if (!acceptedSockets || acceptedSockets.length < 1) {
-      throw new WsException('Accepted user is not online');
-    }
-
-    client.emit('inQueue', { inQueue: true });
-
-    const invitations = await this.getInvitations(client.data.intra_id);
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
-
-    const lobby = this.intraIdToLobby.get(acceptedIntraId);
-
-    await lobby.addClient(client);
-    this.intraIdToLobby.set(client.data.intra_id, lobby);
-  }
-
-  public async declineInvitation(
-    client: Socket,
-    declinedIntraId: number,
-    clients: Map<number, Socket[]>,
-  ) {
-    console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
-
-    if (!(await this.userService.hasUser(declinedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const declinedSockets = clients.get(declinedIntraId);
-    if (!declinedSockets || declinedSockets.length < 1) {
-      throw new WsException('Declined user is not online');
-    }
-
-    this.removeClient(declinedSockets[0]);
-
-    clients.get(declinedIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: false });
-    });
-
-    const invitations = await this.getInvitations(client.data.intra_id);
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
   }
 }
