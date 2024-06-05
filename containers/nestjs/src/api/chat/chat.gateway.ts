@@ -9,9 +9,9 @@ import {
 import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
-import { JwtService } from '@nestjs/jwt';
 import { IsNotEmpty } from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
+import TransJwtService from 'src/auth/trans-jwt-service';
 
 class HandleMessageDto {
   @IsNotEmpty()
@@ -35,7 +35,7 @@ export class ChatGateway {
 
   constructor(
     private readonly chatService: ChatService,
-    private readonly jwtService: JwtService,
+    private readonly transJwtService: TransJwtService,
   ) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
@@ -54,7 +54,7 @@ export class ChatGateway {
     const jwt = authorization.split(' ')[1];
 
     try {
-      const decoded = this.jwtService.verify(jwt);
+      const decoded = this.transJwtService.verify(jwt);
       client.data.intra_id = decoded.sub;
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
