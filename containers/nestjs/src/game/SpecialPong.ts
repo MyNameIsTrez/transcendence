@@ -109,14 +109,14 @@ class InvisibleBallItem extends Item {
 
   private static readonly _originalBallColor = 'white';
 
-  onPickup(itemOwnerId: number) {}
+  onPickup() {}
 
   activeLoopHook(game: APong) {
     game._ball._color = 'transparent';
     return true;
   }
 
-  onPaddleHit(game: APong) {
+  onPaddleHit() {
     return false;
   }
 

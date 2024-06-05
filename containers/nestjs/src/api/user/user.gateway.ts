@@ -9,7 +9,6 @@ import { Server, Socket } from 'socket.io';
 import { UserService } from '../../user/user.service';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 import TransJwtService from '../../auth/trans-jwt-service';
-import { GameService } from '../../game/game.service';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -18,8 +17,7 @@ import { GameService } from '../../game/game.service';
 @UsePipes(new ValidationPipe())
 export class UserGateway {
   constructor(
-    private readonly gameService: GameService,
-    private transJwtService: TransJwtService,
+    private readonly transJwtService: TransJwtService,
     private readonly userService: UserService,
   ) {}
 

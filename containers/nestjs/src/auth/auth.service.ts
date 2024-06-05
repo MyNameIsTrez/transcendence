@@ -17,8 +17,8 @@ import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
-    private transJwtService: TransJwtService,
-    private configService: ConfigService,
+    private readonly transJwtService: TransJwtService,
+    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly userService: UserService,
   ) {}

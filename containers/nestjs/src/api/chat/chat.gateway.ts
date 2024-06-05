@@ -35,7 +35,7 @@ export class ChatGateway {
 
   constructor(
     private readonly chatService: ChatService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
