@@ -22,9 +22,12 @@ gameSocket.on('gameOver', () => {
   drawCanvas()
 })
 
-setInterval(() => {
-  userSocket.emit('heartbeat')
-}, 1000)
+setInterval(
+  () => {
+    userSocket.emit('heartbeat')
+  },
+  import.meta.env.VITE_HEARTBEAT_RATE_MS
+)
 
 const emitMovePaddle = (code: string, keydown: boolean) => {
   let north: boolean | undefined

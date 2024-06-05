@@ -9,13 +9,14 @@ import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
-import { Socket } from 'socket.io';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
+    private readonly configService: ConfigService,
   ) {
     this.createFooUser();
   }
@@ -356,8 +357,9 @@ export class UserService {
             const lastOnlineMs = (
               await this.getLastOnline(friend.intra_id)
             ).getTime();
-            // TODO: Make 10000 a .env variable
-            const isOnline = nowMs - lastOnlineMs < 10000;
+            const isOnline =
+              nowMs - lastOnlineMs <
+              this.configService.get('OFFLINE_TIMEOUT_MS');
 
             return {
               name: friend.username,

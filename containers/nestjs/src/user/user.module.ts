@@ -7,9 +7,13 @@ import { Achievements } from './achievements.entity';
 import { AchievementsService } from './achievements.service';
 import { Match } from './match.entity';
 import { MatchService } from './match.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Chat, Achievements, Match, User])],
+  imports: [
+    TypeOrmModule.forFeature([Chat, Achievements, Match, User]),
+    ConfigModule,
+  ],
   providers: [UserService, AchievementsService, MatchService],
   exports: [UserService, MatchService],
 })
