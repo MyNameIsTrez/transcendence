@@ -7,9 +7,9 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { writeFile } from 'fs';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { authenticator } from 'otplib';
-import { User } from '../users/user.entity';
+import { User } from '../user/user.entity';
 import { toDataURL } from 'qrcode';
 import TransJwtService from './trans-jwt-service';
 import { Response } from 'express';
@@ -17,10 +17,10 @@ import { Response } from 'express';
 @Injectable()
 export class AuthService {
   constructor(
-    private transJwtService: TransJwtService,
-    private configService: ConfigService,
+    private readonly transJwtService: TransJwtService,
+    private readonly configService: ConfigService,
     private readonly httpService: HttpService,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
   ) {}
 
   async getAccessToken(code: string): Promise<string> {
@@ -76,7 +76,7 @@ export class AuthService {
       .then(async (j) => {
         const intra_id = j.id;
 
-        if (!(await this.usersService.hasUser(intra_id))) {
+        if (!(await this.userService.hasUser(intra_id))) {
           const url = j.image.versions.medium;
 
           const { data } = await firstValueFrom(
@@ -89,7 +89,7 @@ export class AuthService {
             if (err) throw err;
           });
 
-          await this.usersService.create(
+          await this.userService.create(
             intra_id,
             j.displayname,
             j.login,
@@ -99,7 +99,7 @@ export class AuthService {
 
         const jwt = this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
 
-        const user: User = await this.usersService.findOne(intra_id);
+        const user: User = await this.userService.findOne(intra_id);
 
         return {
           jwt,
@@ -115,7 +115,7 @@ export class AuthService {
   }
 
   async generate(intra_id: number, response: Response) {
-    const user: User = await this.usersService.findOne(intra_id);
+    const user: User = await this.userService.findOne(intra_id);
 
     if (user.isTwoFactorAuthenticationEnabled) {
       throw new UnauthorizedException(
@@ -145,7 +145,7 @@ export class AuthService {
       secret,
     );
 
-    await this.usersService.setTwoFactorAuthenticationSecret(secret, intra_id);
+    await this.userService.setTwoFactorAuthenticationSecret(secret, intra_id);
 
     return otpAuthUrl;
   }
@@ -165,7 +165,7 @@ export class AuthService {
     twoFactorAuthenticationSecret: string,
     twoFactorAuthenticationCode: string,
   ) {
-    const user: User = await this.usersService.findOne(intra_id);
+    const user: User = await this.userService.findOne(intra_id);
 
     if (user.isTwoFactorAuthenticationEnabled) {
       throw new UnauthorizedException(
@@ -180,7 +180,7 @@ export class AuthService {
     if (!isCodeValid) {
       throw new UnauthorizedException('Wrong authentication code');
     }
-    await this.usersService.turnOnTwoFactorAuthentication(intra_id);
+    await this.userService.turnOnTwoFactorAuthentication(intra_id);
   }
 
   async turnOff(
@@ -188,7 +188,7 @@ export class AuthService {
     twoFactorAuthenticationSecret: string,
     twoFactorAuthenticationCode: string,
   ) {
-    const user: User = await this.usersService.findOne(intra_id);
+    const user: User = await this.userService.findOne(intra_id);
 
     if (!user.isTwoFactorAuthenticationEnabled) {
       throw new UnauthorizedException(
@@ -204,13 +204,13 @@ export class AuthService {
       throw new UnauthorizedException('Wrong authentication code');
     }
 
-    await this.usersService.turnOffTwoFactorAuthentication(intra_id);
+    await this.userService.turnOffTwoFactorAuthentication(intra_id);
 
     return this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
   }
 
   async isEnabled(intra_id: number) {
-    const user: User = await this.usersService.findOne(intra_id);
+    const user: User = await this.userService.findOne(intra_id);
     return user.isTwoFactorAuthenticationEnabled;
   }
 

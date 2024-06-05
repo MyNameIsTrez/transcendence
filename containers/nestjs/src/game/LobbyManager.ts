@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import Lobby from './Lobby';
 import { WsException } from '@nestjs/websockets';
-import { UsersService } from '../users/users.service';
-import { MatchService } from '../users/match.service';
-import { Gamemode } from '../users/match.entity';
+import { UserService } from '../user/user.service';
+import { MatchService } from '../user/match.service';
+import { Gamemode } from '../user/match.entity';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -13,7 +13,7 @@ export default class LobbyManager {
 
   constructor(
     private readonly server: Server,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {}
 
@@ -40,45 +40,39 @@ export default class LobbyManager {
     this.removeClient(client);
     client.emit('inQueue', { inQueue: false });
 
-    // Remove the invited user's invite
     if (lobby.isPrivate) {
       const invitedSockets = clients.get(lobby.invitedIntraId);
       if (!invitedSockets) {
         throw new WsException('Invited user is not online');
       }
 
-      const invitations = await this.getInvitations(lobby.invitedIntraId);
-      invitedSockets.forEach((socket) => {
-        socket.emit('updateInvitations', invitations);
-      });
+      await this.removeInvite(invitedSockets, lobby.invitedIntraId);
     }
+  }
+
+  private async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+    const invitations = await this.getInvitations(invitedIntraId);
+    invitedSockets.forEach((socket) => {
+      socket.emit('updateInvitations', invitations);
+    });
   }
 
   public async createPrivateLobby(
     client: Socket,
     invitedIntraId: number,
     gamemode: Gamemode,
-    clients: Map<number, Socket[]>,
+    invitedSockets: Socket[],
   ) {
     if (this.isUserAlreadyInLobby(client.data)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }
 
-    if (!(await this.usersService.hasUser(invitedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const invitedSockets = clients.get(invitedIntraId);
-    if (!invitedSockets) {
-      throw new WsException('Invited user is not online');
-    }
-
     const lobby = new Lobby(
       gamemode,
       true,
       this.server,
-      this.usersService,
+      this.userService,
       this.matchService,
     );
 
@@ -103,13 +97,7 @@ export default class LobbyManager {
     );
   }
 
-  // Looping through all lobbies is theoretically inefficient,
-  // but we can't just use the old approach of using an array
-  // and checking if the last lobby only has 1 player.
-  // This is because join() could accidentally join the wrong lobby
-  // if it took a lobby_index instead of a lobby_id.
   private getLobby(gamemode: Gamemode): Lobby {
-    // TODO: Update this to look for the correct gamemode lobby
     const notFullLobby = Array.from(this.lobbies.values()).find(
       (lobby) =>
         lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
@@ -123,12 +111,22 @@ export default class LobbyManager {
       gamemode,
       false,
       this.server,
-      this.usersService,
+      this.userService,
       this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
     console.log('Created a new lobby');
     return newLobby;
+  }
+
+  public movePaddle(
+    intra_id: number,
+    playerIndex: number,
+    keydown: boolean,
+    north: boolean,
+  ) {
+    const lobby = this.intraIdToLobby.get(intra_id);
+    lobby?.movePaddle(playerIndex, keydown, north);
   }
 
   public async removeClient(client: Socket) {
@@ -139,8 +137,8 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch(await this.usersService.findOne(client.data.intra_id));
-        this.usersService.addLoss(client.data.intra_id);
+        lobby.saveMatch(await this.userService.findOne(client.data.intra_id));
+        this.userService.addLoss(client.data.intra_id);
       }
 
       lobby.removeClient(client);
@@ -150,7 +148,7 @@ export default class LobbyManager {
 
       if (client_count >= 2) {
         lobby.clients.forEach((otherClient) => {
-          this.usersService.addWin(otherClient.data.intra_id);
+          this.userService.addWin(otherClient.data.intra_id);
         });
       }
 
@@ -158,7 +156,7 @@ export default class LobbyManager {
     }
   }
 
-  public updateLoop() {
+  public startUpdateLoop() {
     setInterval(() => {
       this.lobbies.forEach((lobby) => {
         lobby.update();
@@ -186,7 +184,7 @@ export default class LobbyManager {
         lobby.isPrivate && lobby.invitedIntraId === intra_id
           ? {
               inviterIntraId: lobby.inviterIntraId,
-              inviterName: await this.usersService.getUsername(
+              inviterName: await this.userService.getUsername(
                 lobby.inviterIntraId,
               ),
               gamemode: lobby.gamemode,
@@ -194,64 +192,5 @@ export default class LobbyManager {
           : [],
       ),
     );
-  }
-
-  public async acceptInvitation(
-    client: Socket,
-    acceptedIntraId: number,
-    clients: Map<number, Socket[]>,
-  ) {
-    console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
-
-    if (!(await this.usersService.hasUser(acceptedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const acceptedSockets = clients.get(acceptedIntraId);
-    if (!acceptedSockets || acceptedSockets.length < 1) {
-      throw new WsException('Accepted user is not online');
-    }
-
-    client.emit('inQueue', { inQueue: true });
-
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
-    const invitations = await this.getInvitations(client.data.intra_id);
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
-
-    const lobby = this.intraIdToLobby.get(acceptedIntraId);
-
-    await lobby.addClient(client);
-    this.intraIdToLobby.set(client.data.intra_id, lobby);
-  }
-
-  public async declineInvitation(
-    client: Socket,
-    declinedIntraId: number,
-    clients: Map<number, Socket[]>,
-  ) {
-    console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
-
-    if (!(await this.usersService.hasUser(declinedIntraId))) {
-      throw new WsException('Could not find user');
-    }
-
-    const declinedSockets = clients.get(declinedIntraId);
-    if (!declinedSockets || declinedSockets.length < 1) {
-      throw new WsException('Declined user is not online');
-    }
-
-    this.removeClient(declinedSockets[0]);
-
-    // TODO: Why does this only update every browser tab of the user when the server was just restarted?
-    clients.get(declinedIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: false });
-    });
-
-    const invitations = await this.getInvitations(client.data.intra_id);
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
   }
 }

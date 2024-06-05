@@ -1,5 +1,5 @@
 import { APong, Sides } from './APong';
-import { Gamemode } from '../users/match.entity';
+import { Gamemode } from '../user/match.entity';
 
 export default class NormalPong extends APong {
   constructor(winScore: number) {

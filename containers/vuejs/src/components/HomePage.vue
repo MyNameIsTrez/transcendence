@@ -52,8 +52,10 @@ const opts = {
 
 const gameSocket = getSocket('/game', opts)
 const chatSocket = getSocket('/chat', opts)
+const userSocket = getSocket('/user', opts)
 
 provide('gameSocket', gameSocket)
+provide('userSocket', userSocket)
 
 gameSocket.on('exception', (error) => {
   console.error('In gameSocket exception handler', error)
@@ -71,8 +73,17 @@ chatSocket.on('exception', (error) => {
   }
 })
 
+userSocket.on('exception', (error) => {
+  console.error('In userSocket exception handler', error)
+  if (error.redirectToLoginPage) {
+    console.error('Redirecting to /login')
+    router.replace({ path: '/login' })
+  }
+})
+
 onUnmounted(() => {
   gameSocket.disconnect()
   chatSocket.disconnect()
+  userSocket.disconnect()
 })
 </script>

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
-import { User } from 'src/users/user.entity';
+import { User } from 'src/user/user.entity';
 
 export enum Visibility {
   PUBLIC = 'PUBLIC',

@@ -28,9 +28,9 @@
                     v-model="friendSearch"
                     placeholder="Type here"
                     class="input input-bordered w-full max-w-xs"
-                    @keyup.enter="addFriend"
+                    @keyup.enter="sendFriendRequest"
                   />
-                  <button class="btn" @click="addFriend">Add</button>
+                  <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
               <AlertPopup
@@ -77,7 +77,7 @@
     </template>
     <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming
-      v-for="request in incomingRequests"
+      v-for="request in incomingFriendRequests"
       :key="request.intraId"
       :name="request.name"
       :intraId="request.intraId"
@@ -96,9 +96,10 @@ import AlertPopup from '../AlertPopup.vue'
 import { AlertType } from '../../types'
 
 const gameSocket: Socket = inject('gameSocket')!
+const userSocket: Socket = inject('userSocket')!
 
-const friends = await get('api/user/friends')
-const incomingRequests = await get('api/user/incomingFriendRequests')
+const friends = ref(await get('api/user/friends'))
+const incomingFriendRequests = await get('api/user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
@@ -121,14 +122,16 @@ class Invitation {
     this.gamemode = gamemode
   }
 }
-
 const invitations = ref<Invitation[]>([])
+gameSocket.on('updateInvitations', (invites: Invitation[]) => {
+  invitations.value = invites
+})
 
-function reloadFriends() {
-  location.reload()
+async function reloadFriends() {
+  friends.value = await get('api/user/friends')
 }
 
-async function addFriend() {
+async function sendFriendRequest() {
   await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
     .then(() => {
       alertType.value = AlertType.ALERT_SUCCESS
@@ -150,10 +153,4 @@ async function addFriend() {
       }, 3500)
     })
 }
-
-gameSocket.on('updateInvitations', (invites: Invitation[]) => {
-  invitations.value = invites
-})
-
-gameSocket.emit('requestInvitations')
 </script>

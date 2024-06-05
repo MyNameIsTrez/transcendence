@@ -7,12 +7,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UsersService } from '../users/users.service';
-import LobbyManager from './LobbyManager';
-import { BadRequestTransformFilter } from '../bad-request-transform.filter';
-import TransJwtService from '../auth/trans-jwt-service';
-import { MatchService } from '../users/match.service';
-import { Gamemode } from '../users/match.entity';
+import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
+import TransJwtService from '../../auth/trans-jwt-service';
+import { Gamemode } from '../../user/match.entity';
+import { GameService } from '../../game/game.service';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -21,21 +19,20 @@ import { Gamemode } from '../users/match.entity';
 @UsePipes(new ValidationPipe())
 export class GameGateway {
   constructor(
-    private transJwtService: TransJwtService,
-    private readonly usersService: UsersService,
-    private readonly matchService: MatchService,
+    private readonly gameService: GameService,
+    private readonly transJwtService: TransJwtService,
   ) {}
 
   @WebSocketServer()
   server: Server;
 
-  lobbyManager: LobbyManager;
-
   clients = new Map<number, Socket[]>();
 
-  handleConnection(@ConnectedSocket() client: Socket) {
-    console.log(`Client ${client.id} connected to game socket`);
+  afterInit() {
+    this.gameService.init(this.server);
+  }
 
+  async handleConnection(@ConnectedSocket() client: Socket) {
     const authorization = client.handshake.headers.authorization;
     if (!authorization) {
       console.error(
@@ -70,23 +67,12 @@ export class GameGateway {
     }
   }
 
-  @SubscribeMessage('requestInvitations')
-  async requestInvitations(@ConnectedSocket() client: Socket) {
-    const invitations = await this.lobbyManager.getInvitations(
-      client.data.intra_id,
-    );
-    client.emit('updateInvitations', invitations);
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+    await this.gameService.removeClient(client);
+    this.disconnectSocket(client, client.data.intra_id);
   }
 
-  handleDisconnect(@ConnectedSocket() client: Socket) {
-    // TODO: Add the logic to leave a custom lobby that was created for invites only (Example: A invites B, but A closes the tab before B joined)
-    console.log(`Client ${client.id} disconnected from game socket`);
-    this.lobbyManager.removeClient(client);
-    this.disconnected(client);
-  }
-
-  private disconnected(client: Socket) {
-    const intra_id = client.data.intra_id;
+  private disconnectSocket(client: Socket, intra_id: number) {
     const clientSockets = this.clients.get(intra_id);
     const index = clientSockets.indexOf(client);
     if (index > -1) {
@@ -97,27 +83,17 @@ export class GameGateway {
     }
   }
 
-  afterInit() {
-    this.lobbyManager = new LobbyManager(
-      this.server,
-      this.usersService,
-      this.matchService,
-    );
-    this.lobbyManager.updateLoop();
-  }
-
   @SubscribeMessage('queue')
   async queue(
     @ConnectedSocket() client: Socket,
     @MessageBody('gamemode') gamemode: Gamemode,
   ) {
-    // TODO: Don't allow user to join regular queue while waiting in an invite only queue
-    await this.lobbyManager.queue(client, gamemode);
+    await this.gameService.queue(client, gamemode);
   }
 
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
-    await this.lobbyManager.leaveQueue(client, this.clients);
+    await this.gameService.leaveQueue(client, this.clients);
   }
 
   @SubscribeMessage('createPrivateLobby')
@@ -126,9 +102,7 @@ export class GameGateway {
     @MessageBody('invitedUser') invitedIntraId: number,
     @MessageBody('gamemode') gamemode: Gamemode,
   ) {
-    // TODO: User can't invite person if person isn't online
-    // TODO: Don't allow user to invite people while user is in queue
-    await this.lobbyManager.createPrivateLobby(
+    await this.gameService.createPrivateLobby(
       client,
       invitedIntraId,
       gamemode,
@@ -142,13 +116,12 @@ export class GameGateway {
     @MessageBody('keydown') keydown: boolean,
     @MessageBody('north') north: boolean,
   ) {
-    const lobby = this.lobbyManager.intraIdToLobby.get(client.data.intra_id);
-    lobby?.movePaddle(client.data.playerIndex, keydown, north);
-  }
-
-  @SubscribeMessage('heartbeat')
-  heartbeat(client: Socket) {
-    this.usersService.updateLastOnline(client.data.intra_id);
+    this.gameService.movePaddle(
+      client.data.intra_id,
+      client.data.playerIndex,
+      keydown,
+      north,
+    );
   }
 
   @SubscribeMessage('acceptInvitation')
@@ -156,7 +129,7 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody('acceptedIntraId') acceptedIntraId: number,
   ) {
-    await this.lobbyManager.acceptInvitation(
+    await this.gameService.acceptInvitation(
       client,
       acceptedIntraId,
       this.clients,
@@ -168,7 +141,7 @@ export class GameGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody('declinedIntraId') declinedIntraId: number,
   ) {
-    await this.lobbyManager.declineInvitation(
+    await this.gameService.declineInvitation(
       client,
       declinedIntraId,
       this.clients,

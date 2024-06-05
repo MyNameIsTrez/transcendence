@@ -1,13 +1,13 @@
 import { Server, Socket } from 'socket.io';
 import { v4 as uuid } from 'uuid';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { APong } from './APong';
 import NormalPong from './NormalPong';
 import SpecialPong from './SpecialPong';
-import { MatchService } from '../users/match.service';
+import { MatchService } from '../user/match.service';
 import { WsException } from '@nestjs/websockets';
-import { User } from '../users/user.entity';
-import { Gamemode } from '../users/match.entity';
+import { User } from '../user/user.entity';
+import { Gamemode } from '../user/match.entity';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -36,7 +36,7 @@ export default class Lobby {
     readonly gamemode: Gamemode,
     readonly isPrivate: boolean,
     private readonly server: Server,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {
     console.log('Initializing lobby with gamemode:', gamemode);
@@ -94,9 +94,9 @@ export default class Lobby {
 
       this.clients.forEach(async (client) => {
         if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-          this.usersService.addWin(client.data.intra_id);
+          this.userService.addWin(client.data.intra_id);
         } else {
-          this.usersService.addLoss(client.data.intra_id);
+          this.userService.addLoss(client.data.intra_id);
         }
 
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
@@ -128,8 +128,8 @@ export default class Lobby {
 
   public async saveMatch(disconnectedPlayer: User | null) {
     await this.matchService.create(
-      await this.usersService.findOne(this.leftPlayerIntraId),
-      await this.usersService.findOne(this.rightPlayerIntraId),
+      await this.userService.findOne(this.leftPlayerIntraId),
+      await this.userService.findOne(this.rightPlayerIntraId),
       disconnectedPlayer,
       this.pong.getLeftPlayerScore(),
       this.pong.getRightPlayerScore(),

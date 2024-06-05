@@ -8,15 +8,15 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
-import { privateDecrypt } from 'crypto';
-// import { Achievements } from './achievements';
 import { AchievementsService } from './achievements.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
+    private readonly configService: ConfigService,
   ) {
     this.createFooUser();
   }
@@ -65,20 +65,19 @@ export class UsersService {
     };
   }
 
-  async getAllUsers() {
+  async getLeaderboard() {
     const users = await this.usersRepository.find();
 
-    const returnUsers = users.map((user) => {
-      return {
-        name: user.username,
-        intraId: user.intra_id,
-        wins: user.wins,
-        losses: user.losses,
-      };
-    });
-    returnUsers.sort((a, b) => b.wins - a.wins);
-    console.log('returnUsers: ', returnUsers);
-    return returnUsers;
+    return users
+      .map((user) => {
+        return {
+          name: user.username,
+          intraId: user.intra_id,
+          wins: user.wins,
+          losses: user.losses,
+        };
+      })
+      .sort((a, b) => b.wins - a.wins);
   }
 
   async findOne(intra_id: number): Promise<User> {
@@ -281,10 +280,7 @@ export class UsersService {
     return this.usersRepository.findOneBy({ intra_name: intra_name });
   }
 
-  async sendFriendRequest(
-    sender_id: number,
-    receiver_name: string,
-  ): Promise<boolean> {
+  async sendFriendRequest(sender_id: number, receiver_name: string) {
     const sender = await this.usersRepository.findOne({
       where: { intra_id: sender_id },
       relations: {
@@ -323,6 +319,7 @@ export class UsersService {
       throw new BadRequestException('Friend request already sent');
     }
 
+    // If we were already invited by this person, immediately make us friends
     if (
       sender.incoming_friend_requests.some(
         (friendRequest) => friendRequest.intra_id === receiver.intra_id,
@@ -343,8 +340,6 @@ export class UsersService {
       receiver.incoming_friend_requests.push(sender);
       this.usersRepository.save(receiver);
     }
-
-    return true;
   }
 
   async getFriends(intra_id: number) {
@@ -362,7 +357,9 @@ export class UsersService {
             const lastOnlineMs = (
               await this.getLastOnline(friend.intra_id)
             ).getTime();
-            const isOnline = nowMs - lastOnlineMs < 10000;
+            const isOnline =
+              nowMs - lastOnlineMs <
+              this.configService.get('OFFLINE_TIMEOUT_MS');
 
             return {
               name: friend.username,

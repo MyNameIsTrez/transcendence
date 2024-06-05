@@ -1,8 +1,10 @@
 <template>
   <div>
-    <button @click="changeChatButton">{{ chatButtonText }}</button><br /><br />
-    <div v-if="chatButton">
-      CHANNELS <br /><br />
+    <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
+    <div v-if="!chatIsOpen">
+      CHANNELS
+      <br />
+      <br />
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in channelsOnIndex"
@@ -13,8 +15,10 @@
           {{ chat }}
         </div>
       </div>
-      <br /><br />
-      DIRECT MESSAGES <br /><br />
+      <br />
+      MY CHATS
+      <br />
+      <br />
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in directMessagesOnIndex"
@@ -47,7 +51,7 @@
       <button @click="createChat">Create</button>
     </div>
 
-    <div v-if="!chatButton && openChat">
+    <div v-if="chatIsOpen">
       <div v-if="iAmAdmin">
         <br />
         <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
@@ -127,8 +131,7 @@ const channelsOnIndex = ref<string[]>([])
 const channelIdsOnIndex = ref<string[]>([])
 const chatHistory = ref<string[]>([])
 const chatHistorySender = ref<string[]>([])
-const chatButtonText = ref('== OPEN CHATS ==')
-const chatButton = ref(false)
+const chatIsOpen = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
 const daysToMute = ref(0)
@@ -148,7 +151,6 @@ const otherIntraId = ref('')
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
-const openChat = ref(false)
 const otherProfile = ref('')
 const openOtherProfile = ref(false)
 const password = ref('')
@@ -202,17 +204,11 @@ function changeOptionsButton() {
 }
 
 function changeChatButton() {
-  chatButton.value = !chatButton.value
-  if (chatButton.value === false) {
-    chatButtonText.value = '== OPEN CHATS =='
-    openChat.value = true
-  } else {
-    chatButtonText.value = '== CLOSE CHATS =='
-    openChat.value = false
-  }
+  chatIsOpen.value = !chatIsOpen.value
 }
 
 async function muteUser() {
+  console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
   const mute = await post('api/chat/mute', {
     chat_id: currentChatId.value,
     username: otherUser.value,
@@ -369,7 +365,8 @@ async function getChat(chat_str: string) {
     iAmBlocked.value = false
   }
 
-  if (openChat.value == false) changeChatButton()
+  // TODO: Can this be removed?
+  if (chatIsOpen.value == false) changeChatButton()
 
   chatHistory.value = []
   history = await get('api/chat/history/' + currentChatId.value)

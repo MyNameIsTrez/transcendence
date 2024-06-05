@@ -8,7 +8,7 @@ import {
   WINDOW_HEIGHT,
   WINDOW_WIDTH,
 } from './APong';
-import { Gamemode } from '../users/match.entity';
+import { Gamemode } from '../user/match.entity';
 
 abstract class Item extends Rect {
   constructor(x: number, y: number, c: string) {
@@ -109,14 +109,14 @@ class InvisibleBallItem extends Item {
 
   private static readonly _originalBallColor = 'white';
 
-  onPickup(itemOwnerId: number) {}
+  onPickup() {}
 
   activeLoopHook(game: APong) {
     game._ball._color = 'transparent';
     return true;
   }
 
-  onPaddleHit(game: APong) {
+  onPaddleHit() {
     return false;
   }
 

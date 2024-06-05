@@ -6,7 +6,7 @@ import { Jwt2faAuthGuard } from '../src/auth/jwt-2fa-auth.guard';
 import { Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../src/users/users.service';
+import { UserService } from '../src/user/user.service';
 
 // This constantly monitors if there are any socket leaks
 require('leaked-handles');
@@ -14,7 +14,7 @@ require('leaked-handles');
 describe('App (e2e)', () => {
   let app: INestApplication;
   let bearerValue: string;
-  let usersService: UsersService;
+  let userService: UserService;
 
   const intraId = 76657;
 
@@ -44,7 +44,7 @@ describe('App (e2e)', () => {
     const bearer_token = app.get(ConfigService).get('TEST_BEARER_TOKEN');
     bearerValue = 'Bearer ' + bearer_token;
 
-    usersService = moduleRef.get<UsersService>(UsersService);
+    userService = moduleRef.get<UserService>(UserService);
 
     await app.init();
   });
@@ -55,7 +55,7 @@ describe('App (e2e)', () => {
   });
 
   async function addUser() {
-    await usersService.create(intraId, 'foo', 'foo');
+    await userService.create(intraId, 'foo', 'foo');
   }
 
   function getPublic(path, expectedStatus, expectedBody) {

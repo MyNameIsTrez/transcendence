@@ -16,7 +16,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller()
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Get('login')
