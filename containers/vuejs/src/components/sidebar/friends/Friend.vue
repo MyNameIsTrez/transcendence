@@ -1,10 +1,12 @@
 <template>
   <div class="card lg:card-side bg-base-200">
-    <figure>
-      <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
-        <img class="rounded" :src="`${profilePicture}`" alt="Album" />
-      </div>
-    </figure>
+    <router-link :to="{ path: `user/${intraId}` }">
+      <figure>
+        <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
+          <img class="rounded" :src="`${profilePicture}`" alt="Album" />
+        </div>
+      </figure>
+    </router-link>
     <div class="card-body w-64 h-28 grid justify-items-stretch">
       <h2 class="text justify-self-start font-bold text-sm w-56">
         <router-link :to="{ path: `user/${intraId}` }">{{ name }}</router-link>
