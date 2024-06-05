@@ -98,7 +98,8 @@ import { AlertType } from '../../types'
 const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
-const friends = await get('api/user/friends')
+const friends = ref(await get('api/user/friends'))
+const incomingFriendRequests = await get('api/user/incomingFriendRequests')
 
 const friendSearch = ref('')
 
@@ -126,24 +127,8 @@ gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
 
-class IncomingFriendRequest {
-  intraId: number
-  name: string
-
-  constructor(intraId: number, name: string) {
-    this.intraId = intraId
-    this.name = name
-  }
-}
-const incomingFriendRequests = ref<IncomingFriendRequest[]>([])
-userSocket.on('updateIncomingFriendRequests', (requests: IncomingFriendRequest[]) => {
-  console.log('in updateIncomingFriendRequests')
-  incomingFriendRequests.value = requests
-})
-userSocket.emit('updateIncomingFriendRequests')
-
-function reloadFriends() {
-  location.reload()
+async function reloadFriends() {
+  friends.value = await get('api/user/friends')
 }
 
 async function sendFriendRequest() {
