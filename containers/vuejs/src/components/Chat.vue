@@ -2,7 +2,7 @@
   <div>
     <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
     <div v-if="!chatIsOpen">
-      CHANNELS
+      PUBLIC CHATS
       <br />
       <br />
       <div class="scrollable-container-half">
@@ -89,9 +89,9 @@
       <div v-if="openOtherProfile">
         <router-link :to="`/user/${otherIntraId}`">View profile of {{ otherProfile }} </router-link>
       </div>
-      <br/>
+      <br />
 
-      CURRENT CHAT: {{ currentChat }} <br /><br />
+      IN CHAT '{{ currentChat }}' <br /><br />
       <div ref="chat" class="scrollable-container">
         <div
           v-for="(line, index) in chatHistory"
