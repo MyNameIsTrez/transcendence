@@ -17,7 +17,7 @@
             <span class="material-symbols-outlined" style="font-size: 20px">account_circle</span>
           </button>
         </router-link>
-        <button class="btn m-1 btn-error w-8 h-8 min-h-0" @click="removeFriend">
+        <button v-if="isFriend" class="btn m-1 btn-error w-8 h-8 min-h-0" @click="removeFriend">
           <span class="material-symbols-outlined" style="font-size: 20px">taunt</span>
         </button>
       </div>
@@ -32,7 +32,8 @@ import { post, getImage } from '../../../httpRequests'
 const props = defineProps({
   name: String,
   isOnline: Boolean,
-  intraId: Number
+  intraId: Number,
+  isFriend: Boolean
 })
 
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)

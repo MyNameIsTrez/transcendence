@@ -314,7 +314,8 @@ async function getChat(chat_str: string) {
 
   if (iAmBanned.value) return
 
-  blocked.value = new Set<number>(await get('api/user/blocked'))
+  const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
+  blocked.value = new Set<number>(blockedUsers)
 
   // TODO: Can this be removed?
   if (chatIsOpen.value == false) changeChatButton()

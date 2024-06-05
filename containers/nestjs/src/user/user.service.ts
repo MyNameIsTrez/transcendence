@@ -202,6 +202,8 @@ export class UserService {
 
     me.blocked.push(other);
 
+    this.removeFriend(my_intra_id, other_intra_id);
+
     return this.usersRepository.save(me);
   }
 
@@ -231,15 +233,33 @@ export class UserService {
     return blocked;
   }
 
-  async blocked(my_intra_id: number) {
-    const me = await this.usersRepository.findOne({
-      where: { intra_id: my_intra_id },
-      relations: {
-        blocked: true,
-      },
-    });
+  async blocked(intra_id: number) {
+    return await this.usersRepository
+      .findOne({
+        where: { intra_id },
+        relations: {
+          blocked: true,
+        },
+      })
+      .then(async (user) => {
+        return await Promise.all(
+          user.blocked.map(async (blockedUser) => {
+            const nowMs = Date.now();
+            const lastOnlineMs = (
+              await this.getLastOnline(blockedUser.intra_id)
+            ).getTime();
+            const isOnline =
+              nowMs - lastOnlineMs <
+              this.configService.get('OFFLINE_TIMEOUT_MS');
 
-    return me.blocked.map((user) => user.intra_id);
+            return {
+              name: blockedUser.username,
+              isOnline,
+              intraId: blockedUser.intra_id,
+            };
+          }),
+        );
+      });
   }
 
   async addWin(intra_id: number) {
