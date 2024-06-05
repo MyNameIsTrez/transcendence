@@ -83,24 +83,14 @@
         </div>
       </div>
 
-      <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
-
-      <div v-if="selectedUserUsername">
-        <router-link :to="`/user/${selectedUserIntraId}`"
-          >View profile of {{ selectedUserUsername }}
-        </router-link>
-      </div>
       <br />
 
       IN CHAT '{{ currentChat }}' <br /><br />
       <div ref="chat" class="scrollable-container">
-        <div
-          v-for="(entry, index) in chatHistory"
-          :key="index"
-          class="line"
-          @click="openProfileButton(index)"
-        >
-          {{ entry.sender_name + ': ' + entry.body + '\n' }}
+        <div v-for="(entry, index) in chatHistory" :key="index" class="line">
+          <router-link :to="`/user/${entry.sender}`">
+            {{ entry.sender_name + ': ' + entry.body + '\n' }}
+          </router-link>
         </div>
       </div>
       <br />
@@ -124,7 +114,6 @@ const props = defineProps(['chatSocket'])
 const chatSocket = props.chatSocket
 
 // VARIABLES
-const blockStatus = ref('Block')
 const chat = ref()
 const chatName = ref('')
 const directMessagesOnIndex = ref<string[]>([])
@@ -146,7 +135,6 @@ const myIntraId = ref('')
 const myUsername = ref('')
 const chats = ref()
 const newPassword = ref('')
-const selectedUserIntraId = ref(-1)
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
@@ -180,17 +168,6 @@ async function changeVisibility() {
   getChannels()
 }
 
-function openProfileButton(index: number) {
-  const entry = chatHistory.value[index]
-
-  selectedUserUsername.value = entry.sender_name
-  selectedUserIntraId.value = entry.sender
-
-  if (selectedUserUsername.value === myUsername.value) {
-    selectedUserUsername.value = null
-  }
-}
-
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
   if (optionsButton.value === false) optionsButtonText.value = '~ open options ~'
@@ -217,24 +194,6 @@ async function getMyIntraId() {
 
 async function getMyUsername() {
   myUsername.value = await get('api/user/username')
-}
-
-async function handleBlock() {
-  if (blockStatus.value === 'Block') {
-    blockUser()
-    blockStatus.value = 'Unblock'
-  } else {
-    unblockUser()
-    blockStatus.value = 'Block'
-  }
-}
-
-async function blockUser() {
-  await get('api/user/block/' + myIntraId.value + '/' + selectedUserIntraId.value)
-}
-
-async function unblockUser() {
-  await get('api/user/unblock/' + myIntraId.value + '/' + selectedUserIntraId.value)
 }
 
 async function kickUser() {
