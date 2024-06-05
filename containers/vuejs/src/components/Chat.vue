@@ -113,14 +113,27 @@ import { nextTick } from 'vue'
 const props = defineProps(['chatSocket'])
 const chatSocket = props.chatSocket
 
+class Entry {
+  sender_name: string
+  sender: number
+  body: string
+
+  constructor(sender_name: string, sender: number, body: string) {
+    this.sender_name = sender_name
+    this.sender = sender
+    this.body = body
+  }
+}
+
 // VARIABLES
+const blocked = ref(new Set<number>([]))
 const chat = ref()
 const chatName = ref('')
 const directMessagesOnIndex = ref<string[]>([])
 const directMessageIdsOnIndex = ref<string[]>([])
 const channelsOnIndex = ref<string[]>([])
 const channelIdsOnIndex = ref<string[]>([])
-const chatHistory = ref<{ sender_name: string; sender: number; body: string }[]>([])
+const chatHistory = ref<Entry[]>([])
 const chatIsOpen = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
@@ -138,7 +151,6 @@ const newPassword = ref('')
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
-const selectedUserUsername = ref<string | null>(null)
 const password = ref('')
 const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
 const passwordChat = ref('')
@@ -297,8 +309,12 @@ async function validateLock(chat_str: string) {
 
 async function getChat(chat_str: string) {
   locked.value = false
+
   await getInfo()
+
   if (iAmBanned.value) return
+
+  blocked.value = new Set<number>(await get('api/user/blocked'))
 
   // TODO: Can this be removed?
   if (chatIsOpen.value == false) changeChatButton()
@@ -308,7 +324,9 @@ async function getChat(chat_str: string) {
     username: myUsername.value
   })
 
-  chatHistory.value = await get('api/chat/history/' + currentChatId.value)
+  chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
+    (entry: Entry) => !blocked.value.has(entry.sender)
+  )
 
   await nextTick()
   getChats()

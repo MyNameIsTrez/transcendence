@@ -107,6 +107,11 @@ export class UserController {
     return await this.userService.hasBlocked(req.user.intra_id, intraId);
   }
 
+  @Get('blocked')
+  async blocked(@Request() req) {
+    return await this.userService.blocked(req.user.intra_id);
+  }
+
   @Get('friends')
   async getFriends(@Request() req) {
     return await this.userService.getFriends(req.user.intra_id);
