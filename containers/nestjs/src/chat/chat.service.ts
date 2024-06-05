@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Chat, Visibility } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
@@ -29,7 +29,7 @@ export class ChatService {
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -46,7 +46,7 @@ export class ChatService {
 
     const chat_id = uuid();
 
-    const current_user = await this.usersService.findOne(intra_id);
+    const current_user = await this.userService.findOne(intra_id);
 
     return this.chatRepository.save({
       chat_id,
@@ -61,7 +61,7 @@ export class ChatService {
   }
 
   async addUser(chat_id: string, username: string) {
-    const user = await this.usersService.findOneByUsername(username);
+    const user = await this.userService.findOneByUsername(username);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
@@ -103,7 +103,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        const user = await this.usersService.findOneByUsername(username);
+        const user = await this.userService.findOneByUsername(username);
         chat.banned.push(user);
         const result = await this.chatRepository.save(chat);
         return !!result;
@@ -114,7 +114,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
-        const user = await this.usersService.findOneByUsername(username);
+        const user = await this.userService.findOneByUsername(username);
         if (chat.admins.some((admin) => admin.username == username))
           return false;
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
@@ -198,7 +198,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
       .then(async (chat) => {
-        this.usersService.findOne(sender).then(async (user) => {
+        this.userService.findOne(sender).then(async (user) => {
           const message = new Message();
           message.sender_name = user.username;
           message.sender = sender;
@@ -255,7 +255,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { muted: true } })
       .then(async (chat) => {
-        const user = await this.usersService.findOneByUsername(username);
+        const user = await this.userService.findOneByUsername(username);
         if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
         const mute = new Mute();
         mute.intra_id = user.intra_id;
@@ -302,7 +302,7 @@ export class ChatService {
       .then(async (chat) => {
         try {
           if (await bcrypt.compare(password, chat.hashed_password)) {
-            chat.access_granted.push(await this.usersService.findOne(intra_id));
+            chat.access_granted.push(await this.userService.findOne(intra_id));
             return this.chatRepository.save(chat);
           }
         } catch (err) {
@@ -344,7 +344,7 @@ export class ChatService {
           chat.visibility == Visibility.PUBLIC ||
           chat.visibility == Visibility.PROTECTED
         ) {
-          chat.users.push(await this.usersService.findOne(intra_id));
+          chat.users.push(await this.userService.findOne(intra_id));
           this.chatRepository.save(chat);
         }
       });

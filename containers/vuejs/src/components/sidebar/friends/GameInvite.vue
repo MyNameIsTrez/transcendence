@@ -6,7 +6,7 @@
       </div>
     </figure>
     <div class="card-body h-28 grid justify-items-stretch pt-3">
-      <h2 class="text justify-self-start font-bold text-sm w-56">{{ name }}</h2>
+      <h2 class="text justify-self-start font-bold text-sm w-56">{{ inviterName }}</h2>
       <div class="grid">
         <div class="text text-xs text-purple-400">{{ gamemode }} game</div>
         <div class="place-self-end pt-1.5">
@@ -24,23 +24,27 @@
 </template>
 
 <script setup lang="ts">
-import { post, getImage } from '../../../httpRequests'
+import { getImage } from '../../../httpRequests'
+import { Socket } from 'socket.io-client'
+import { inject } from 'vue'
+
+const gameSocket: Socket = inject('gameSocket')!
 
 const props = defineProps({
-  name: String,
-  intraId: Number,
+  inviterIntraId: Number,
+  inviterName: String,
   gamemode: String
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.inviterIntraId}.png`)
 
 async function acceptGameInvite() {
-  // TODO: Hier een daadwerkelijk werkende functie van maken
-  console.log('Accpeted game invite: ', props.intraId)
+  console.log('Accepting game invite from intra id', props.inviterIntraId)
+  gameSocket.emit('acceptInvitation', { acceptedIntraId: props.inviterIntraId })
 }
 
 async function declineGameInvite() {
-  // TODO: Hier een daadwerkelijk werkende functie van maken
-  console.log('Declined game invite: ', props.intraId)
+  console.log('Declining game invite from intra id', props.inviterIntraId)
+  gameSocket.emit('declineInvitation', { declinedIntraId: props.inviterIntraId })
 }
 </script>

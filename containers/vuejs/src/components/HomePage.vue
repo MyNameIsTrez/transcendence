@@ -1,14 +1,12 @@
 <template>
   <div class="flex flex-col overflow-hidden w-full lg:flex-row">
-    <div
-      class="grid flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box place-items-stretch"
-    >
+    <div class="flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box">
       <Sidebar />
     </div>
     <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
       <PongCanvas :game-socket="gameSocket" />
     </div>
-    <div class="grid flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
+    <div class="flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
       <Chat :chat-socket="chatSocket" />
     </div>
   </div>
@@ -22,7 +20,7 @@ import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
 
 import { useRouter } from 'vue-router'
-import { onUnmounted } from 'vue'
+import { onUnmounted, provide } from 'vue'
 import { io } from 'socket.io-client'
 
 const router = useRouter()
@@ -54,6 +52,10 @@ const opts = {
 
 const gameSocket = getSocket('/game', opts)
 const chatSocket = getSocket('/chat', opts)
+const userSocket = getSocket('/user', opts)
+
+provide('gameSocket', gameSocket)
+provide('userSocket', userSocket)
 
 gameSocket.on('exception', (error) => {
   console.error('In gameSocket exception handler', error)
@@ -71,8 +73,17 @@ chatSocket.on('exception', (error) => {
   }
 })
 
+userSocket.on('exception', (error) => {
+  console.error('In userSocket exception handler', error)
+  if (error.redirectToLoginPage) {
+    console.error('Redirecting to /login')
+    router.replace({ path: '/login' })
+  }
+})
+
 onUnmounted(() => {
   gameSocket.disconnect()
   chatSocket.disconnect()
+  userSocket.disconnect()
 })
 </script>

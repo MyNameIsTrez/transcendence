@@ -13,7 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UsersService } from '../../users/users.service';
+import { UserService } from '../../user/user.service';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 
@@ -42,11 +42,11 @@ class BlockDto {
 
 @Controller('api/user')
 export class UserController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('username')
   username(@Request() req) {
-    return this.usersService.getUsername(req.user.intra_id);
+    return this.userService.getUsername(req.user.intra_id);
   }
 
   @Get('intraId')
@@ -56,34 +56,34 @@ export class UserController {
 
   @Get('me')
   me(@Request() req) {
-    return this.usersService.getUser(req.user.intra_id);
+    return this.userService.getUser(req.user.intra_id);
   }
 
   @Get('other/:intra_id')
   user(@Param('intra_id') intra_id) {
-    return this.usersService.getUser(intra_id);
+    return this.userService.getUser(intra_id);
   }
 
   @Get('usernameOnIntraId/:intraId')
   usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
-    return this.usersService.getUsername(dto.intraId);
+    return this.userService.getUsername(dto.intraId);
   }
 
   @Post('setUsername')
   @HttpCode(204)
   async setUsername(@Request() req, @Body() dto: SetUsernameDto) {
-    await this.usersService.setUsername(req.user.intra_id, dto.username);
+    await this.userService.setUsername(req.user.intra_id, dto.username);
   }
 
   @Get('chats')
   chats(@Request() req) {
-    return this.usersService.chats(req.user.intra_id);
+    return this.userService.chats(req.user.intra_id);
   }
 
   @Get('profilePicture/:intra_id.png')
   @Header('Content-Type', 'image/png')
   getProfilePicture(@Param('intra_id') intra_id) {
-    return this.usersService.getProfilePicture(intra_id);
+    return this.userService.getProfilePicture(intra_id);
   }
 
   @Post('profilePicture')
@@ -100,24 +100,24 @@ export class UserController {
     writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
   }
 
-  @Get('allUsers')
-  getAllUsers() {
-	return this.usersService.getAllUsers();
+  @Get('leaderboard')
+  getLeaderboard() {
+    return this.userService.getLeaderboard();
   }
 
   @Get('block/:my_intra_id/:other_intra_id')
-  blockUser(@Request() req, @Param() dto: BlockDto) {
-    return this.usersService.block(dto.my_intra_id, dto.other_intra_id);
+  blockUser(@Param() dto: BlockDto) {
+    return this.userService.block(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('unblock/:my_intra_id/:other_intra_id')
-  unblockUser(@Request() req, @Param() dto: BlockDto) {
-    return this.usersService.unblock(dto.my_intra_id, dto.other_intra_id);
+  unblockUser(@Param() dto: BlockDto) {
+    return this.userService.unblock(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('blockStatus/:my_intra_id/:other_intra_id')
-  async iAmBlocked(@Request() req, @Param() dto: BlockDto) {
-    return await this.usersService.iAmBlocked(
+  async iAmBlocked(@Param() dto: BlockDto) {
+    return await this.userService.iAmBlocked(
       dto.my_intra_id,
       dto.other_intra_id,
     );
@@ -125,39 +125,36 @@ export class UserController {
 
   @Get('friends')
   getFriends(@Request() req) {
-    return this.usersService.getFriends(req.user.intra_id);
+    return this.userService.getFriends(req.user.intra_id);
   }
 
   @Get('incomingFriendRequests')
   getIncomingFriendRequests(@Request() req) {
-    return this.usersService.getIncomingFriendRequests(req.user.intra_id);
+    return this.userService.getIncomingFriendRequests(req.user.intra_id);
   }
 
   @Post('sendFriendRequest')
   sendFriendRequest(@Request() req, @Body() body) {
-    return this.usersService.sendFriendRequest(
-      req.user.intra_id,
-      body.intra_name,
-    );
+    this.userService.sendFriendRequest(req.user.intra_id, body.intra_name);
   }
 
   @Post('acceptFriendRequest')
   acceptFriendRequest(@Request() req, @Body() body) {
-    this.usersService.acceptFriendRequest(req.user.intra_id, body.sender_id);
+    this.userService.acceptFriendRequest(req.user.intra_id, body.sender_id);
   }
 
   @Post('declineFriendRequest')
   declineFriendRequest(@Request() req, @Body() body) {
-    this.usersService.declineFriendRequest(req.user.intra_id, body.sender_id);
+    this.userService.declineFriendRequest(req.user.intra_id, body.sender_id);
   }
 
   @Post('removeFriend')
   removeFriend(@Request() req, @Body() body) {
-    this.usersService.removeFriend(req.user.intra_id, body.friend_id);
+    this.userService.removeFriend(req.user.intra_id, body.friend_id);
   }
 
   @Get('matchHistory/:intra_id')
   async getMatchHistory(@Param('intra_id') intra_id) {
-    return (await this.usersService.getMatchHistory(intra_id)).reverse();
+    return (await this.userService.getMatchHistory(intra_id)).reverse();
   }
 }

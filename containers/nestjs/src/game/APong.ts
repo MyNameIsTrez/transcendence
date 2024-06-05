@@ -1,4 +1,4 @@
-import { Gamemode } from 'src/users/match.entity';
+import { Gamemode } from '../user/match.entity';
 
 export const WINDOW_WIDTH = 1920;
 export const WINDOW_HEIGHT = 1080;

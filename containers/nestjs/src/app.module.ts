@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { CreationModule } from './creation/creation.module';
 import { GameModule } from './game/game.module';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -20,6 +20,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
         FRONTEND_PORT: Joi.number().integer().positive(),
         BACKEND_PORT: Joi.number().integer().positive(),
+
+        OFFLINE_TIMEOUT_MS: Joi.number().integer().positive(),
 
         VITE_ADDRESS: Joi.string().uri(),
         VITE_BACKEND_PORT: Joi.number().integer().positive(),
@@ -44,7 +46,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ChatModule,
     CreationModule,
     GameModule,
-    UsersModule,
+    UserModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

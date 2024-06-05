@@ -25,7 +25,6 @@ const router = createRouter({
         {
           path: '/user/:intraId',
           component: UserProfile,
-          //   name: 'UserProfile',
           props: true
         },
         {

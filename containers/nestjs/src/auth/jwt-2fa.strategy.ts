@@ -1,14 +1,14 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/user.entity';
+import { UserService } from '../user/user.service';
+import { User } from '../user/user.entity';
 import { CreationService } from '../creation/creation.service';
 
 @Injectable()
 export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt-2fa') {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly userService: UserService,
     private readonly creationService: CreationService,
   ) {
     super({
@@ -28,7 +28,7 @@ export class Jwt2faStrategy extends PassportStrategy(Strategy, 'jwt-2fa') {
       });
     }
 
-    const user: User = await this.usersService.findOne(payload.sub);
+    const user: User = await this.userService.findOne(payload.sub);
 
     if (!user) {
       throw new BadRequestException('Failed to find user in database');

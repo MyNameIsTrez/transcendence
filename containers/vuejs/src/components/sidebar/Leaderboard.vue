@@ -1,7 +1,6 @@
 <template>
   <div class="overflow-x-auto">
     <table class="table">
-      <!-- head -->
       <thead>
         <tr>
           <th>Rank</th>
@@ -10,13 +9,13 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="(user,index) in users">
+        <template v-for="(user, index) in users" :key="user.intraId">
           <RankComponent
             :username="user.name"
             :intraId="user.intraId"
             :wins="user.wins"
             :losses="user.losses"
-            :rank="index+1"
+            :rank="index + 1"
           />
         </template>
       </tbody>
@@ -28,9 +27,5 @@
 import RankComponent from './leaderboard/RankComponent.vue'
 import { get } from '../../httpRequests'
 
-const nbr = 1
-
-const users = await get('api/user/allUsers')
+const users = await get('api/user/leaderboard')
 </script>
-
-<style lang="scss" scoped></style>

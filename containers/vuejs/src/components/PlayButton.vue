@@ -1,13 +1,15 @@
 <template>
   <button class="play-button" @click="emit('clicked')">
-    {{ props.buttonText }}
+    {{ buttonText }}
   </button>
 </template>
 <script setup lang="ts">
 import { defineProps } from 'vue'
 
+// Allows anyone using PlayButton to use `@clicked="fooFn"`
 const emit = defineEmits(['clicked'])
-const props = defineProps({
+
+defineProps({
   buttonText: String
 })
 </script>
