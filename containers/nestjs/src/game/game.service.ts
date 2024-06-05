@@ -71,7 +71,6 @@ export class GameService {
     await this.lobbyManager.removeClient(client);
   }
 
-  // TODO: Try to move this to user.service.ts?
   public async updateInvitations(client: Socket) {
     const invitations = await this.lobbyManager.getInvitations(
       client.data.intra_id,

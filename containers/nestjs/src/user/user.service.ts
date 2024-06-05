@@ -356,6 +356,7 @@ export class UserService {
             const lastOnlineMs = (
               await this.getLastOnline(friend.intra_id)
             ).getTime();
+            // TODO: Make 10000 a .env variable
             const isOnline = nowMs - lastOnlineMs < 10000;
 
             return {
@@ -474,10 +475,5 @@ export class UserService {
       .then((user) => {
         return user?.matchHistory;
       });
-  }
-
-  public async updateIncomingFriendRequests(client: Socket) {
-    const requests = await this.getIncomingFriendRequests(client.data.intra_id);
-    client.emit('updateIncomingFriendRequests', requests);
   }
 }

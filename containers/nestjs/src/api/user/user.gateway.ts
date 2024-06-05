@@ -56,7 +56,6 @@ export class UserGateway {
 
   @SubscribeMessage('heartbeat')
   heartbeat(client: Socket) {
-    console.log('heartbeat'); // TODO: Remove this line
     this.userService.updateLastOnline(client.data.intra_id);
   }
 }
