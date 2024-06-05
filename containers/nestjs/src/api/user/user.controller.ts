@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from '../../user/user.service';
-import { IsNotEmpty, MaxLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 
 class SetUsernameDto {
@@ -25,19 +25,6 @@ class SetUsernameDto {
     message: 'Name exceeds character limit of 16',
   })
   username: string;
-}
-
-class SetIntraIdDto {
-  @IsNotEmpty()
-  intraId: number;
-}
-
-class BlockDto {
-  @IsNotEmpty()
-  my_intra_id: number;
-
-  @IsNotEmpty()
-  other_intra_id: number;
 }
 
 @Controller('api/user')
@@ -65,8 +52,8 @@ export class UserController {
   }
 
   @Get('usernameOnIntraId/:intraId')
-  async usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
-    return await this.userService.getUsername(dto.intraId);
+  async usernameOnIntraId(@Param('intraId') intraId: number) {
+    return await this.userService.getUsername(intraId);
   }
 
   @Post('setUsername')
@@ -105,14 +92,19 @@ export class UserController {
     return await this.userService.getLeaderboard();
   }
 
-  @Get('block/:my_intra_id/:other_intra_id')
-  async blockUser(@Param() dto: BlockDto) {
-    return await this.userService.block(dto.my_intra_id, dto.other_intra_id);
+  @Get('block/:intraId')
+  async blockUser(@Request() req, @Param('intraId') intraId: number) {
+    return await this.userService.block(req.user.intra_id, intraId);
   }
 
-  @Get('unblock/:my_intra_id/:other_intra_id')
-  async unblockUser(@Param() dto: BlockDto) {
-    return await this.userService.unblock(dto.my_intra_id, dto.other_intra_id);
+  @Get('unblock/:intraId')
+  async unblockUser(@Request() req, @Param('intraId') intraId: number) {
+    return await this.userService.unblock(req.user.intra_id, intraId);
+  }
+
+  @Get('hasBlocked/:intraId')
+  async hasBlocked(@Request() req, @Param('intraId') intraId: number) {
+    return await this.userService.hasBlocked(req.user.intra_id, intraId);
   }
 
   @Get('friends')

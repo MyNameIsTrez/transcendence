@@ -16,7 +16,6 @@ import { v4 as uuid } from 'uuid';
 class Info {
   isAdmin: boolean;
   isBanned: boolean;
-  isDirect: boolean;
   isMute: boolean;
   isOwner: boolean;
   isProtected: boolean;
@@ -178,14 +177,6 @@ export class ChatService {
       });
   }
 
-  public async isDirect(chat_id: string) {
-    return this.chatRepository
-      .findOne({ where: { chat_id }, relations: ['users'] })
-      .then(async (chat) => {
-        return chat.users.length === 2;
-      });
-  }
-
   public async isProtected(chat_id: string) {
     return this.chatRepository
       .findOne({ where: { chat_id } })
@@ -256,7 +247,6 @@ export class ChatService {
     const info = new Info();
     info.isAdmin = await this.isAdmin(chat_id, intra_id);
     info.isBanned = await this.isBanned(chat_id, intra_id);
-    info.isDirect = await this.isDirect(chat_id);
     info.isMute = await this.isMute(chat_id, intra_id);
     info.isOwner = await this.isOwner(chat_id, intra_id);
     info.isProtected = await this.isProtected(chat_id);

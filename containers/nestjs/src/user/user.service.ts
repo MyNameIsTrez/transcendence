@@ -212,8 +212,23 @@ export class UserService {
         blocked: true,
       },
     });
+
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
+
     return this.usersRepository.save(me);
+  }
+
+  async hasBlocked(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
+      relations: {
+        blocked: true,
+      },
+    });
+
+    const blocked = me.blocked.some((user) => user.intra_id === other_intra_id);
+
+    return blocked;
   }
 
   async addWin(intra_id: number) {

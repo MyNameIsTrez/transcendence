@@ -124,11 +124,6 @@ export class ChatController {
     return await this.chatService.isOwner(dto.chat_id, dto.intra_id);
   }
 
-  @Get('isDirect/:chat_id')
-  async isDirect(@Param() dto: NameDto) {
-    return await this.chatService.isDirect(dto.chat_id);
-  }
-
   @Post('mute')
   async mute(@Body() dto: MuteDto) {
     return await this.chatService.mute(dto.chat_id, dto.username, dto.days);
