@@ -76,7 +76,7 @@ export class ChatController {
 
   @Post('create')
   async create(@Request() req, @Body() dto: CreateDto) {
-    return this.chatService.create(
+    return await this.chatService.create(
       req.user.intra_id,
       dto.name,
       dto.visibility,
@@ -85,53 +85,53 @@ export class ChatController {
   }
 
   @Post('addUserToChat')
-  AddUserToChat(@Body() dto: AddUserDto) {
-    return this.chatService.addUser(dto.chat_id, dto.username);
+  async AddUserToChat(@Body() dto: AddUserDto) {
+    return await this.chatService.addUser(dto.chat_id, dto.username);
   }
 
   @Post('addAdminToChat')
-  AddAdminToChat(@Body() dto: AddUserDto) {
-    return this.chatService.addAdmin(dto.chat_id, dto.username);
+  async AddAdminToChat(@Body() dto: AddUserDto) {
+    return await this.chatService.addAdmin(dto.chat_id, dto.username);
   }
 
   @Get('kick/:chat_id/:username')
-  kick(@Param() dto: AddUserDto) {
-    return this.chatService.kickUser(dto.chat_id, dto.username);
+  async kick(@Param() dto: AddUserDto) {
+    return await this.chatService.kickUser(dto.chat_id, dto.username);
   }
 
   @Get('ban/:chat_id/:username')
-  ban(@Param() dto: AddUserDto) {
-    return this.chatService.banUser(dto.chat_id, dto.username);
+  async ban(@Param() dto: AddUserDto) {
+    return await this.chatService.banUser(dto.chat_id, dto.username);
   }
 
   @Get('name/:chat_id')
-  name(@Param() dto: NameDto) {
-    return this.chatService.getName(dto.chat_id);
+  async name(@Param() dto: NameDto) {
+    return await this.chatService.getName(dto.chat_id);
   }
 
   @Get('history/:chat_id')
-  history(@Param() dto: NameDto) {
-    return this.chatService.getHistory(dto.chat_id);
+  async history(@Param() dto: NameDto) {
+    return await this.chatService.getHistory(dto.chat_id);
   }
 
   @Get('isAdmin/:chat_id/:intra_id')
-  isAdmin(@Param() dto: OtherUserDto) {
-    return this.chatService.isAdmin(dto.chat_id, dto.intra_id);
+  async isAdmin(@Param() dto: OtherUserDto) {
+    return await this.chatService.isAdmin(dto.chat_id, dto.intra_id);
   }
 
   @Get('isOwner/:chat_id/:intra_id')
-  isOwner(@Param() dto: OtherUserDto) {
-    return this.chatService.isOwner(dto.chat_id, dto.intra_id);
+  async isOwner(@Param() dto: OtherUserDto) {
+    return await this.chatService.isOwner(dto.chat_id, dto.intra_id);
   }
 
   @Get('isDirect/:chat_id')
-  isDirect(@Param() dto: NameDto) {
-    return this.chatService.isDirect(dto.chat_id);
+  async isDirect(@Param() dto: NameDto) {
+    return await this.chatService.isDirect(dto.chat_id);
   }
 
   @Get('getOtherIntraId/:chat_id/:intra_id')
-  getOtherIntraId(@Param() dto: OtherUserDto) {
-    return this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id);
+  async getOtherIntraId(@Param() dto: OtherUserDto) {
+    return await this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id);
   }
 
   @Post('mute')
@@ -164,13 +164,13 @@ export class ChatController {
   }
 
   @Post('changePassword')
-  changePassword(@Body() dto: PasswordDto) {
-    return this.chatService.changePassword(dto.chat_id, dto.password);
+  async changePassword(@Body() dto: PasswordDto) {
+    return await this.chatService.changePassword(dto.chat_id, dto.password);
   }
 
   @Post('changeVisibility')
-  changeVisibility(@Body() dto: ChangeVisibilityDto) {
-    return this.chatService.changeVisibility(
+  async changeVisibility(@Body() dto: ChangeVisibilityDto) {
+    return await this.chatService.changeVisibility(
       dto.chat_id,
       dto.visibility,
       dto.password,
@@ -178,7 +178,7 @@ export class ChatController {
   }
 
   @Get('channels')
-  channels() {
-    return this.chatService.channels();
+  async channels() {
+    return await this.chatService.channels();
   }
 }

@@ -45,28 +45,28 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('username')
-  username(@Request() req) {
-    return this.userService.getUsername(req.user.intra_id);
+  async username(@Request() req) {
+    return await this.userService.getUsername(req.user.intra_id);
   }
 
   @Get('intraId')
-  intraId(@Request() req) {
+  async intraId(@Request() req) {
     return req.user.intra_id;
   }
 
   @Get('me')
-  me(@Request() req) {
-    return this.userService.getUser(req.user.intra_id);
+  async me(@Request() req) {
+    return await this.userService.getUser(req.user.intra_id);
   }
 
   @Get('other/:intra_id')
-  user(@Param('intra_id') intra_id) {
-    return this.userService.getUser(intra_id);
+  async user(@Param('intra_id') intra_id) {
+    return await this.userService.getUser(intra_id);
   }
 
   @Get('usernameOnIntraId/:intraId')
-  usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
-    return this.userService.getUsername(dto.intraId);
+  async usernameOnIntraId(@Request() req, @Param() dto: SetIntraIdDto) {
+    return await this.userService.getUsername(dto.intraId);
   }
 
   @Post('setUsername')
@@ -76,19 +76,19 @@ export class UserController {
   }
 
   @Get('chats')
-  chats(@Request() req) {
-    return this.userService.chats(req.user.intra_id);
+  async chats(@Request() req) {
+    return await this.userService.chats(req.user.intra_id);
   }
 
   @Get('profilePicture/:intra_id.png')
   @Header('Content-Type', 'image/png')
-  getProfilePicture(@Param('intra_id') intra_id) {
+  async getProfilePicture(@Param('intra_id') intra_id) {
     return this.userService.getProfilePicture(intra_id);
   }
 
   @Post('profilePicture')
   @UseInterceptors(FileInterceptor('file'))
-  setProfilePicture(
+  async setProfilePicture(
     @Request() req,
     @UploadedFile(
       new ParseFilePipe({
@@ -101,18 +101,18 @@ export class UserController {
   }
 
   @Get('leaderboard')
-  getLeaderboard() {
-    return this.userService.getLeaderboard();
+  async getLeaderboard() {
+    return await this.userService.getLeaderboard();
   }
 
   @Get('block/:my_intra_id/:other_intra_id')
-  blockUser(@Param() dto: BlockDto) {
-    return this.userService.block(dto.my_intra_id, dto.other_intra_id);
+  async blockUser(@Param() dto: BlockDto) {
+    return await this.userService.block(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('unblock/:my_intra_id/:other_intra_id')
-  unblockUser(@Param() dto: BlockDto) {
-    return this.userService.unblock(dto.my_intra_id, dto.other_intra_id);
+  async unblockUser(@Param() dto: BlockDto) {
+    return await this.userService.unblock(dto.my_intra_id, dto.other_intra_id);
   }
 
   @Get('blockStatus/:my_intra_id/:other_intra_id')
@@ -124,33 +124,42 @@ export class UserController {
   }
 
   @Get('friends')
-  getFriends(@Request() req) {
-    return this.userService.getFriends(req.user.intra_id);
+  async getFriends(@Request() req) {
+    return await this.userService.getFriends(req.user.intra_id);
   }
 
   @Get('incomingFriendRequests')
-  getIncomingFriendRequests(@Request() req) {
-    return this.userService.getIncomingFriendRequests(req.user.intra_id);
+  async getIncomingFriendRequests(@Request() req) {
+    return await this.userService.getIncomingFriendRequests(req.user.intra_id);
   }
 
   @Post('sendFriendRequest')
-  sendFriendRequest(@Request() req, @Body() body) {
-    this.userService.sendFriendRequest(req.user.intra_id, body.intra_name);
+  async sendFriendRequest(@Request() req, @Body() body) {
+    await this.userService.sendFriendRequest(
+      req.user.intra_id,
+      body.intra_name,
+    );
   }
 
   @Post('acceptFriendRequest')
-  acceptFriendRequest(@Request() req, @Body() body) {
-    this.userService.acceptFriendRequest(req.user.intra_id, body.sender_id);
+  async acceptFriendRequest(@Request() req, @Body() body) {
+    await this.userService.acceptFriendRequest(
+      req.user.intra_id,
+      body.sender_id,
+    );
   }
 
   @Post('declineFriendRequest')
-  declineFriendRequest(@Request() req, @Body() body) {
-    this.userService.declineFriendRequest(req.user.intra_id, body.sender_id);
+  async declineFriendRequest(@Request() req, @Body() body) {
+    await this.userService.declineFriendRequest(
+      req.user.intra_id,
+      body.sender_id,
+    );
   }
 
   @Post('removeFriend')
-  removeFriend(@Request() req, @Body() body) {
-    this.userService.removeFriend(req.user.intra_id, body.friend_id);
+  async removeFriend(@Request() req, @Body() body) {
+    await this.userService.removeFriend(req.user.intra_id, body.friend_id);
   }
 
   @Get('matchHistory/:intra_id')
