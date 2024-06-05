@@ -33,11 +33,9 @@
                   <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
-              <AlertPopup
-                :alertType="alertType"
-                :visible="alertVisible"
-                :alertMessage="alertMessage"
-              />
+              <AlertPopup :alertType="alertType" :visible="alertVisible">{{
+                alertMessage
+              }}</AlertPopup>
             </span>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>

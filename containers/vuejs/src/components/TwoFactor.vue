@@ -12,11 +12,9 @@
       />
       <button class="btn" @click="sendAuthCode">Send</button>
     </span>
-    <AlertPopup
-      :alertType="AlertType.ALERT_WARNING"
-      :visible="alertVisible"
-      alertMessage="Code is invalid"
-    />
+    <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">
+      Code is invalid
+    </AlertPopup>
   </div>
 </template>
 
