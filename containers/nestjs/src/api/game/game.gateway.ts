@@ -128,11 +128,6 @@ export class GameGateway {
     );
   }
 
-  @SubscribeMessage('heartbeat')
-  heartbeat(client: Socket) {
-    this.userService.updateLastOnline(client.data.intra_id);
-  }
-
   @SubscribeMessage('acceptInvitation')
   async acceptInvitation(
     @ConnectedSocket() client: Socket,

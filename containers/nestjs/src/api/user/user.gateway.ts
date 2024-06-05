@@ -1,6 +1,7 @@
 import { ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -44,9 +45,6 @@ export class UserGateway {
       const decoded = this.transJwtService.verify(jwt);
       const intra_id = decoded.sub;
       client.data.intra_id = intra_id;
-
-      await this.gameService.updateInvitations(client);
-      await this.userService.updateIncomingFriendRequests(client);
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {
@@ -54,5 +52,11 @@ export class UserGateway {
         redirectToLoginPage: true,
       });
     }
+  }
+
+  @SubscribeMessage('heartbeat')
+  heartbeat(client: Socket) {
+    console.log('heartbeat'); // TODO: Remove this line
+    this.userService.updateLastOnline(client.data.intra_id);
   }
 }

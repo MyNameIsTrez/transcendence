@@ -130,10 +130,7 @@ export class UserController {
 
   @Post('sendFriendRequest')
   sendFriendRequest(@Request() req, @Body() body) {
-    return this.userService.sendFriendRequest(
-      req.user.intra_id,
-      body.intra_name,
-    );
+    this.userService.sendFriendRequest(req.user.intra_id, body.intra_name);
   }
 
   @Post('acceptFriendRequest')

@@ -140,6 +140,7 @@ userSocket.on('updateIncomingFriendRequests', (requests: IncomingFriendRequest[]
   console.log('in updateIncomingFriendRequests')
   incomingFriendRequests.value = requests
 })
+userSocket.emit('updateIncomingFriendRequests')
 
 function reloadFriends() {
   location.reload()

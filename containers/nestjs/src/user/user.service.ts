@@ -279,10 +279,7 @@ export class UserService {
     return this.usersRepository.findOneBy({ intra_name: intra_name });
   }
 
-  async sendFriendRequest(
-    sender_id: number,
-    receiver_name: string,
-  ): Promise<boolean> {
+  async sendFriendRequest(sender_id: number, receiver_name: string) {
     const sender = await this.usersRepository.findOne({
       where: { intra_id: sender_id },
       relations: {
@@ -321,6 +318,7 @@ export class UserService {
       throw new BadRequestException('Friend request already sent');
     }
 
+    // If we were already invited by this person, immediately make us friends
     if (
       sender.incoming_friend_requests.some(
         (friendRequest) => friendRequest.intra_id === receiver.intra_id,
@@ -341,8 +339,6 @@ export class UserService {
       receiver.incoming_friend_requests.push(sender);
       this.usersRepository.save(receiver);
     }
-
-    return true;
   }
 
   async getFriends(intra_id: number) {

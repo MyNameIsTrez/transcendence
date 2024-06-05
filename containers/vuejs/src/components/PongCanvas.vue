@@ -6,11 +6,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
+import { Socket } from 'socket.io-client'
 import ScoreBoard from './ScoreBoard.vue'
 
 const props = defineProps(['gameSocket'])
 const gameSocket = props.gameSocket
+
+const userSocket: Socket = inject('userSocket')!
 
 gameSocket.on('pong', (data: any) => {
   render(data)
@@ -20,7 +23,7 @@ gameSocket.on('gameOver', () => {
 })
 
 setInterval(() => {
-  gameSocket.emit('heartbeat')
+  userSocket.emit('heartbeat')
 }, 1000)
 
 const emitMovePaddle = (code: string, keydown: boolean) => {
