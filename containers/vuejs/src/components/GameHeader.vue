@@ -1,10 +1,8 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
-    <AlertPopup
-      :alertType="AlertType.ALERT_WARNING"
-      :visible="alertVisible"
-      :alertMessage="alertMessage"
-    />
+    <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+      alertMessage
+    }}</AlertPopup>
 
     <h1 class="game-title">{{ gameTitle }}</h1>
     <PlayButton v-if="!endOfGame && !queueing" @clicked="joinGame" :buttonText="'PLAY'" />

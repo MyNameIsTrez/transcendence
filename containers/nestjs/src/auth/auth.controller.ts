@@ -61,7 +61,7 @@ export class AuthController {
 
   @Post('2fa/generate')
   async generate(@Request() req, @Response() res) {
-    return this.authService.generate(req.user.intra_id, res);
+    return await this.authService.generate(req.user.intra_id, res);
   }
 
   @Post('2fa/turn-on')
@@ -75,7 +75,7 @@ export class AuthController {
 
   @Post('2fa/turn-off')
   async turnOff(@Request() req, @Body() body) {
-    return this.authService.turnOff(
+    return await this.authService.turnOff(
       req.user.intra_id,
       req.user.twoFactorAuthenticationSecret,
       body.twoFactorAuthenticationCode,
@@ -86,16 +86,16 @@ export class AuthController {
   @HttpCode(200)
   @Public()
   @UseGuards(JwtAuthGuard)
-  isEnabled(@Request() req) {
-    return this.authService.isEnabled(req.user.intra_id);
+  async isEnabled(@Request() req) {
+    return await this.authService.isEnabled(req.user.intra_id);
   }
 
   @Post('2fa/authenticate')
   @HttpCode(200)
   @Public()
   @UseGuards(JwtAuthGuard)
-  authenticate(@Request() req, @Body() body) {
-    return this.authService.authenticate(
+  async authenticate(@Request() req, @Body() body) {
+    return await this.authService.authenticate(
       req.user.intra_id,
       req.user.isTwoFactorAuthenticated,
       req.user.twoFactorAuthenticationSecret,

@@ -2,7 +2,7 @@
   <div>
     <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
     <div v-if="!chatIsOpen">
-      CHANNELS
+      PUBLIC AND PROTECTED CHATS
       <br />
       <br />
       <div class="scrollable-container-half">
@@ -43,7 +43,7 @@
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
       <input
-        v-if="protectedChat"
+        v-if="visibility === 'PROTECTED'"
         v-model="passwordChat"
         placeholder="Password..."
         @keyup.enter="createChat"
@@ -66,7 +66,7 @@
           </div>
           <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
           <input
-            v-if="protectedChat"
+            v-if="visibility === 'PROTECTED'"
             v-model="passwordChat"
             placeholder="Password..."
             @keyup.enter="changeVisibility"
@@ -83,23 +83,14 @@
         </div>
       </div>
 
-      <div v-if="direct">
-        <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
-      </div>
-      <div v-if="openOtherProfile">
-        <router-link :to="`/user/${otherIntraId}`">View profile of {{ otherProfile }} </router-link>
-      </div>
-      <br/>
+      <br />
 
-      CURRENT CHAT: {{ currentChat }} <br /><br />
+      IN CHAT '{{ currentChat }}' <br /><br />
       <div ref="chat" class="scrollable-container">
-        <div
-          v-for="(line, index) in chatHistory"
-          :key="index"
-          class="line"
-          @click="openProfileButton(index)"
-        >
-          {{ line }}
+        <div v-for="(entry, index) in chatHistory" :key="index" class="line">
+          <router-link :to="`/user/${entry.sender}`">
+            {{ entry.sender_name + ': ' + entry.body + '\n' }}
+          </router-link>
         </div>
       </div>
       <br />
@@ -122,50 +113,49 @@ import { nextTick } from 'vue'
 const props = defineProps(['chatSocket'])
 const chatSocket = props.chatSocket
 
+class Entry {
+  sender_name: string
+  sender: number
+  body: string
+
+  constructor(sender_name: string, sender: number, body: string) {
+    this.sender_name = sender_name
+    this.sender = sender
+    this.body = body
+  }
+}
+
 // VARIABLES
-const blockStatus = ref('Block')
+const blocked = ref(new Set<number>([]))
 const chat = ref()
 const chatName = ref('')
 const directMessagesOnIndex = ref<string[]>([])
 const directMessageIdsOnIndex = ref<string[]>([])
 const channelsOnIndex = ref<string[]>([])
 const channelIdsOnIndex = ref<string[]>([])
-const chatHistory = ref<string[]>([])
-const chatHistorySender = ref<string[]>([])
+const chatHistory = ref<Entry[]>([])
 const chatIsOpen = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
 const daysToMute = ref(0)
-const direct = ref(false)
 const iAmAdmin = ref(false)
 const iAmBanned = ref(false)
-const iAmBlocked = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
 const isProtected = ref(false)
 const locked = ref(false)
 const myIntraId = ref('')
 const myUsername = ref('')
-const chats = ref('')
+const chats = ref()
 const newPassword = ref('')
-const otherIntraId = ref('')
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
-const otherProfile = ref('')
-const openOtherProfile = ref(false)
 const password = ref('')
 const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
-const protectedChat = ref(false)
 const passwordChat = ref('')
 const typedMessage = ref('')
 const visibility = ref('PUBLIC')
-const visibilityNum = ref(1)
-const visitProfile = ref(false)
-
-async function openProfile() {
-  visitProfile.value = true
-}
 
 async function changePassword() {
   await post('api/chat/changePassword', {
@@ -190,15 +180,6 @@ async function changeVisibility() {
   getChannels()
 }
 
-function openProfileButton(index: number) {
-  otherProfile.value = chatHistorySender.value[index]
-  if (otherProfile.value !== myUsername.value) {
-    openOtherProfile.value = true
-  } else {
-    openOtherProfile.value = false
-  }
-}
-
 function changeOptionsButton() {
   optionsButton.value = !optionsButton.value
   if (optionsButton.value === false) optionsButtonText.value = '~ open options ~'
@@ -211,16 +192,12 @@ function changeChatButton() {
 
 async function muteUser() {
   console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
-  const mute = await post('api/chat/mute', {
+  await post('api/chat/mute', {
     chat_id: currentChatId.value,
     username: otherUser.value,
     days: parseInt(daysToMute.value)
   })
   daysToMute.value = 0
-}
-
-async function getBlockStatus() {
-  return await get('api/user/blockStatus/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function getMyIntraId() {
@@ -229,28 +206,6 @@ async function getMyIntraId() {
 
 async function getMyUsername() {
   myUsername.value = await get('api/user/username')
-}
-
-async function getOtherIntraId() {
-  return await get('api/chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
-}
-
-async function handleBlock() {
-  if (blockStatus.value === 'Block') {
-    blockUser()
-    blockStatus.value = 'Unblock'
-  } else {
-    unblockUser()
-    blockStatus.value = 'Block'
-  }
-}
-
-async function blockUser() {
-  await get('api/user/block/' + myIntraId.value + '/' + otherIntraId.value)
-}
-
-async function unblockUser() {
-  await get('api/user/unblock/' + myIntraId.value + '/' + otherIntraId.value)
 }
 
 async function kickUser() {
@@ -307,7 +262,6 @@ async function getInfo() {
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
   console.log('info', info)
   iAmAdmin.value = info.isAdmin
-  direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
   isProtected.value = info.isProtected
@@ -354,41 +308,34 @@ async function validateLock(chat_str: string) {
 }
 
 async function getChat(chat_str: string) {
-  let i: number = 0
-  let history: string[] = []
   locked.value = false
+
   await getInfo()
+
   if (iAmBanned.value) return
-  if (direct.value) {
-    otherIntraId.value = await getOtherIntraId()
-    iAmBlocked.value = await getBlockStatus()
-  } else {
-    otherIntraId.value = ''
-    iAmBlocked.value = false
-  }
+
+  const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
+  blocked.value = new Set<number>(blockedUsers)
 
   // TODO: Can this be removed?
   if (chatIsOpen.value == false) changeChatButton()
-
-  chatHistory.value = []
-  history = await get('api/chat/history/' + currentChatId.value)
 
   await post('api/chat/addUserToChat', {
     chat_id: currentChatId.value,
     username: myUsername.value
   })
 
-  i = 0
-  while (history[i]) {
-    chatHistory.value[i] = history[i].sender_name + ': ' + history[i].body + '\n'
-    chatHistorySender.value[i] = history[i].sender_name
-    i++
-  }
+  chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
+    (entry: Entry) => !blocked.value.has(entry.sender)
+  )
 
   await nextTick()
   getChats()
   getChannels()
-  chat.value.scrollTop = chat.value.scrollHeight
+
+  if (chat.value) {
+    chat.value.scrollTop = chat.value.scrollHeight
+  }
 }
 
 async function getChats() {
@@ -425,13 +372,13 @@ async function getChannels() {
   }
 }
 
-chatSocket.on('confirm', async (result) => {
+chatSocket.on('confirm', async () => {
   typedMessage.value = ''
   await getChat(currentChat.value)
 })
 
 function sendMessage() {
-  if ((direct.value && iAmBlocked.value) || iAmMute.value) {
+  if (iAmMute.value) {
     typedMessage.value = ''
     return
   }
@@ -443,19 +390,15 @@ function sendMessage() {
 }
 
 function chatVisibility() {
-  protectedChat.value = false
-  visibilityNum.value += 1
-  if (visibilityNum.value > 3) visibilityNum.value = 1
-  if (visibilityNum.value === 1) {
-    privateButtonClass.value = 'btn btn-warning mb-3'
-    visibility.value = 'PUBLIC'
-  } else if (visibilityNum.value === 2) {
+  if (visibility.value === 'PUBLIC') {
     privateButtonClass.value = 'btn btn-primary mx-3 mb-3'
     visibility.value = 'PRIVATE'
-  } else {
+  } else if (visibility.value === 'PRIVATE') {
     privateButtonClass.value = 'btn btn-info mx-6 mb-3'
     visibility.value = 'PROTECTED'
-    protectedChat.value = true
+  } else {
+    privateButtonClass.value = 'btn btn-warning mb-3'
+    visibility.value = 'PUBLIC'
   }
 }
 

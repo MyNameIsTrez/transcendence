@@ -33,11 +33,9 @@
                   <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
-              <AlertPopup
-                :alertType="alertType"
-                :visible="alertVisible"
-                :alertMessage="alertMessage"
-              />
+              <AlertPopup :alertType="alertType" :visible="alertVisible">{{
+                alertMessage
+              }}</AlertPopup>
             </span>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>
@@ -64,6 +62,7 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
+        :isFriend="true"
       />
     </template>
     <h1 class="text-center pt-2">----- Offline -----</h1>
@@ -73,6 +72,7 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
+        :isFriend="true"
       />
     </template>
     <h1 class="text-center pt-2">---- Incoming ----</h1>
@@ -96,7 +96,6 @@ import AlertPopup from '../AlertPopup.vue'
 import { AlertType } from '../../types'
 
 const gameSocket: Socket = inject('gameSocket')!
-const userSocket: Socket = inject('userSocket')!
 
 const friends = ref(await get('api/user/friends'))
 const incomingFriendRequests = await get('api/user/incomingFriendRequests')

@@ -46,11 +46,9 @@
               </div>
             </div>
 
-            <AlertPopup
-              :alertType="AlertType.ALERT_WARNING"
-              :visible="alertVisible"
-              :alertMessage="alertMessage"
-            />
+            <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+              alertMessage
+            }}</AlertPopup>
           </span>
 
           <!-- Allows clicking outside of the modal to close it -->

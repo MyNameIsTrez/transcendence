@@ -11,7 +11,7 @@
     >
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="`${svgPath}`" />
     </svg>
-    <span>{{ alertMessage }}</span>
+    <slot />
   </div>
 </template>
 
@@ -21,8 +21,7 @@ import { AlertType } from '../types'
 
 const props = defineProps({
   alertType: String as PropType<AlertType>,
-  visible: Boolean,
-  alertMessage: String
+  visible: Boolean
 })
 
 const svgPath =

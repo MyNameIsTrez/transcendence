@@ -202,6 +202,8 @@ export class UserService {
 
     me.blocked.push(other);
 
+    this.removeFriend(my_intra_id, other_intra_id);
+
     return this.usersRepository.save(me);
   }
 
@@ -212,18 +214,52 @@ export class UserService {
         blocked: true,
       },
     });
+
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
+
     return this.usersRepository.save(me);
   }
 
-  async iAmBlocked(my_intra_id: number, other_intra_id: number) {
-    const other_user = await this.usersRepository.findOne({
-      where: { intra_id: other_intra_id },
+  async hasBlocked(my_intra_id: number, other_intra_id: number) {
+    const me = await this.usersRepository.findOne({
+      where: { intra_id: my_intra_id },
       relations: {
         blocked: true,
       },
     });
-    return other_user.blocked.some((user) => user.intra_id === my_intra_id);
+
+    const blocked = me.blocked.some((user) => user.intra_id === other_intra_id);
+
+    return blocked;
+  }
+
+  async blocked(intra_id: number) {
+    return await this.usersRepository
+      .findOne({
+        where: { intra_id },
+        relations: {
+          blocked: true,
+        },
+      })
+      .then(async (user) => {
+        return await Promise.all(
+          user.blocked.map(async (blockedUser) => {
+            const nowMs = Date.now();
+            const lastOnlineMs = (
+              await this.getLastOnline(blockedUser.intra_id)
+            ).getTime();
+            const isOnline =
+              nowMs - lastOnlineMs <
+              this.configService.get('OFFLINE_TIMEOUT_MS');
+
+            return {
+              name: blockedUser.username,
+              isOnline,
+              intraId: blockedUser.intra_id,
+            };
+          }),
+        );
+      });
   }
 
   async addWin(intra_id: number) {

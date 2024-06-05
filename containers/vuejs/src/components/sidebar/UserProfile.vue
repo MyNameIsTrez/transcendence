@@ -52,6 +52,11 @@
       </div>
       <br />
       <Achievements :intraId="intra_id" />
+
+      <br />
+      <button class="btn text-xl" @click="handleBlock">
+        {{ blocked ? 'Unblock' : 'Block' }}
+      </button>
     </div>
   </div>
 </template>
@@ -61,7 +66,7 @@ import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
@@ -71,13 +76,20 @@ const user = await get(`api/user/other/${intra_id}`)
 const username = user.username
 const wins = user.wins
 const losses = user.losses
-const profilePicture = await getImage(`api/user/profilePicture/${user.intra_id}.png`)
-const matchHistory = await get(`api/user/matchHistory/${user.intra_id}`)
+const profilePicture = await getImage(`api/user/profilePicture/${intra_id}.png`)
+const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
+
+const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
     invitedUser: intra_id,
     gamemode: localStorage.getItem('gamemode')
   })
+}
+
+async function handleBlock() {
+  await get('api/user/' + (blocked.value ? 'un' : '') + 'block/' + intra_id)
+  blocked.value = !blocked.value
 }
 </script>
