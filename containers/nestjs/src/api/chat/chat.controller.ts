@@ -129,11 +129,6 @@ export class ChatController {
     return await this.chatService.isDirect(dto.chat_id);
   }
 
-  @Get('getOtherIntraId/:chat_id/:intra_id')
-  async getOtherIntraId(@Param() dto: OtherUserDto) {
-    return await this.chatService.getOtherIntraId(dto.chat_id, dto.intra_id);
-  }
-
   @Post('mute')
   async mute(@Body() dto: MuteDto) {
     return await this.chatService.mute(dto.chat_id, dto.username, dto.days);

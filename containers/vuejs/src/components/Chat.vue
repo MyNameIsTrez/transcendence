@@ -83,9 +83,8 @@
         </div>
       </div>
 
-      <div v-if="direct">
-        <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
-      </div>
+      <button @click="handleBlock">{{ blockStatus }}</button><br /><br />
+
       <div v-if="selectedUserUsername">
         <router-link :to="`/user/${selectedUserIntraId}`"
           >View profile of {{ selectedUserUsername }}
@@ -137,10 +136,8 @@ const chatIsOpen = ref(false)
 const currentChat = ref('')
 const currentChatId = ref('')
 const daysToMute = ref(0)
-const direct = ref(false)
 const iAmAdmin = ref(false)
 const iAmBanned = ref(false)
-const iAmBlocked = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
 const isProtected = ref(false)
@@ -149,7 +146,7 @@ const myIntraId = ref('')
 const myUsername = ref('')
 const chats = ref()
 const newPassword = ref('')
-const selectedUserIntraId = ref('')
+const selectedUserIntraId = ref(-1)
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
@@ -184,7 +181,11 @@ async function changeVisibility() {
 }
 
 function openProfileButton(index: number) {
-  selectedUserUsername.value = chatHistory.value[index].sender_name
+  const entry = chatHistory.value[index]
+
+  selectedUserUsername.value = entry.sender_name
+  selectedUserIntraId.value = entry.sender
+
   if (selectedUserUsername.value === myUsername.value) {
     selectedUserUsername.value = null
   }
@@ -210,21 +211,12 @@ async function muteUser() {
   daysToMute.value = 0
 }
 
-async function getBlockStatus() {
-  return await get('api/user/blockStatus/' + myIntraId.value + '/' + selectedUserIntraId.value)
-}
-
 async function getMyIntraId() {
   myIntraId.value = await get('api/user/intraId')
 }
 
 async function getMyUsername() {
   myUsername.value = await get('api/user/username')
-}
-
-async function getOtherIntraId() {
-  console.log({ myIntraId: myIntraId.value })
-  return await get('api/chat/getOtherIntraId/' + currentChatId.value + '/' + myIntraId.value)
 }
 
 async function handleBlock() {
@@ -299,7 +291,6 @@ async function getInfo() {
   const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
   console.log('info', info)
   iAmAdmin.value = info.isAdmin
-  direct.value = info.isDirect
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
   isProtected.value = info.isProtected
@@ -349,14 +340,6 @@ async function getChat(chat_str: string) {
   locked.value = false
   await getInfo()
   if (iAmBanned.value) return
-  if (direct.value) {
-    selectedUserIntraId.value = await getOtherIntraId()
-    console.log('otherIntraId.value', selectedUserIntraId.value)
-    iAmBlocked.value = await getBlockStatus()
-  } else {
-    selectedUserIntraId.value = ''
-    iAmBlocked.value = false
-  }
 
   // TODO: Can this be removed?
   if (chatIsOpen.value == false) changeChatButton()
@@ -417,7 +400,7 @@ chatSocket.on('confirm', async () => {
 })
 
 function sendMessage() {
-  if ((direct.value && iAmBlocked.value) || iAmMute.value) {
+  if (iAmMute.value) {
     typedMessage.value = ''
     return
   }

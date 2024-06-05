@@ -115,14 +115,6 @@ export class UserController {
     return await this.userService.unblock(dto.my_intra_id, dto.other_intra_id);
   }
 
-  @Get('blockStatus/:my_intra_id/:other_intra_id')
-  async iAmBlocked(@Param() dto: BlockDto) {
-    return await this.userService.iAmBlocked(
-      dto.my_intra_id,
-      dto.other_intra_id,
-    );
-  }
-
   @Get('friends')
   async getFriends(@Request() req) {
     return await this.userService.getFriends(req.user.intra_id);

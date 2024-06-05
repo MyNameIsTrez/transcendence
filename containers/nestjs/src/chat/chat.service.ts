@@ -210,20 +210,6 @@ export class ChatService {
       });
   }
 
-  public async getOtherIntraId(chat_id: string, intra_id: number) {
-    return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { users: true } })
-      .then((chat) => {
-        const user = chat.users.find((user) => user.intra_id !== intra_id);
-        if (!user) {
-          throw new BadRequestException(
-            "Couldn't find another user in this chat",
-          );
-        }
-        return user.intra_id;
-      });
-  }
-
   public getTimeOfUnmute(days: number) {
     const date = new Date();
     const current_time = date.getTime();

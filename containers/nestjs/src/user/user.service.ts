@@ -216,16 +216,6 @@ export class UserService {
     return this.usersRepository.save(me);
   }
 
-  async iAmBlocked(my_intra_id: number, other_intra_id: number) {
-    const other_user = await this.usersRepository.findOne({
-      where: { intra_id: other_intra_id },
-      relations: {
-        blocked: true,
-      },
-    });
-    return other_user.blocked.some((user) => user.intra_id === my_intra_id);
-  }
-
   async addWin(intra_id: number) {
     await this.usersRepository.increment({ intra_id }, 'wins', 1);
 
