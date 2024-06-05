@@ -125,8 +125,7 @@ export class ChatService {
   }
 
   public async getName(chat_id: string) {
-    const chat = await this.getChat(chat_id);
-    return chat.name;
+    return (await this.getChat(chat_id)).name;
   }
 
   private getChat(chat_id: string) {
@@ -167,8 +166,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { banned: true } })
       .then(async (chat) => {
-        if (chat.banned.some((user) => user.intra_id == intra_id)) return true;
-        return false;
+        return chat.banned.some((user) => user.intra_id == intra_id);
       });
   }
 
@@ -353,7 +351,6 @@ export class ChatService {
   }
 
   public async channels() {
-    const chats = this.chatRepository.find();
-    return chats;
+    return this.chatRepository.find();
   }
 }
