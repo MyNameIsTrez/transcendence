@@ -138,10 +138,11 @@ class SmallerPaddleItem extends Item {
   }
 
   activeLoopHook(game: APong) {
-    const player = game._leftPlayer.id === this._affectedPlayerId
-      ? game._leftPlayer
-      : game._rightPlayer;
-    const playerCenter = player.paddle._pos.y + player.paddle._size.h / 2;
+    const player =
+      game._leftPlayer.id === this._affectedPlayerId
+        ? game._leftPlayer
+        : game._rightPlayer;
+    const paddleCenter = player.paddle._pos.y + player.paddle._size.h / 2;
 
     player.paddle._size.h = WINDOW_HEIGHT * 0.15;
     player.paddle._pos.y = paddleCenter - player.paddle._size.h / 2;
@@ -163,14 +164,18 @@ class SmallerPaddleItem extends Item {
   }
 
   onDestroy(game: APong) {
-    const player = game._leftPlayer.id === this._affectedPlayerId
-      ? game._leftPlayer 
-      : game._rightPlayer;
-    const playerCenter = player.paddle._pos.y + player.paddle._size.h / 2;
+    const player =
+      game._leftPlayer.id === this._affectedPlayerId
+        ? game._leftPlayer
+        : game._rightPlayer;
+    const paddleCenter = player.paddle._pos.y + player.paddle._size.h / 2;
 
     player.paddle._size.h = WINDOW_HEIGHT * 0.2;
     const targetPos = paddleCenter - player.paddle._size.h / 2;
-    player.paddle._pos.y = Math.max(Math.min(targetPos, WINDOW_HEIGHT - player.paddle._size.h), 0);
+    player.paddle._pos.y = Math.max(
+      Math.min(targetPos, WINDOW_HEIGHT - player.paddle._size.h),
+      0,
+    );
   }
 }
 
