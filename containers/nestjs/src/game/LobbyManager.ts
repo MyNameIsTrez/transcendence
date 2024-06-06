@@ -176,7 +176,7 @@ export default class LobbyManager {
   public async getInvitations(intra_id: number) {
     const lobbiesArray = await Array.from(this.lobbies.values());
 
-    return await Promise.all(
+    const invitations = await Promise.all(
       lobbiesArray.flatMap(async (lobby) =>
         lobby.isPrivate &&
         lobby.invitedIntraId === intra_id &&
@@ -191,5 +191,10 @@ export default class LobbyManager {
           : [],
       ),
     );
+
+    // TODO: Remove before eval
+    console.log('invitations', invitations);
+
+    return invitations;
   }
 }
