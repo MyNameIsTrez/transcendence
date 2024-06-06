@@ -83,7 +83,7 @@ export class GameService {
     acceptedIntraId: number,
     clients: Map<number, Socket[]>,
   ) {
-    console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
+    // console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
 
     if (!(await this.userService.hasUser(acceptedIntraId))) {
       throw new WsException('Could not find user');
@@ -96,17 +96,17 @@ export class GameService {
 
     client.emit('inQueue', { inQueue: true });
 
+    const lobby = this.lobbyManager.intraIdToLobby.get(acceptedIntraId);
+
+    await lobby.addClient(client);
+    this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
+
     const invitations = await this.lobbyManager.getInvitations(
       client.data.intra_id,
     );
     clients.get(client.data.intra_id).forEach((socket) => {
       socket.emit('updateInvitations', invitations);
     });
-
-    const lobby = this.lobbyManager.intraIdToLobby.get(acceptedIntraId);
-
-    await lobby.addClient(client);
-    this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
   public async declineInvitation(

@@ -181,7 +181,9 @@ export default class LobbyManager {
 
     return await Promise.all(
       lobbiesArray.flatMap(async (lobby) =>
-        lobby.isPrivate && lobby.invitedIntraId === intra_id
+        lobby.isPrivate &&
+        lobby.invitedIntraId === intra_id &&
+        !lobby.gameHasStarted
           ? {
               inviterIntraId: lobby.inviterIntraId,
               inviterName: await this.userService.getUsername(
