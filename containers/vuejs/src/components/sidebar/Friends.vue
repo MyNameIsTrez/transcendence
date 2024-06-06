@@ -133,7 +133,6 @@ async function reloadFriends() {
 }
 
 async function updateLists() {
-  console.log('Child has been created.')
   friends.value = await get('api/user/friends')
   incomingFriendRequests.value = await get('api/user/incomingFriendRequests')
 }
