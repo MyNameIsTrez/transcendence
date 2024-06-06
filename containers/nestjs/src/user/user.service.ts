@@ -494,16 +494,17 @@ export class UserService {
       (user) => user.intra_id === friend_id,
     );
     if (myFriendIndex === -1) {
-      throw new InternalServerErrorException('Failed to find myFriendIndex');
+      return;
     }
-    user.friends.splice(myFriendIndex, 1);
 
     const otherFriendIndex = friend.friends.findIndex(
       (user) => user.intra_id === user_id,
     );
     if (otherFriendIndex === -1) {
-      throw new InternalServerErrorException('Failed to find otherFriendIndex');
+      return;
     }
+
+    user.friends.splice(myFriendIndex, 1);
     friend.friends.splice(otherFriendIndex, 1);
 
     this.usersRepository.save(user);
