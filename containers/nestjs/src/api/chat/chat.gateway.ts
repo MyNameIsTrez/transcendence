@@ -75,6 +75,12 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: HandleMessageDto,
   ) {
+    if (await this.chatService.isMute(dto.chatId, client.data.intra_id))
+      return ;
+    if (await this.chatService.isBanned(dto.chatId, client.data.intra_id))
+      return ;
+    if (!await this.chatService.isUser(dto.chatId, client.data.intra_id))
+      return ;
     await this.chatService.handleMessage(
       client.data.intra_id,
       dto.chatId,

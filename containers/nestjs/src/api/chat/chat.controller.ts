@@ -171,4 +171,9 @@ export class ChatController {
   async channels() {
     return await this.chatService.channels();
   }
+
+  @Get('leave/:chat_id')
+  async leave(@Request() req, @Param() dto: NameDto) {
+    return await this.chatService.leave(dto.chat_id, req.user.intra_id);
+  }
 }

@@ -1,6 +1,8 @@
 <template>
   <div>
+    <br />
     <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
+    <button class="btn btn-success" @click="getChannels(); getChats();">refresh</button><br /><br />
     <div v-if="!chatIsOpen">
       PUBLIC AND PROTECTED CHATS
       <br />
@@ -50,10 +52,12 @@
       /><br />
       <button @click="createChat">Create</button>
     </div>
-
     <div v-if="chatIsOpen">
+      <div v-if="iAmUser">
+        <button class="btn btn-secondary" @click="leave"> Leave chat </button><br /><br />
+      </div>
+
       <div v-if="iAmAdmin">
-        <br />
         <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
         <div v-if="optionsButton">
           <div v-if="isProtected">
@@ -85,7 +89,8 @@
 
       <br />
 
-      IN CHAT '{{ currentChat }}' <br /><br />
+      IN CHAT '{{ currentChat }}' 
+      <div v-if="isDirect">(DM)</div> <br /><br />
       <div ref="chat" class="scrollable-container">
         <div v-for="(entry, index) in chatHistory" :key="index" class="line">
           <router-link :to="`/user/${entry.sender}`">
@@ -142,6 +147,8 @@ const iAmAdmin = ref(false)
 const iAmBanned = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
+const iAmUser = ref(false)
+const isDirect = ref(false)
 const isProtected = ref(false)
 const locked = ref(false)
 const myIntraId = ref('')
@@ -152,10 +159,17 @@ const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const password = ref('')
-const privateButtonClass = ref('btn btn-warning text-white mx-3 mb-3')
+const privateButtonClass = ref('btn btn-warning')
 const passwordChat = ref('')
 const typedMessage = ref('')
 const visibility = ref('PUBLIC')
+
+async function leave() {
+  await get('api/chat/leave/' + currentChatId.value);
+  getChats()
+  getChannels()
+  chatIsOpen.value = false
+}
 
 async function changePassword() {
   await post('api/chat/changePassword', {
@@ -261,11 +275,13 @@ async function getInfo() {
   getChannels()
   const info = await get('api/chat/info/' + currentChatId.value)
   console.log('info', info)
+  iAmUser.value = info.isUser
   iAmAdmin.value = info.isAdmin
   iAmMute.value = info.isMute
   iAmOwner.value = info.isOwner
   isProtected.value = info.isProtected
   iAmBanned.value = info.isBanned
+  isDirect.value = info.isDirect
 }
 
 async function validatePassword() {
@@ -301,6 +317,9 @@ async function validateLock(chat_str: string) {
     }
   }
 
+  await getInfo()
+  if (iAmBanned.value) return
+
   if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
     locked.value = true
   } else {
@@ -311,21 +330,17 @@ async function validateLock(chat_str: string) {
 async function getChat(chat_str: string) {
   locked.value = false
 
-  await getInfo()
-
-  if (iAmBanned.value) return
-
   const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
   blocked.value = new Set<number>(blockedUsers)
-
+  
   // TODO: Can this be removed?
   if (chatIsOpen.value == false) changeChatButton()
-
+  
   await post('api/chat/addUserToChat', {
     chat_id: currentChatId.value,
     username: myUsername.value
   })
-
+  
   chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
     (entry: Entry) => !blocked.value.has(entry.sender)
   )
@@ -388,13 +403,13 @@ function sendMessage() {
 
 function chatVisibility() {
   if (visibility.value === 'PUBLIC') {
-    privateButtonClass.value = 'btn btn-primary mx-3 mb-3'
+    privateButtonClass.value = 'btn btn-primary'
     visibility.value = 'PRIVATE'
   } else if (visibility.value === 'PRIVATE') {
-    privateButtonClass.value = 'btn btn-info mx-6 mb-3'
+    privateButtonClass.value = 'btn btn-info '
     visibility.value = 'PROTECTED'
   } else {
-    privateButtonClass.value = 'btn btn-warning mb-3'
+    privateButtonClass.value = 'btn btn-warning'
     visibility.value = 'PUBLIC'
   }
 }
