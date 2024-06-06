@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from '../../user/user.service';
-import { IsNotEmpty, MaxLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 import { Transform, TransformFnParams } from 'class-transformer';
 
@@ -28,6 +28,12 @@ class SetUsernameDto {
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
   username: string;
+}
+
+class UserDto {
+  @IsInt()
+  @IsPositive()
+  intra_id: number;
 }
 
 @Controller('api/user')
@@ -95,14 +101,14 @@ export class UserController {
     return await this.userService.getLeaderboard();
   }
 
-  @Get('block/:intraId')
-  async blockUser(@Request() req, @Param('intraId') intraId: number) {
-    return await this.userService.block(req.user.intra_id, intraId);
+  @Post('block')
+  async blockUser(@Request() req, @Body() dto: UserDto) {
+    return await this.userService.block(req.user.intra_id, dto.intra_id);
   }
 
-  @Get('unblock/:intraId')
-  async unblockUser(@Request() req, @Param('intraId') intraId: number) {
-    return await this.userService.unblock(req.user.intra_id, intraId);
+  @Post('unblock')
+  async unblockUser(@Request() req, @Body() dto: UserDto) {
+    return await this.userService.unblock(req.user.intra_id, dto.intra_id);
   }
 
   @Get('hasBlocked/:intraId')

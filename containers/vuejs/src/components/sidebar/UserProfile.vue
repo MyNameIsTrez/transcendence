@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
-import { get, getImage } from '../../httpRequests'
+import { get, getImage, post } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
 import { inject, ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
@@ -98,7 +98,9 @@ function inviteToGame() {
 }
 
 async function handleBlock() {
-  await get('api/user/' + (blocked.value ? 'un' : '') + 'block/' + intra_id)
+  const url = 'api/user/' + (blocked.value ? 'unblock' : 'block')
+
+  await post(url, { intra_id })
     .then(() => (blocked.value = !blocked.value))
     .catch((err) => {
       console.error('handleBlock error', err)
