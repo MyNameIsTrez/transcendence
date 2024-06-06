@@ -106,12 +106,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
+import { Socket } from 'socket.io-client'
 
-const props = defineProps(['chatSocket'])
-const chatSocket = props.chatSocket
+const chatSocket: Socket = inject('chatSocket')!
 
 class Entry {
   sender_name: string

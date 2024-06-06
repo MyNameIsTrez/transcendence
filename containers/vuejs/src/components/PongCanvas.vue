@@ -10,9 +10,7 @@ import { ref, onMounted, inject } from 'vue'
 import { Socket } from 'socket.io-client'
 import ScoreBoard from './ScoreBoard.vue'
 
-const props = defineProps(['gameSocket'])
-const gameSocket = props.gameSocket
-
+const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
 gameSocket.on('pong', (data: any) => {

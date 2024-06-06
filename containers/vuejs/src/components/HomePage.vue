@@ -55,6 +55,7 @@ const chatSocket = getSocket('/chat', opts)
 const userSocket = getSocket('/user', opts)
 
 provide('gameSocket', gameSocket)
+provide('chatSocket', chatSocket)
 provide('userSocket', userSocket)
 
 gameSocket.on('exception', (error) => {

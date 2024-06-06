@@ -29,12 +29,12 @@
 
 <script setup lang="ts">
 import PlayButton from './PlayButton.vue'
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import AlertPopup from './AlertPopup.vue'
 import { AlertType } from '../types'
+import { Socket } from 'socket.io-client'
 
-const props = defineProps(['gameSocket'])
-const gameSocket = props.gameSocket
+const gameSocket: Socket = inject('gameSocket')!
 
 const alertVisible = ref(false)
 
