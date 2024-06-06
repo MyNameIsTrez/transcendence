@@ -26,9 +26,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         VITE_ADDRESS: Joi.string().uri(),
         VITE_BACKEND_PORT: Joi.number().integer().positive(),
         VITE_INTRA_REDIRECT_URL: Joi.string().uri(),
+        VITE_HEARTBEAT_RATE_MS: Joi.number().integer().positive(),
 
         INTRA_CLIENT_ID: Joi.string(),
         INTRA_CLIENT_SECRET: Joi.string(),
+
         JWT_SECRET: Joi.string(),
 
         APP_NAME: Joi.string(),
