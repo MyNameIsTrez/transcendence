@@ -174,27 +174,25 @@ export default class LobbyManager {
   }
 
   public async getInvitations(intra_id: number) {
-    const lobbiesArray = await Array.from(this.lobbies.values());
+    const lobbies = await Array.from(this.lobbies.values());
 
-    const invitations = await Promise.all(
-      lobbiesArray.flatMap(async (lobby) =>
+    const filteredLobbies = lobbies.filter(
+      (lobby) =>
         lobby.isPrivate &&
         lobby.invitedIntraId === intra_id &&
-        !lobby.gameHasStarted
-          ? {
-              inviterIntraId: lobby.inviterIntraId,
-              inviterName: await this.userService.getUsername(
-                lobby.inviterIntraId,
-              ),
-              gamemode: lobby.gamemode,
-            }
-          : [],
-      ),
+        !lobby.gameHasStarted,
     );
 
-    // TODO: Remove before eval
-    console.log('invitations', invitations);
+    const mappedLobbiesArray = await Promise.all(
+      filteredLobbies.map(async (lobby) => {
+        return {
+          inviterIntraId: lobby.inviterIntraId,
+          inviterName: await this.userService.getUsername(lobby.inviterIntraId),
+          gamemode: lobby.gamemode,
+        };
+      }),
+    );
 
-    return invitations;
+    return mappedLobbiesArray;
   }
 }

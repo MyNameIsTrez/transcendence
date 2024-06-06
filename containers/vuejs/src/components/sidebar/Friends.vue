@@ -49,7 +49,7 @@
     <GameInvite
       v-for="invite in invitations"
       :key="invite.inviterIntraId"
-      :name="invite.inviterName"
+      :inviterName="invite.inviterName"
       :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
     />
