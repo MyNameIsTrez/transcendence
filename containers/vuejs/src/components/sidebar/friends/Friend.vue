@@ -3,7 +3,7 @@
     <router-link :to="{ path: `user/${intraId}` }">
       <figure>
         <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
-          <img class="rounded" :src="`${profilePicture}`" alt="Album" />
+          <img class="rounded" :src="`${profilePicture}`" />
         </div>
       </figure>
     </router-link>
@@ -35,7 +35,7 @@ const props = defineProps({
   intraId: Number
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function removeFriend() {
   post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())

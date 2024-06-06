@@ -28,7 +28,7 @@ const props = defineProps({
   intraId: Number
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function acceptFriendRequest() {
   post('api/user/acceptFriendRequest', { sender_id: props.intraId }).then(() => location.reload())

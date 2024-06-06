@@ -85,7 +85,7 @@ export class AuthService {
             }),
           );
 
-          writeFile(`profile_pictures/${intra_id}.png`, data, (err) => {
+          writeFile(`profile_pictures/${intra_id}`, data, (err) => {
             if (err) throw err;
           });
 

@@ -176,10 +176,7 @@ export class UserService {
   }
 
   getProfilePicture(intra_id: number) {
-    const stream = createReadStream(
-      `profile_pictures/${intra_id}.png`,
-      'base64',
-    );
+    const stream = createReadStream(`profile_pictures/${intra_id}`, 'base64');
 
     // If you add this line back, with nothing between the {},
     // it'll return 200 when the png doesn't exist
