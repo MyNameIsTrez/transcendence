@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from '../../user/user.service';
 import { IsNotEmpty, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
+import { Transform, TransformFnParams } from 'class-transformer';
 
 class SetUsernameDto {
   @IsNotEmpty({
@@ -24,6 +25,8 @@ class SetUsernameDto {
   @MaxLength(16, {
     message: 'Name exceeds character limit of 16',
   })
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   username: string;
 }
 
