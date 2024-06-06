@@ -93,7 +93,7 @@
                 match.players[1].intra_id === match.disconnectedPlayer.intra_id
               "
               :leftPlayerIntraId="match.players[0].intra_id"
-              :myIntraId="me.intra_id"
+              :myIntraId="intraId"
               :leftPlayerScore="match.leftScore"
               :rightPlayerScore="match.rightScore"
               :gamemode="match.gamemode"
@@ -102,7 +102,7 @@
         </div>
       </div>
       <br />
-      <Achievements :intraId="me.intra_id" />
+      <Achievements :intraId="intraId" />
 
       <br />
       <button class="btn w-auto text-xl" @click="logout">Logout</button>
@@ -118,12 +118,13 @@ import { ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
 import { AlertType } from '../../types'
 
-const me = await get(`api/user/me`)
+let me = await get(`api/user/me`)
 
-const username = me.username
+const username = ref(me.username)
 const wins = me.wins
 const losses = me.losses
-const profilePicture = await getImage(`api/user/profilePicture/${me.intra_id}`)
+const intraId = me.intra_id
+const profilePicture = ref(await getImage(`api/user/profilePicture/${me.intra_id}`))
 const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
@@ -139,7 +140,9 @@ function uploadProfilePicture(event: any) {
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
   post('api/user/profilePicture', data)
-    .then(() => location.reload())
+    .then(async () => {
+      profilePicture.value = await getImage(`api/user/profilePicture/${me.intra_id}`)
+    })
     .catch((err) => {
       console.error('profilePicture error', err)
       alertMessage.value = err.response.data.message
@@ -152,7 +155,11 @@ function uploadProfilePicture(event: any) {
 
 function changeUsername() {
   post('api/user/setUsername', { username: newUsername.value })
-    .then(() => location.reload())
+    .then(async () => {
+      me = await get(`api/user/me`)
+      username.value = me.username
+      console.log('foo')
+    })
     .catch((err) => {
       console.error('setUsername error', err)
       alertMessage.value = err.response.data.message[0]
