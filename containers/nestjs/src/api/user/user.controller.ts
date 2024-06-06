@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from '../../user/user.service';
-import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
+import { IsNotEmpty, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 
 class SetUsernameDto {
