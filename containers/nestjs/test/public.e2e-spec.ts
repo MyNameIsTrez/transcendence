@@ -596,19 +596,19 @@ describe('App (e2e)', () => {
   });
 
   // TODO: Make this test pass
-  // it('/api/user/profilePicture/:intra_id.png (GET)', async () => {
+  // it('/api/user/profilePicture/:intra_id (GET)', async () => {
   //   await addUser();
   //   return getAuthorized(
-  //     `/api/user/profilePicture/${intraId}.png`,
+  //     `/api/user/profilePicture/${intraId}`,
   //     HttpStatus.OK,
   //     intraId.toString(),
   //   );
   // });
   // TODO: Make this test pass
-  // it('/api/user/profilePicture/:intra_id.png (GET) - profile picture not in database', async () => {
+  // it('/api/user/profilePicture/:intra_id (GET) - profile picture not in database', async () => {
   //   await addUser();
   //   return getAuthorized(
-  //     '/api/user/profilePicture/42.png',
+  //     '/api/user/profilePicture/42',
   //     HttpStatus.INTERNAL_SERVER_ERROR,
   //     {
   //       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -616,9 +616,9 @@ describe('App (e2e)', () => {
   //     },
   //   );
   // });
-  it('/api/user/profilePicture/:intra_id.png (GET) - user not in database', () => {
+  it('/api/user/profilePicture/:intra_id (GET) - user not in database', () => {
     return getAuthorized(
-      `/api/user/profilePicture/${intraId}.png`,
+      `/api/user/profilePicture/${intraId}`,
       HttpStatus.INTERNAL_SERVER_ERROR,
       {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -626,10 +626,10 @@ describe('App (e2e)', () => {
       },
     );
   });
-  it('/api/user/profilePicture/:intra_id.png (GET) - unauthorized', async () => {
+  it('/api/user/profilePicture/:intra_id (GET) - unauthorized', async () => {
     await addUser();
     return getPublic(
-      `/api/user/profilePicture/${intraId}.png`,
+      `/api/user/profilePicture/${intraId}`,
       HttpStatus.INTERNAL_SERVER_ERROR,
       {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,

@@ -76,7 +76,7 @@ const user = await get(`api/user/other/${intra_id}`)
 const username = user.username
 const wins = user.wins
 const losses = user.losses
-const profilePicture = await getImage(`api/user/profilePicture/${intra_id}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${intra_id}`)
 const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
 const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))

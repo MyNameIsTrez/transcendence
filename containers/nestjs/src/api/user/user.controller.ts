@@ -67,7 +67,7 @@ export class UserController {
     return await this.userService.chats(req.user.intra_id);
   }
 
-  @Get('profilePicture/:intra_id.png')
+  @Get('profilePicture/:intra_id')
   @Header('Content-Type', 'image/png')
   async getProfilePicture(@Param('intra_id') intra_id) {
     return this.userService.getProfilePicture(intra_id);
@@ -79,12 +79,12 @@ export class UserController {
     @Request() req,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: 'image/png' })],
+        validators: [new FileTypeValidator({ fileType: /image\/.*/ })],
       }),
     )
     file: Express.Multer.File,
   ) {
-    writeFileSync(`profile_pictures/${req.user.intra_id}.png`, file.buffer);
+    writeFileSync(`profile_pictures/${req.user.intra_id}`, file.buffer);
   }
 
   @Get('leaderboard')

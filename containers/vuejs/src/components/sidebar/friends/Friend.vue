@@ -36,7 +36,7 @@ const props = defineProps({
   isFriend: Boolean
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function removeFriend() {
   post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())

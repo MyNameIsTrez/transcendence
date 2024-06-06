@@ -36,7 +36,7 @@ const props = defineProps({
   gamemode: String
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.inviterIntraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.inviterIntraId}`)
 
 async function acceptGameInvite() {
   console.log('Accepting game invite from intra id', props.inviterIntraId)
