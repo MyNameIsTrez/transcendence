@@ -57,6 +57,10 @@
       <button class="btn text-xl" @click="handleBlock">
         {{ blocked ? 'Unblock' : 'Block' }}
       </button>
+
+      <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+        alertMessage
+      }}</AlertPopup>
     </div>
   </div>
 </template>
@@ -67,6 +71,11 @@ import Achievements from './achievements/Achievements.vue'
 import { get, getImage } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
 import { inject, ref } from 'vue'
+import AlertPopup from '../AlertPopup.vue'
+import { AlertType } from '../../types'
+
+const alertVisible = ref(false)
+const alertMessage = ref('')
 
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
@@ -90,6 +99,14 @@ function inviteToGame() {
 
 async function handleBlock() {
   await get('api/user/' + (blocked.value ? 'un' : '') + 'block/' + intra_id)
-  blocked.value = !blocked.value
+    .then(() => (blocked.value = !blocked.value))
+    .catch((err) => {
+      console.error('handleBlock error', err)
+      alertMessage.value = err.response.data.message
+      alertVisible.value = true
+      setTimeout(() => {
+        alertVisible.value = false
+      }, 3500)
+    })
 }
 </script>

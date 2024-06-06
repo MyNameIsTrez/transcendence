@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -189,6 +190,10 @@ export class UserService {
   }
 
   async block(my_intra_id: number, other_intra_id: number) {
+    if (my_intra_id === other_intra_id) {
+      throw new BadRequestException("You can't block yourself");
+    }
+
     const me = await this.usersRepository.findOne({
       where: { intra_id: my_intra_id },
       relations: {
@@ -197,9 +202,9 @@ export class UserService {
     });
     const other = await this.findOne(other_intra_id);
 
-    me.blocked.push(other);
+    await this.removeFriend(my_intra_id, other_intra_id);
 
-    this.removeFriend(my_intra_id, other_intra_id);
+    me.blocked.push(other);
 
     return this.usersRepository.save(me);
   }
@@ -484,14 +489,23 @@ export class UserService {
         friends: true,
       },
     });
-    user.friends.splice(
-      user.friends.findIndex((user) => user.intra_id === friend_id),
-      1,
+
+    const myFriendIndex = user.friends.findIndex(
+      (user) => user.intra_id === friend_id,
     );
-    friend.friends.splice(
-      friend.friends.findIndex((user) => user.intra_id === user_id),
-      1,
+    if (myFriendIndex === -1) {
+      throw new InternalServerErrorException('Failed to find myFriendIndex');
+    }
+    user.friends.splice(myFriendIndex, 1);
+
+    const otherFriendIndex = friend.friends.findIndex(
+      (user) => user.intra_id === user_id,
     );
+    if (otherFriendIndex === -1) {
+      throw new InternalServerErrorException('Failed to find otherFriendIndex');
+    }
+    friend.friends.splice(otherFriendIndex, 1);
+
     this.usersRepository.save(user);
     this.usersRepository.save(friend);
   }
