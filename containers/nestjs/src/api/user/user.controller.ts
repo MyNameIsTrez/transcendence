@@ -74,7 +74,7 @@ export class UserController {
   }
 
   @Post('profilePicture')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10000000 } }))
   async setProfilePicture(
     @Request() req,
     @UploadedFile(
