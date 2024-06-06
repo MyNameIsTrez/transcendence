@@ -355,6 +355,8 @@ export class UserService {
       throw new BadRequestException('Friend request already sent');
     }
 
+    this.unblock(sender_id, receiver.intra_id);
+
     // If we were already invited by this person, immediately make us friends
     if (
       sender.incoming_friend_requests.some(

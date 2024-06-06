@@ -288,18 +288,19 @@ async function validatePassword() {
 
 async function validateLock(chat_str: string) {
   currentChat.value = chat_str
-  let i: number = 0
 
-  while (channelIdsOnIndex.value[i]) {
-    if (channelsOnIndex.value[i] == chat_str) currentChatId.value = channelIdsOnIndex.value[i]
-    i++
+  for (let i = 0; channelIdsOnIndex.value[i]; i++) {
+    if (channelsOnIndex.value[i] == chat_str) {
+      currentChatId.value = channelIdsOnIndex.value[i]
+    }
   }
-  i = 0
-  while (directMessageIdsOnIndex.value[i]) {
-    if (directMessagesOnIndex.value[i] == chat_str)
+
+  for (let i = 0; directMessageIdsOnIndex.value[i]; i++) {
+    if (directMessagesOnIndex.value[i] == chat_str) {
       currentChatId.value = directMessageIdsOnIndex.value[i]
-    i++
+    }
   }
+
   if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
     locked.value = true
   } else {
@@ -378,10 +379,6 @@ chatSocket.on('confirm', async () => {
 })
 
 function sendMessage() {
-  if (iAmMute.value) {
-    typedMessage.value = ''
-    return
-  }
   const message = {
     chatId: currentChatId.value,
     body: typedMessage.value

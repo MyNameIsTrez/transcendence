@@ -70,12 +70,6 @@ export class ChatGateway {
     this.connectedClients.delete(client);
   }
 
-  letClientsUpdateTheirChats() {
-    for (const client of this.connectedClients.values()) {
-      client.emit('confirm', true);
-    }
-  }
-
   @SubscribeMessage('sendMessage')
   async handleMessage(
     @ConnectedSocket() client: Socket,
@@ -87,5 +81,11 @@ export class ChatGateway {
       dto.body,
     );
     this.letClientsUpdateTheirChats();
+  }
+
+  private letClientsUpdateTheirChats() {
+    for (const client of this.connectedClients.values()) {
+      client.emit('confirm', true);
+    }
   }
 }
