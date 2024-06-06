@@ -16,8 +16,8 @@ export default class Lobby {
 
   public readonly clients = new Map<string, Socket>();
 
-  public inviterIntraId = -1;
-  public invitedIntraId = -1;
+  public inviterIntraId: number | null = null;
+  public invitedIntraId: number | null = null;
 
   private leftPlayerIntraId: number;
   private rightPlayerIntraId: number;
@@ -30,7 +30,7 @@ export default class Lobby {
       [Gamemode.SPECIAL, (scoreToWin: number) => new SpecialPong(scoreToWin)],
     ]);
 
-  private gameHasStarted = false;
+  public gameHasStarted = false;
 
   constructor(
     readonly gamemode: Gamemode,
@@ -39,7 +39,7 @@ export default class Lobby {
     private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {
-    console.log('Initializing lobby with gamemode:', gamemode);
+    // console.log('Initializing lobby with gamemode:', gamemode);
     if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
     }

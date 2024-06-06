@@ -138,7 +138,16 @@ function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
-  post('api/user/profilePicture', data).then(() => location.reload())
+  post('api/user/profilePicture', data)
+    .then(() => location.reload())
+    .catch((err) => {
+      console.error('profilePicture error', err)
+      alertMessage.value = err.response.data.message
+      alertVisible.value = true
+      setTimeout(() => {
+        alertVisible.value = false
+      }, 3500)
+    })
 }
 
 function changeUsername() {
