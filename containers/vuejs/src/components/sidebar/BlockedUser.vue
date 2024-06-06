@@ -3,7 +3,7 @@
     <router-link :to="{ path: `user/${intraId}` }">
       <figure>
         <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
-          <img class="rounded" :src="`${profilePicture}`" />
+          <img class="rounded" :src="`${profilePicture}`" alt="Album" />
         </div>
       </figure>
     </router-link>
@@ -17,9 +17,6 @@
             <span class="material-symbols-outlined" style="font-size: 20px">account_circle</span>
           </button>
         </router-link>
-        <button class="btn m-1 btn-error w-8 h-8 min-h-0" @click="removeFriend">
-          <span class="material-symbols-outlined" style="font-size: 20px">taunt</span>
-        </button>
       </div>
     </div>
   </div>
@@ -27,17 +24,14 @@
 </template>
 
 <script setup lang="ts">
-import { post, getImage } from '../../../httpRequests'
+import { getImage } from '../../httpRequests'
 
 const props = defineProps({
   name: String,
   isOnline: Boolean,
-  intraId: Number
+  intraId: Number,
+  isFriend: Boolean
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
-
-async function removeFriend() {
-  post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
-}
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
 </script>

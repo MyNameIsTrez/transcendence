@@ -62,7 +62,6 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
-        :isFriend="true"
       />
     </template>
     <h1 class="text-center pt-2">----- Offline -----</h1>
@@ -72,7 +71,6 @@
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
-        :isFriend="true"
       />
     </template>
     <h1 class="text-center pt-2">---- Incoming ----</h1>
