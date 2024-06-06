@@ -34,5 +34,5 @@ const props = defineProps({
   losses: Number
 })
 
-const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 </script>

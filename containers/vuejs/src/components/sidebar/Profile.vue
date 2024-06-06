@@ -123,7 +123,7 @@ const me = await get(`api/user/me`)
 const username = me.username
 const wins = me.wins
 const losses = me.losses
-const profilePicture = await getImage(`api/user/profilePicture/${me.intra_id}.png`)
+const profilePicture = await getImage(`api/user/profilePicture/${me.intra_id}`)
 const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
 const newUsername = ref('')
