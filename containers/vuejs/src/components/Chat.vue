@@ -378,10 +378,6 @@ chatSocket.on('confirm', async () => {
 })
 
 function sendMessage() {
-  if (iAmMute.value) {
-    typedMessage.value = ''
-    return
-  }
   const message = {
     chatId: currentChatId.value,
     body: typedMessage.value
