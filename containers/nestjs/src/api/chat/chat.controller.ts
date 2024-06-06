@@ -134,9 +134,9 @@ export class ChatController {
     return await this.chatService.isMute(dto.chat_id, dto.intra_id);
   }
 
-  @Get('info/:chat_id/:intra_id')
-  async getInfo(@Param() dto: OtherUserDto) {
-    return await this.chatService.getInfo(dto.chat_id, dto.intra_id);
+  @Get('info/:chat_id')
+  async getInfo(@Request() req, @Param() dto: NameDto) {
+    return await this.chatService.getInfo(dto.chat_id, req.user.intra_id);
   }
 
   @Get('isLocked/:chat_id/:intra_id')
