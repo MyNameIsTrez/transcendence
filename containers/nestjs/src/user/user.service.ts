@@ -327,6 +327,7 @@ export class UserService {
       relations: {
         friends: true,
         incoming_friend_requests: true,
+        blocked: true,
       },
     });
 
@@ -350,6 +351,12 @@ export class UserService {
       )
     ) {
       throw new BadRequestException('Friend request already sent');
+    }
+
+    if (receiver.blocked.some((block) => block.intra_id === sender_id)) {
+      throw new BadRequestException(
+        "Can't befriend someone who has blocked you",
+      );
     }
 
     this.unblock(sender_id, receiver.intra_id);
