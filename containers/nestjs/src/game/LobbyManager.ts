@@ -50,7 +50,7 @@ export default class LobbyManager {
     }
   }
 
-  private async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+  public async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
     const invitations = await this.getInvitations(invitedIntraId);
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
@@ -85,10 +85,7 @@ export default class LobbyManager {
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
 
-    const invitations = await this.getInvitations(invitedIntraId);
-    invitedSockets.forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
+    await this.removeInvite(invitedSockets, invitedIntraId);
   }
 
   private isUserAlreadyInLobby(user: any): boolean {

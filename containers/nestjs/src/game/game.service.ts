@@ -71,13 +71,6 @@ export class GameService {
     await this.lobbyManager.removeClient(client);
   }
 
-  public async updateInvitations(client: Socket) {
-    const invitations = await this.lobbyManager.getInvitations(
-      client.data.intra_id,
-    );
-    client.emit('updateInvitations', invitations);
-  }
-
   public async acceptInvitation(
     client: Socket,
     acceptedIntraId: number,
@@ -101,12 +94,8 @@ export class GameService {
     await lobby.addClient(client);
     this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
 
-    const invitations = await this.lobbyManager.getInvitations(
-      client.data.intra_id,
-    );
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
+    const mySockets = clients.get(client.data.intra_id);
+    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
   }
 
   public async declineInvitation(
@@ -131,11 +120,7 @@ export class GameService {
       socket.emit('inQueue', { inQueue: false });
     });
 
-    const invitations = await this.lobbyManager.getInvitations(
-      client.data.intra_id,
-    );
-    clients.get(client.data.intra_id).forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
+    const mySockets = clients.get(client.data.intra_id);
+    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
   }
 }
