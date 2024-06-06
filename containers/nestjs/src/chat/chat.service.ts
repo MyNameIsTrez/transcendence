@@ -62,9 +62,11 @@ export class ChatService {
   async addUser(chat_id: string, username: string) {
     const user = await this.userService.findOneByUsername(username);
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { users: true } })
+      .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        if (chat.users.some((user) => user.username == username)) return;
+        if (chat.users.some((me) => me.intra_id == user.intra_id)) return;
+        if (chat.banned.some((banned) => banned.intra_id == user.intra_id)) return;
+
         chat.users.push(user);
         await this.chatRepository.save(chat);
       });
@@ -114,8 +116,8 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         const user = await this.userService.findOneByUsername(username);
-        if (chat.admins.some((admin) => admin.username == username))
-          return false;
+        if (chat.admins.some((admin) => admin.intra_id == user.intra_id)) return false;
+
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
         const result = await this.chatRepository.save(chat);
 
@@ -150,14 +152,6 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { admins: true } })
       .then(async (chat) => {
         return chat.admins.some((admin) => admin.intra_id === intra_id);
-
-        // TODO: Remove?
-        // let isAdmin = false;
-        // const admins = chat.admins;
-        // admins.forEach((admin) => {
-        //   if (admin.intra_id == intra_id) isAdmin = true;
-        // });
-        // return isAdmin;
       });
   }
 
@@ -230,10 +224,11 @@ export class ChatService {
 
   public async mute(chat_id: string, username: string, days: number) {
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { muted: true } })
+      .findOne({ where: { chat_id }, relations: { admins: true, muted: true } })
       .then(async (chat) => {
         const user = await this.userService.findOneByUsername(username);
         if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
+        if (chat.admins.some((admin) => admin.intra_id == user.intra_id)) return;
         const mute = new Mute();
         mute.intra_id = user.intra_id;
         mute.time_of_unmute = this.getTimeOfUnmute(days);
