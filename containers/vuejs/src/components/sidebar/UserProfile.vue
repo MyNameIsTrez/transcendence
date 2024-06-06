@@ -5,6 +5,13 @@
         <div class="text text-base justify-self-start self-center text-yellow-200 w-64">
           {{ username }}
         </div>
+
+        <button
+          :class="`btn btn-square btn-primary justify-self-end ${addButtonVisible ? 'visible' : 'invisible'}`"
+          @click="sendFriendRequest"
+        >
+          <span class="material-symbols-outlined">person_add</span>
+        </button>
       </span>
       <br />
       <div class="flex justify-between">
@@ -64,9 +71,11 @@
 <script setup lang="ts">
 import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
-import { get, getImage } from '../../httpRequests'
+import { get, getImage, post } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
 import { inject, ref } from 'vue'
+import AlertPopup from '../AlertPopup.vue'
+import { AlertType } from '../../types'
 
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
@@ -81,6 +90,23 @@ const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
 const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))
 
+const alertVisible = ref(false)
+
+const alertType = ref(AlertType.ALERT_SUCCESS)
+
+const alertMessage = ref('Friend request sent')
+
+const isError = ref(true)
+
+const friends = ref(await get('api/user/friends'))
+const isFriend = ref(friends.value.findIndex((item) => item.intraId === user.intra_id))
+
+const addButtonVisible = ref(false)
+
+if (isFriend.value == -1) {
+  addButtonVisible.value = true
+}
+
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
     invitedUser: intra_id,
@@ -91,5 +117,28 @@ function inviteToGame() {
 async function handleBlock() {
   await get('api/user/' + (blocked.value ? 'un' : '') + 'block/' + intra_id)
   blocked.value = !blocked.value
+}
+
+async function sendFriendRequest() {
+  await post('api/user/sendFriendRequest', { intra_name: user.intra_name })
+    .then(() => {
+      alertType.value = AlertType.ALERT_SUCCESS
+      alertMessage.value = 'Friend request sent'
+      alertVisible.value = true
+      isError.value = false
+      setTimeout(() => {
+        alertVisible.value = false
+      }, 3500)
+    })
+    .catch((err) => {
+      console.error('sendFriendRequest error', err)
+      alertType.value = AlertType.ALERT_WARNING
+      alertMessage.value = err.response.data.message
+      alertVisible.value = true
+      isError.value = true
+      setTimeout(() => {
+        alertVisible.value = false
+      }, 3500)
+    })
 }
 </script>
