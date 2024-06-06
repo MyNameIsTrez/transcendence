@@ -1,7 +1,7 @@
 <template>
   <div ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
-    <ScoreBoard class="pt-32" :game-socket="gameSocket" />
+    <ScoreBoard class="pt-32" />
   </div>
 </template>
 
