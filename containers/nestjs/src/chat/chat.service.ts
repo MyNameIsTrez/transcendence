@@ -150,14 +150,6 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { admins: true } })
       .then(async (chat) => {
         return chat.admins.some((admin) => admin.intra_id === intra_id);
-
-        // TODO: Remove?
-        // let isAdmin = false;
-        // const admins = chat.admins;
-        // admins.forEach((admin) => {
-        //   if (admin.intra_id == intra_id) isAdmin = true;
-        // });
-        // return isAdmin;
       });
   }
 

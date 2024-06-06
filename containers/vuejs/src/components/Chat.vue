@@ -259,7 +259,7 @@ async function createChat() {
 async function getInfo() {
   getChats()
   getChannels()
-  const info = await get('api/chat/info/' + currentChatId.value + '/' + myIntraId.value)
+  const info = await get('api/chat/info/' + currentChatId.value)
   console.log('info', info)
   iAmAdmin.value = info.isAdmin
   iAmMute.value = info.isMute
