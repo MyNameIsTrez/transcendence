@@ -39,6 +39,10 @@ export class GameService {
     gamemode: Gamemode,
     clients: Map<number, Socket[]>,
   ) {
+    if (client.data.intra_id === invitedIntraId) {
+      throw new WsException("You can't invite yourself to a game");
+    }
+
     if (!(await this.userService.hasUser(invitedIntraId))) {
       throw new WsException('Could not find user');
     }
