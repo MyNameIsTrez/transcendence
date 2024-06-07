@@ -351,8 +351,8 @@ export class ChatService {
 
   public async removeChat(chat: Chat) {
     chat.users = []
-    chat.history.some((message) => this.messageRepository.remove(message))
-    chat.history = []
+    chat.history.forEach((message) => this.messageRepository.remove(message))
+    chat.history = [] // TODO: maybe not necessary
     chat.admins = []
     chat.banned = []
     chat.muted = []
