@@ -19,6 +19,8 @@ class Info {
   isMute: boolean;
   isOwner: boolean;
   isProtected: boolean;
+  isUser: boolean;
+  isDirect: boolean;
 }
 
 @Injectable()
@@ -116,9 +118,10 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         const user = await this.userService.findOneByUsername(username);
-        if (chat.admins.some((admin) => admin.intra_id == user.intra_id)) return false;
+        if (chat.owner == user.intra_id) return false;
 
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
+        chat.admins = chat.admins.filter((u) => u.intra_id !== user.intra_id);
         const result = await this.chatRepository.save(chat);
 
         return !!result;
@@ -179,6 +182,14 @@ export class ChatService {
       });
   }
 
+  public async isUser(chat_id: string, intra_id: number) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true } })
+      .then(async (chat) => {
+        return chat.users.some((user) => user.intra_id == intra_id);
+      });
+  }
+
   public async handleMessage(sender: number, chat_id: string, body: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { history: true } })
@@ -227,8 +238,9 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { admins: true, muted: true } })
       .then(async (chat) => {
         const user = await this.userService.findOneByUsername(username);
+        if (chat.owner == user.intra_id) return;
         if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
-        if (chat.admins.some((admin) => admin.intra_id == user.intra_id)) return;
+
         const mute = new Mute();
         mute.intra_id = user.intra_id;
         mute.time_of_unmute = this.getTimeOfUnmute(days);
@@ -238,6 +250,16 @@ export class ChatService {
       });
   }
 
+  public async isDirect(chat_id: string) {
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true }})
+      .then(async (chat) => {
+        if (chat.users.length === 2)
+          return true;
+        return false;
+      })
+  }
+
   public async getInfo(chat_id: string, intra_id: number) {
     const info = new Info();
     info.isAdmin = await this.isAdmin(chat_id, intra_id);
@@ -245,6 +267,8 @@ export class ChatService {
     info.isMute = await this.isMute(chat_id, intra_id);
     info.isOwner = await this.isOwner(chat_id, intra_id);
     info.isProtected = await this.isProtected(chat_id);
+    info.isUser = await this.isUser(chat_id, intra_id);
+    info.isDirect = await this.isDirect(chat_id);
     return info;
   }
 
@@ -323,5 +347,42 @@ export class ChatService {
 
   public async channels() {
     return this.chatRepository.find();
+  }
+
+  public async removeChat(chat: Chat) {
+    chat.users = []
+    chat.history.some((message) => this.messageRepository.remove(message))
+    chat.history = []
+    chat.admins = []
+    chat.banned = []
+    chat.muted = []
+    chat.access_granted = []
+    await this.chatRepository.save(chat)
+    this.chatRepository.remove(chat)
+  }
+
+  public async leave(chat_id: string, intra_id: number) {
+    return this.chatRepository
+      .findOne({ where: {chat_id}, relations: {
+        users: true, 
+        history: true, 
+        admins: true,
+        banned: true,
+        muted: true,
+        access_granted: true
+      } })
+      .then(async (chat) => {
+
+        if (chat.owner == intra_id) {
+          console.log("removeChat called")
+          this.removeChat(chat)
+          return ;
+        }
+
+        if (chat.admins.some((admin) => admin.intra_id == intra_id))
+          chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
+        chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+        this.chatRepository.save(chat);
+      })
   }
 }

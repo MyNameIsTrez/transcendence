@@ -196,6 +196,7 @@ export class UserService {
       },
     });
     const other = await this.findOne(other_intra_id);
+    if (me.intra_id == other_intra_id) return ;
 
     me.blocked.push(other);
 
