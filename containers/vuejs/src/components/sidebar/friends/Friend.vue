@@ -18,7 +18,7 @@
           </button>
         </router-link>
         <button class="btn m-1 btn-error w-8 h-8 min-h-0" @click="removeFriend">
-          <span class="material-symbols-outlined" style="font-size: 20px">taunt</span>
+          <span class="material-symbols-outlined" style="font-size: 20px">person_remove</span>
         </button>
       </div>
     </div>
@@ -35,9 +35,13 @@ const props = defineProps({
   intraId: Number
 })
 
+const emit = defineEmits(['update'])
+
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function removeFriend() {
-  post('api/user/removeFriend', { friend_id: props.intraId }).then(() => location.reload())
+  post('api/user/removeFriend', { friend_id: props.intraId }).then(() => {
+    emit('update')
+  })
 }
 </script>
