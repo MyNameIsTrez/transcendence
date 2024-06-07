@@ -57,26 +57,27 @@
         <button class="btn btn-secondary" @click="leave"> Leave chat </button><br /><br />
       </div>
 
+      <div v-if="iAmOwner">
+        <div v-if="isProtected">
+          <input
+            v-model="newPassword"
+            placeholder="New password..."
+            @keyup.enter="changePassword"
+          /><br />
+          <button @click="changePassword">Change password</button><br /><br />
+        </div>
+        <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
+        <input
+          v-if="visibility === 'PROTECTED'"
+          v-model="passwordChat"
+          placeholder="Password..."
+          @keyup.enter="changeVisibility"
+        /><br />
+        <button @click="changeVisibility">Change visibility</button><br /><br />
+      </div>
       <div v-if="iAmAdmin">
         <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
         <div v-if="optionsButton">
-          <div v-if="isProtected">
-            <input
-              v-model="newPassword"
-              placeholder="New password..."
-              @keyup.enter="changePassword"
-            /><br />
-            <button @click="changePassword">Change password</button><br /><br />
-          </div>
-          <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
-          <input
-            v-if="visibility === 'PROTECTED'"
-            v-model="passwordChat"
-            placeholder="Password..."
-            @keyup.enter="changeVisibility"
-          /><br />
-          <button @click="changeVisibility">Change visibility</button><br /><br />
-
           <input v-model="otherUser" placeholder="42 student..." /><br />
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
