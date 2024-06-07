@@ -1,8 +1,8 @@
 <template>
   <div>
     <br />
-    <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
-    <button class="btn btn-success" @click="getChannels(); getChats();">refresh</button><br /><br />
+    <button v-if="chatIsOpen" @click="backButton">← Back</button><br /><br />
+    <button class="btn btn-success" @click="getChannels(), getChats()">refresh</button><br /><br />
     <div v-if="!chatIsOpen">
       PUBLIC AND PROTECTED CHATS
       <br />
@@ -12,7 +12,7 @@
           v-for="(chat, index) in channelsOnIndex"
           :key="index"
           class="line"
-          @click="validateLock(chat)"
+          @click="joinChat(chat)"
         >
           {{ chat }}
         </div>
@@ -26,7 +26,7 @@
           v-for="(chat, index) in directMessagesOnIndex"
           :key="index"
           class="line"
-          @click="validateLock(chat)"
+          @click="joinChat(chat)"
         >
           {{ chat }}
         </div>
@@ -54,7 +54,7 @@
     </div>
     <div v-if="chatIsOpen">
       <div v-if="iAmUser">
-        <button class="btn btn-secondary" @click="leave"> Leave chat </button><br /><br />
+        <button class="btn btn-secondary" @click="leave">Leave chat</button><br /><br />
       </div>
 
       <div v-if="iAmOwner">
@@ -90,8 +90,9 @@
 
       <br />
 
-      IN CHAT '{{ currentChat }}' 
-      <div v-if="isDirect">(DM)</div> <br /><br />
+      IN CHAT '{{ currentChat }}'
+      <div v-if="isDirect">(DM)</div>
+      <br /><br />
       <div ref="chat" class="scrollable-container">
         <div v-for="(entry, index) in chatHistory" :key="index" class="line">
           <router-link :to="`/user/${entry.sender}`">
@@ -166,7 +167,7 @@ const typedMessage = ref('')
 const visibility = ref('PUBLIC')
 
 async function leave() {
-  await get('api/chat/leave/' + currentChatId.value);
+  await get('api/chat/leave/' + currentChatId.value)
   getChats()
   getChannels()
   chatIsOpen.value = false
@@ -201,8 +202,9 @@ function changeOptionsButton() {
   else optionsButtonText.value = '~ close options ~'
 }
 
-function changeChatButton() {
+function backButton() {
   chatIsOpen.value = !chatIsOpen.value
+  chatSocket.emit('leaveChat', { chatId: currentChat.value })
 }
 
 async function muteUser() {
@@ -303,29 +305,36 @@ async function validatePassword() {
   password.value = ''
 }
 
-async function validateLock(chat_str: string) {
-  currentChat.value = chat_str
+async function joinChat(chatId: string) {
+  console.log('in joinChat, chatId is', chatId)
+  chatSocket.emit('joinChat', { chatId })
 
-  for (let i = 0; channelIdsOnIndex.value[i]; i++) {
-    if (channelsOnIndex.value[i] == chat_str) {
-      currentChatId.value = channelIdsOnIndex.value[i]
-    }
-  }
+  currentChat.value = chatId
+  chatIsOpen.value = true
+  currentChatId.value = chatId
 
-  for (let i = 0; directMessageIdsOnIndex.value[i]; i++) {
-    if (directMessagesOnIndex.value[i] == chat_str) {
-      currentChatId.value = directMessageIdsOnIndex.value[i]
-    }
-  }
+  // for (let i = 0; channelIdsOnIndex.value[i]; i++) {
+  //   if (channelsOnIndex.value[i] == chat_str) {
+  //     currentChatId.value = channelIdsOnIndex.value[i]
+  //   }
+  // }
 
-  await getInfo()
-  if (iAmBanned.value) return
+  // for (let i = 0; directMessageIdsOnIndex.value[i]; i++) {
+  //   if (directMessagesOnIndex.value[i] == chat_str) {
+  //     currentChatId.value = directMessageIdsOnIndex.value[i]
+  //   }
+  // }
 
-  if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
-    locked.value = true
-  } else {
-    getChat(chat_str)
-  }
+  // await getInfo()
+  // if (iAmBanned.value) return
+
+  // if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
+  //   locked.value = true
+  // } else {
+  //   getChat(chat_str)
+  // }
+
+  console.log('chatIsOpen.value', chatIsOpen.value)
 }
 
 async function getChat(chat_str: string) {
@@ -333,18 +342,21 @@ async function getChat(chat_str: string) {
 
   const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
   blocked.value = new Set<number>(blockedUsers)
-  
+
   // TODO: Can this be removed?
-  if (chatIsOpen.value == false) changeChatButton()
-  
+  if (chatIsOpen.value == false) backButton()
+
   await post('api/chat/addUserToChat', {
     chat_id: currentChatId.value,
     username: myUsername.value
   })
-  
+
   chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
     (entry: Entry) => !blocked.value.has(entry.sender)
   )
+
+  // TODO: REMOVE
+  console.log('chatHistory.value', chatHistory.value)
 
   await nextTick()
   getChats()
@@ -389,8 +401,7 @@ async function getChannels() {
   }
 }
 
-chatSocket.on('confirm', async () => {
-  typedMessage.value = ''
+chatSocket.on('newMessage', async () => {
   await getChat(currentChat.value)
 })
 
@@ -399,6 +410,9 @@ function sendMessage() {
     chatId: currentChatId.value,
     body: typedMessage.value
   }
+
+  typedMessage.value = ''
+
   chatSocket.emit('sendMessage', message)
 }
 

@@ -4,14 +4,14 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import { Chat, Visibility } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
-import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
 
 class Info {
   isAdmin: boolean;
@@ -67,7 +67,8 @@ export class ChatService {
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
         if (chat.users.some((me) => me.intra_id == user.intra_id)) return;
-        if (chat.banned.some((banned) => banned.intra_id == user.intra_id)) return;
+        if (chat.banned.some((banned) => banned.intra_id == user.intra_id))
+          return;
 
         chat.users.push(user);
         await this.chatRepository.save(chat);
@@ -252,12 +253,11 @@ export class ChatService {
 
   public async isDirect(chat_id: string) {
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: { users: true }})
+      .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        if (chat.users.length === 2)
-          return true;
+        if (chat.users.length === 2) return true;
         return false;
-      })
+      });
   }
 
   public async getInfo(chat_id: string, intra_id: number) {
@@ -350,39 +350,43 @@ export class ChatService {
   }
 
   public async removeChat(chat: Chat) {
-    chat.users = []
-    chat.history.forEach((message) => this.messageRepository.remove(message))
-    chat.history = [] // TODO: maybe not necessary
-    chat.admins = []
-    chat.banned = []
-    chat.muted = []
-    chat.access_granted = []
-    await this.chatRepository.save(chat)
-    this.chatRepository.remove(chat)
+    chat.users = [];
+    chat.history.forEach((message) => this.messageRepository.remove(message));
+    chat.history = [];
+    chat.admins = [];
+    chat.banned = [];
+    chat.muted = [];
+    chat.access_granted = [];
+    await this.chatRepository.save(chat);
+    this.chatRepository.remove(chat);
   }
 
   public async leave(chat_id: string, intra_id: number) {
     return this.chatRepository
-      .findOne({ where: {chat_id}, relations: {
-        users: true, 
-        history: true, 
-        admins: true,
-        banned: true,
-        muted: true,
-        access_granted: true
-      } })
+      .findOne({
+        where: { chat_id },
+        relations: {
+          users: true,
+          history: true,
+          admins: true,
+          banned: true,
+          muted: true,
+          access_granted: true,
+        },
+      })
       .then(async (chat) => {
-
         if (chat.owner == intra_id) {
-          console.log("removeChat called")
-          this.removeChat(chat)
-          return ;
+          // console.log('removeChat called');
+          this.removeChat(chat);
+          return;
         }
 
         if (chat.admins.some((admin) => admin.intra_id == intra_id))
           chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
+
         chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+
         this.chatRepository.save(chat);
-      })
+      });
   }
 }
