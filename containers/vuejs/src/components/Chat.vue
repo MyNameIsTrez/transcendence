@@ -32,7 +32,9 @@
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
-      <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
+      <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+        {{ visibility }}
+      </button>
       <input
         v-if="visibility === Visibility.PROTECTED"
         v-model="passwordChat"
@@ -55,7 +57,9 @@
           />
           <button @click="changePassword">Change password</button>
         </div>
-        <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
+        <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+          {{ visibility }}
+        </button>
         <input
           v-if="visibility === Visibility.PROTECTED"
           v-model="passwordChat"
@@ -161,7 +165,6 @@ const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const password = ref('')
-const privateButtonClass = ref('btn btn-warning')
 const passwordChat = ref('')
 const typedMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
@@ -323,6 +326,7 @@ async function validatePassword() {
 }
 
 async function joinChat(chat: Chat) {
+  // TODO: Don't emit joinChat() if the chat is protected
   chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
     chatIsOpen.value = true
@@ -386,15 +390,20 @@ function sendMessage() {
 
 function chatVisibility() {
   if (visibility.value === Visibility.PUBLIC) {
-    privateButtonClass.value = 'btn btn-info '
     visibility.value = Visibility.PROTECTED
   } else if (visibility.value === Visibility.PROTECTED) {
-    privateButtonClass.value = 'btn btn-primary'
     visibility.value = Visibility.PRIVATE
   } else {
-    privateButtonClass.value = 'btn btn-warning'
     visibility.value = Visibility.PUBLIC
   }
+}
+
+function getBtnColor(visibility: Visibility) {
+  return visibility === Visibility.PUBLIC
+    ? 'btn-info'
+    : visibility === Visibility.PROTECTED
+      ? 'btn-primary'
+      : 'btn-warning'
 }
 
 getMyUsername()
