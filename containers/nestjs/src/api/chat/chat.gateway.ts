@@ -11,7 +11,8 @@ import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
 import { IsNotEmpty, IsUUID } from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
-import TransJwtService from 'src/auth/trans-jwt-service';
+import TransJwtService from '../../auth/trans-jwt-service';
+import { UserService } from '../../user/user.service';
 
 class ChatDto {
   @IsUUID()
@@ -40,6 +41,7 @@ export class ChatGateway {
 
   constructor(
     private readonly chatService: ChatService,
+    private readonly userService: UserService,
     private readonly transJwtService: TransJwtService,
   ) {}
 
@@ -143,9 +145,12 @@ export class ChatGateway {
 
     const sockets = this.chatToSockets.get(dto.chatId) ?? [];
 
+    const senderName = await this.userService.getUsername(client.data.intra_id);
+
     sockets.forEach((otherClient) => {
       otherClient.emit('newMessage', {
         sender: client.data.intra_id,
+        sender_name: senderName,
         body: dto.body,
       });
     });

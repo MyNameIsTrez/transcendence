@@ -31,7 +31,7 @@
         Password of {{ currentChat?.name }}:
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
-      <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
+      <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
         {{ visibility }}
       </button>
@@ -84,7 +84,7 @@
       In chat '{{ currentChat?.name }}'
       <div v-if="isDirect">(DM)</div>
 
-      <div ref="chat" class="scrollable-container">
+      <div ref="chatRef" class="scrollable-container">
         <div v-for="(message, index) in chatHistory" :key="index" class="line">
           <router-link :to="`/user/${message.sender}`">
             {{ message.sender_name + ': ' + message.body + '\n' }}
@@ -138,11 +138,8 @@ class Chat {
   }
 }
 
-const blocked = ref(new Set<number>([]))
-const chat = ref()
-const chatName = ref('')
-const directMessagesOnIndex = ref<string[]>([])
-const directMessageIdsOnIndex = ref<string[]>([])
+const chatRef = ref()
+const inputChatName = ref('')
 const publicChats = ref<Chat[]>([])
 const protectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>()
@@ -279,12 +276,12 @@ async function addUser() {
 async function createChat() {
   // if (passwordChat.value === '') passwordChat.value = 'foo'
   const chat = await post('api/chat/create', {
-    name: chatName.value,
+    name: inputChatName.value,
     visibility: visibility.value,
     password: passwordChat.value
   })
   passwordChat.value = ''
-  chatName.value = ''
+  inputChatName.value = ''
   getChats()
 }
 
@@ -298,7 +295,6 @@ async function getInfo() {
     iAmMute.value = info.isMute
     iAmOwner.value = info.isOwner
     isProtected.value = info.isProtected
-    iAmBanned.value = info.isBanned
     isDirect.value = info.isDirect
   }
 }
@@ -339,7 +335,7 @@ async function getChat() {
     locked.value = false
 
     const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
-    blocked.value = new Set<number>(blockedUsers)
+    const blocked = new Set<number>(blockedUsers)
 
     // TODO: Can this be removed?
     if (chatIsOpen.value == false) backButton()
@@ -350,15 +346,21 @@ async function getChat() {
     })
 
     chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
-      (message: Message) => !blocked.value.has(message.sender)
+      (message: Message) => !blocked.has(message.sender)
     )
 
-    await nextTick() // TODO: Wtf is this for? Can we get rid of this?
     getChats()
 
-    if (chat.value) {
-      chat.value.scrollTop = chat.value.scrollHeight
-    }
+    await scrollToBottom()
+  }
+}
+
+async function scrollToBottom() {
+  // This forces the chat DOM object to have its scrollHeight updated right now
+  await nextTick()
+
+  if (chatRef.value) {
+    chatRef.value.scrollTop = chatRef.value.scrollHeight
   }
 }
 
@@ -371,6 +373,20 @@ async function getChats() {
 
 chatSocket.on('newMessage', async (message: Message) => {
   chatHistory.value.push(message)
+
+  // Only scroll down if our scrollbar is already all the way down
+  // This is because we don't want to suddenly scroll down
+  // when we're reading old messages, and someone sends a message
+  //
+  // scrollHeight: total container size
+  // scrollTop: amount of scroll user has done
+  // clientHeight: amount of container a user sees
+  if (chatRef.value) {
+    // The `+ 1.5` accounts for scrollTop sometimes being bigger or smaller than expected
+    if (chatRef.value.scrollTop + chatRef.value.clientHeight + 1.5 >= chatRef.value.scrollHeight) {
+      await scrollToBottom()
+    }
+  }
 })
 
 function sendMessage() {

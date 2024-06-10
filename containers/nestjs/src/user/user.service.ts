@@ -102,7 +102,7 @@ export class UserService {
   }
 
   async getUsername(intra_id: number): Promise<string> {
-    return this.findOne(intra_id).then((user) => {
+    return await this.findOne(intra_id).then((user) => {
       return user.username;
     });
   }
