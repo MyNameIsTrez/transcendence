@@ -85,9 +85,9 @@
       <div v-if="isDirect">(DM)</div>
 
       <div ref="chat" class="scrollable-container">
-        <div v-for="(entry, index) in chatHistory" :key="index" class="line">
-          <router-link :to="`/user/${entry.sender}`">
-            {{ entry.sender_name + ': ' + entry.body + '\n' }}
+        <div v-for="(message, index) in chatHistory" :key="index" class="line">
+          <router-link :to="`/user/${message.sender}`">
+            {{ message.sender_name + ': ' + message.body + '\n' }}
           </router-link>
         </div>
       </div>
@@ -110,7 +110,7 @@ import { Socket } from 'socket.io-client'
 
 const chatSocket: Socket = inject('chatSocket')!
 
-class Entry {
+class Message {
   sender_name: string
   sender: number
   body: string
@@ -147,7 +147,7 @@ const publicChats = ref<Chat[]>([])
 const protectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>()
 const currentChat = ref<Chat>()
-const chatHistory = ref<Entry[]>([])
+const chatHistory = ref<Message[]>([])
 const chatIsOpen = ref(false)
 const daysToMute = ref(0)
 const iAmAdmin = ref(false)
@@ -330,6 +330,7 @@ async function joinChat(chat: Chat) {
   chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
     chatIsOpen.value = true
+    getChat()
   })
 }
 
@@ -349,13 +350,10 @@ async function getChat() {
     })
 
     chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
-      (entry: Entry) => !blocked.value.has(entry.sender)
+      (message: Message) => !blocked.value.has(message.sender)
     )
 
-    // TODO: REMOVE
-    console.log('chatHistory.value', chatHistory.value)
-
-    await nextTick()
+    await nextTick() // TODO: Wtf is this for? Can we get rid of this?
     getChats()
 
     if (chat.value) {
@@ -371,8 +369,8 @@ async function getChats() {
   myChats.value = await get('api/user/myChats')
 }
 
-chatSocket.on('newMessage', async () => {
-  await getChat()
+chatSocket.on('newMessage', async (message: Message) => {
+  chatHistory.value.push(message)
 })
 
 function sendMessage() {

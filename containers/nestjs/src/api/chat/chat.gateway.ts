@@ -143,8 +143,11 @@ export class ChatGateway {
 
     const sockets = this.chatToSockets.get(dto.chatId) ?? [];
 
-    sockets.forEach((client) => {
-      client.emit('newMessage');
+    sockets.forEach((otherClient) => {
+      otherClient.emit('newMessage', {
+        sender: client.data.intra_id,
+        body: dto.body,
+      });
     });
   }
 }
