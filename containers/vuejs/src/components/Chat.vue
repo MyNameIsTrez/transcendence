@@ -1,23 +1,14 @@
 <template>
   <div>
-    <br />
-    <button v-if="chatIsOpen" @click="backButton">← Back</button><br /><br />
-    <button class="btn btn-success" @click="getPublicAndProtectedChats(), getChats()">
-      refresh</button
-    ><br /><br />
+    <button v-if="chatIsOpen" @click="backButton">← Back</button>
     <div v-if="!chatIsOpen">
       Public chats 🌎
-      <br />
-      <br />
       <div class="scrollable-container-half">
         <div v-for="(chat, index) in publicChats" :key="index" class="line" @click="joinChat(chat)">
           {{ chat.name }}
         </div>
       </div>
-      <br />
       Protected chats 🔒
-      <br />
-      <br />
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in protectedChats"
@@ -28,10 +19,7 @@
           {{ chat.name }}
         </div>
       </div>
-      <br />
       My chats 👤
-      <br />
-      <br />
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in directMessagesOnIndex"
@@ -44,15 +32,9 @@
       </div>
 
       <div v-if="locked">
-        <br /><br />
         Password of {{ currentChat }}:
-        <input
-          v-model="password"
-          placeholder="Password..."
-          @keyup.enter="validatePassword"
-        /><br /><br />
+        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
-      <br />
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
       <input
@@ -60,12 +42,12 @@
         v-model="passwordChat"
         placeholder="Password..."
         @keyup.enter="createChat"
-      /><br />
+      />
       <button @click="createChat">Create</button>
     </div>
     <div v-if="chatIsOpen">
       <div v-if="iAmUser">
-        <button class="btn btn-secondary" @click="leave">Leave chat</button><br /><br />
+        <button class="btn btn-secondary" @click="leave">Leave chat</button>
       </div>
 
       <div v-if="iAmOwner">
@@ -74,8 +56,8 @@
             v-model="newPassword"
             placeholder="New password..."
             @keyup.enter="changePassword"
-          /><br />
-          <button @click="changePassword">Change password</button><br /><br />
+          />
+          <button @click="changePassword">Change password</button>
         </div>
         <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
         <input
@@ -83,27 +65,25 @@
           v-model="passwordChat"
           placeholder="Password..."
           @keyup.enter="changeVisibility"
-        /><br />
-        <button @click="changeVisibility">Change visibility</button><br /><br />
+        />
+        <button @click="changeVisibility">Change visibility</button>
       </div>
       <div v-if="iAmAdmin">
-        <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
+        <button @click="changeOptionsButton">{{ optionsButtonText }}</button>
         <div v-if="optionsButton">
-          <input v-model="otherUser" placeholder="42 student..." /><br />
+          <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
           <button @click="kickUser">/Kick</button>
           <button @click="banUser">/Ban</button>
           <button @click="addAdmin">/Make admin</button>
           <button @click="muteUser">/Mute</button>
-          <input v-model="daysToMute" placeholder="days to mute..." /><br /><br />
+          <input v-model="daysToMute" placeholder="days to mute..." />
         </div>
       </div>
 
-      <br />
-
       IN CHAT '{{ currentChat }}'
       <div v-if="isDirect">(DM)</div>
-      <br /><br />
+
       <div ref="chat" class="scrollable-container">
         <div v-for="(entry, index) in chatHistory" :key="index" class="line">
           <router-link :to="`/user/${entry.sender}`">
@@ -111,7 +91,6 @@
           </router-link>
         </div>
       </div>
-      <br />
       <input
         v-if="!iAmMute"
         v-model="typedMessage"
