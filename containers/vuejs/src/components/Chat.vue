@@ -1,7 +1,7 @@
 <template>
   <div>
-    <button v-if="chatIsOpen" @click="backButton">← Back</button>
-    <div v-if="!chatIsOpen">
+    <button v-if="currentChat" @click="leaveChat">← Back</button>
+    <div v-if="!currentChat">
       <!-- TODO: Turn these three identical chat list blocks into a shared component -->
       Public chats 🌎
       <div class="scrollable-container-half">
@@ -43,7 +43,7 @@
       />
       <button @click="createChat">Create</button>
     </div>
-    <div v-if="chatIsOpen">
+    <div v-if="currentChat">
       <div v-if="iAmUser">
         <button class="btn btn-secondary" @click="leave">Leave chat</button>
       </div>
@@ -145,10 +145,8 @@ const protectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>()
 const currentChat = ref<Chat>()
 const chatHistory = ref<Message[]>([])
-const chatIsOpen = ref(false)
 const daysToMute = ref(0)
 const iAmAdmin = ref(false)
-const iAmBanned = ref(false)
 const iAmMute = ref(false)
 const iAmOwner = ref(false)
 const iAmUser = ref(false)
@@ -170,7 +168,7 @@ async function leave() {
   if (currentChat.value) {
     await get('api/chat/leave/' + currentChat.value.chat_id)
     getChats()
-    chatIsOpen.value = false
+    currentChat.value = undefined
   }
 }
 
@@ -205,10 +203,10 @@ function changeOptionsButton() {
   else optionsButtonText.value = '~ close options ~'
 }
 
-function backButton() {
+function leaveChat() {
   if (currentChat.value) {
-    chatIsOpen.value = !chatIsOpen.value
-    chatSocket.emit('leaveChat', { chatId: currentChat.value })
+    chatSocket.emit('leaveChat', { chatId: currentChat.value.chat_id })
+    currentChat.value = undefined
   }
 }
 
@@ -325,7 +323,6 @@ async function joinChat(chat: Chat) {
   // TODO: Don't emit joinChat() if the chat is protected
   chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
-    chatIsOpen.value = true
     getChat()
   })
 }
@@ -336,9 +333,6 @@ async function getChat() {
 
     const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
     const blocked = new Set<number>(blockedUsers)
-
-    // TODO: Can this be removed?
-    if (chatIsOpen.value == false) backButton()
 
     await post('api/chat/addUserToChat', {
       chat_id: currentChat.value.chat_id,
