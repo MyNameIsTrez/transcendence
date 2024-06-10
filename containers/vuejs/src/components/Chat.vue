@@ -5,7 +5,12 @@
       <!-- TODO: Turn these three identical chat list blocks into a shared component -->
       Public chats 🌎
       <div class="scrollable-container-half">
-        <div v-for="(chat, index) in publicChats" :key="index" class="line" @click="joinChat(chat)">
+        <div
+          v-for="(chat, index) in publicChats"
+          :key="index"
+          class="line"
+          @click="clickedChat(chat)"
+        >
           {{ chat.name }}
         </div>
       </div>
@@ -15,20 +20,20 @@
           v-for="(chat, index) in protectedChats"
           :key="index"
           class="line"
-          @click="joinChat(chat)"
+          @click="clickedChat(chat)"
         >
           {{ chat.name }}
         </div>
       </div>
       My chats 👤
       <div class="scrollable-container-half">
-        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="joinChat(chat)">
+        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="clickedChat(chat)">
           {{ chat.name }}
         </div>
       </div>
 
-      <div v-if="locked">
-        Password of {{ currentChat?.name }}:
+      <div v-if="selectedChat">
+        Password of {{ selectedChat.name }}'':
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
       <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
@@ -131,10 +136,12 @@ enum Visibility {
 class Chat {
   chat_id: string
   name: string
+  visibility: Visibility
 
-  constructor(chat_id: string, name: string) {
+  constructor(chat_id: string, name: string, visibility: Visibility) {
     this.chat_id = chat_id
     this.name = name
+    this.visibility = visibility
   }
 }
 
@@ -143,24 +150,27 @@ const inputChatName = ref('')
 const publicChats = ref<Chat[]>([])
 const protectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>()
-const currentChat = ref<Chat>()
+const currentChat = ref<Chat | null>(null)
+const selectedChat = ref<Chat | null>(null)
 const chatHistory = ref<Message[]>([])
-const daysToMute = ref(0)
-const iAmAdmin = ref(false)
-const iAmMute = ref(false)
-const iAmOwner = ref(false)
-const iAmUser = ref(false)
-const isDirect = ref(false)
-const isProtected = ref(false)
-const locked = ref(false)
+const daysToMute = ref<string>('0')
+const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
+const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
+const iAmOwner = ref(false) // TODO: Replace all usage of this with currentChat.iAmOwner
+const iAmUser = ref(false) // TODO: Replace all usage of this with currentChat.iAmUser
+const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.isDirect
+const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
 const myIntraId = ref('')
 const myUsername = ref('')
+
+// TODO: Refactor so there's just a single password <input> div that we read the password from
+const password = ref('')
 const newPassword = ref('')
+const passwordChat = ref('')
+
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
-const password = ref('')
-const passwordChat = ref('')
 const typedMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
 
@@ -168,7 +178,7 @@ async function leave() {
   if (currentChat.value) {
     await get('api/chat/leave/' + currentChat.value.chat_id)
     getChats()
-    currentChat.value = undefined
+    currentChat.value = null
   }
 }
 
@@ -206,19 +216,18 @@ function changeOptionsButton() {
 function leaveChat() {
   if (currentChat.value) {
     chatSocket.emit('leaveChat', { chatId: currentChat.value.chat_id })
-    currentChat.value = undefined
+    currentChat.value = null
   }
 }
 
 async function muteUser() {
   if (currentChat.value) {
-    console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
     await post('api/chat/mute', {
       chat_id: currentChat.value.chat_id,
       username: otherUser.value,
       days: parseInt(daysToMute.value)
     })
-    daysToMute.value = 0
+    daysToMute.value = '0'
   }
 }
 
@@ -319,18 +328,25 @@ async function validatePassword() {
   }
 }
 
-async function joinChat(chat: Chat) {
-  // TODO: Don't emit joinChat() if the chat is protected
-  chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
+async function clickedChat(chat: Chat) {
+  selectedChat.value = chat
+
+  const body = { chatId: chat.chat_id }
+
+  if (chat.visibility === Visibility.PROTECTED) {
+    // TODO: Add the password
+    body.password = ;
+  }
+
+  chatSocket.emit('joinChat', body, () => {
     currentChat.value = chat
+    selectedChat.value = null
     getChat()
   })
 }
 
 async function getChat() {
   if (currentChat.value) {
-    locked.value = false
-
     const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
     const blocked = new Set<number>(blockedUsers)
 

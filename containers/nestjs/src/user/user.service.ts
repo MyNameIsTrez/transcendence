@@ -149,6 +149,13 @@ export class UserService {
         relations: {
           chats: true,
         },
+        select: {
+          chats: {
+            chat_id: true,
+            name: true,
+            visibility: true,
+          },
+        },
       })
       .then((user) => {
         return user?.chats;

@@ -337,6 +337,7 @@ export class ChatService {
       select: {
         chat_id: true,
         name: true,
+        visibility: true,
       },
     });
   }
@@ -347,6 +348,7 @@ export class ChatService {
       select: {
         chat_id: true,
         name: true,
+        visibility: true,
       },
     });
   }
