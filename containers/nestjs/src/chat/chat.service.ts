@@ -88,7 +88,7 @@ export class ChatService {
       });
   }
 
-  public hashPassword(password: string) {
+  private hashPassword(password: string) {
     const rounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS'));
     return bcrypt
       .hash(password, rounds)
@@ -133,7 +133,7 @@ export class ChatService {
     return (await this.getChat(chat_id)).name;
   }
 
-  private getChat(chat_id: string) {
+  private async getChat(chat_id: string) {
     return this.chatRepository.findOneBy({ chat_id }).then((chat) => {
       if (chat) {
         return chat;
@@ -175,7 +175,7 @@ export class ChatService {
       });
   }
 
-  public async isProtected(chat_id: string) {
+  private async isProtected(chat_id: string) {
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
@@ -207,7 +207,7 @@ export class ChatService {
       });
   }
 
-  public getTimeOfUnmute(days: number) {
+  private getTimeOfUnmute(days: number) {
     const date = new Date();
     const current_time = date.getTime();
     const new_time = current_time + days * 24 * 60 * 60 * 1000;
@@ -215,7 +215,7 @@ export class ChatService {
     return date;
   }
 
-  public timeIsPassed(date: Date) {
+  private hasTimePassed(date: Date) {
     const current_date = new Date();
     return date < current_date;
   }
@@ -227,7 +227,7 @@ export class ChatService {
         let is_mute = false;
         chat.muted.forEach((mute) => {
           if (mute.intra_id === intra_id) {
-            if (!this.timeIsPassed(mute.time_of_unmute)) is_mute = true;
+            if (!this.hasTimePassed(mute.time_of_unmute)) is_mute = true;
           }
         });
         return is_mute;
@@ -251,7 +251,7 @@ export class ChatService {
       });
   }
 
-  public async isDirect(chat_id: string) {
+  private async isDirect(chat_id: string) {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
@@ -331,22 +331,24 @@ export class ChatService {
       });
   }
 
-  public async addToChannels(intra_id: number) {
-    return this.chatRepository
-      .findOne({ relations: ['visibility'] })
-      .then(async (chat) => {
-        if (
-          chat.visibility == Visibility.PUBLIC ||
-          chat.visibility == Visibility.PROTECTED
-        ) {
-          chat.users.push(await this.userService.findOne(intra_id));
-          this.chatRepository.save(chat);
-        }
-      });
+  public async getPublicChats() {
+    return this.chatRepository.find({
+      where: [{ visibility: Visibility.PUBLIC }],
+      select: {
+        chat_id: true,
+        name: true,
+      },
+    });
   }
 
-  public async channels() {
-    return this.chatRepository.find();
+  public async getProtectedChats() {
+    return this.chatRepository.find({
+      where: [{ visibility: Visibility.PROTECTED }],
+      select: {
+        chat_id: true,
+        name: true,
+      },
+    });
   }
 
   public async removeChat(chat: Chat) {

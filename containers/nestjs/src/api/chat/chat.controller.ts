@@ -1,6 +1,13 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
-import { IsInt, IsEnum, IsNotEmpty, IsUUID, IsPositive } from 'class-validator';
+import {
+  IsInt,
+  IsEnum,
+  IsNotEmpty,
+  IsUUID,
+  IsPositive,
+  ValidateIf,
+} from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
@@ -10,7 +17,7 @@ class CreateDto {
   @IsEnum(Visibility)
   visibility: Visibility;
 
-  // TODO: Only make this required if visiblity is PROTECTED
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
   @IsNotEmpty()
   password: string;
 }
@@ -66,6 +73,8 @@ class ChangeVisibilityDto {
   @IsEnum(Visibility)
   visibility: Visibility;
 
+  // TODO: Use this here? The function using this dto will then need to make this argument optional
+  // @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
   @IsNotEmpty()
   password: string;
 }
@@ -167,9 +176,14 @@ export class ChatController {
     );
   }
 
-  @Get('channels')
-  async channels() {
-    return await this.chatService.channels();
+  @Get('publicChats')
+  async getPublicChats() {
+    return await this.chatService.getPublicChats();
+  }
+
+  @Get('protectedChats')
+  async getProtectedChats() {
+    return await this.chatService.getProtectedChats();
   }
 
   @Get('leave/:chat_id')

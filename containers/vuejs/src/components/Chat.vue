@@ -2,23 +2,34 @@
   <div>
     <br />
     <button v-if="chatIsOpen" @click="backButton">← Back</button><br /><br />
-    <button class="btn btn-success" @click="getChannels(), getChats()">refresh</button><br /><br />
+    <button class="btn btn-success" @click="getPublicAndProtectedChats(), getChats()">
+      refresh</button
+    ><br /><br />
     <div v-if="!chatIsOpen">
-      PUBLIC AND PROTECTED CHATS
+      Public chats 🌎
+      <br />
+      <br />
+      <div class="scrollable-container-half">
+        <div v-for="(chat, index) in publicChats" :key="index" class="line" @click="joinChat(chat)">
+          {{ chat.name }}
+        </div>
+      </div>
+      <br />
+      Protected chats 🔒
       <br />
       <br />
       <div class="scrollable-container-half">
         <div
-          v-for="(chat, index) in channelsOnIndex"
+          v-for="(chat, index) in protectedChats"
           :key="index"
           class="line"
           @click="joinChat(chat)"
         >
-          {{ chat }}
+          {{ chat.name }}
         </div>
       </div>
       <br />
-      MY CHATS
+      My chats 👤
       <br />
       <br />
       <div class="scrollable-container-half">
@@ -45,7 +56,7 @@
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
       <input
-        v-if="visibility === 'PROTECTED'"
+        v-if="visibility === Visibility.PROTECTED"
         v-model="passwordChat"
         placeholder="Password..."
         @keyup.enter="createChat"
@@ -68,7 +79,7 @@
         </div>
         <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
         <input
-          v-if="visibility === 'PROTECTED'"
+          v-if="visibility === Visibility.PROTECTED"
           v-model="passwordChat"
           placeholder="Password..."
           @keyup.enter="changeVisibility"
@@ -132,14 +143,29 @@ class Entry {
   }
 }
 
-// VARIABLES
+enum Visibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED'
+}
+
+class Chat {
+  chat_id: string
+  name: string
+
+  constructor(chat_id: string, name: string) {
+    this.chat_id = chat_id
+    this.name = name
+  }
+}
+
 const blocked = ref(new Set<number>([]))
 const chat = ref()
 const chatName = ref('')
 const directMessagesOnIndex = ref<string[]>([])
 const directMessageIdsOnIndex = ref<string[]>([])
-const channelsOnIndex = ref<string[]>([])
-const channelIdsOnIndex = ref<string[]>([])
+const publicChats = ref<Chat[]>([])
+const protectedChats = ref<Chat[]>([])
 const chatHistory = ref<Entry[]>([])
 const chatIsOpen = ref(false)
 const currentChat = ref('')
@@ -164,12 +190,12 @@ const password = ref('')
 const privateButtonClass = ref('btn btn-warning')
 const passwordChat = ref('')
 const typedMessage = ref('')
-const visibility = ref('PUBLIC')
+const visibility = ref(Visibility.PUBLIC)
 
 async function leave() {
   await get('api/chat/leave/' + currentChatId.value)
   getChats()
-  getChannels()
+  getPublicAndProtectedChats()
   chatIsOpen.value = false
 }
 
@@ -183,8 +209,7 @@ async function changePassword() {
 }
 
 async function changeVisibility() {
-  if (passwordChat.value === '' && visibility.value === 'PROTECTED') return
-  console.log('visibility', visibility.value)
+  if (passwordChat.value === '' && visibility.value === Visibility.PROTECTED) return
   if (passwordChat.value === '') passwordChat.value = 'foo'
   await post('api/chat/changeVisibility', {
     chat_id: currentChatId.value,
@@ -193,7 +218,7 @@ async function changeVisibility() {
   })
   passwordChat.value = ''
   getChats()
-  getChannels()
+  getPublicAndProtectedChats()
 }
 
 function changeOptionsButton() {
@@ -259,23 +284,21 @@ async function addUser() {
 }
 
 async function createChat() {
-  if (passwordChat.value === '') passwordChat.value = 'foo'
-  console.log('password', passwordChat.value)
+  // if (passwordChat.value === '') passwordChat.value = 'foo'
   const chat = await post('api/chat/create', {
     name: chatName.value,
     visibility: visibility.value,
     password: passwordChat.value
   })
-  console.log('chat', chat)
   passwordChat.value = ''
   chatName.value = ''
   getChats()
-  getChannels()
+  getPublicAndProtectedChats()
 }
 
 async function getInfo() {
   getChats()
-  getChannels()
+  getPublicAndProtectedChats()
   const info = await get('api/chat/info/' + currentChatId.value)
   console.log('info', info)
   iAmUser.value = info.isUser
@@ -360,7 +383,7 @@ async function getChat(chat_str: string) {
 
   await nextTick()
   getChats()
-  getChannels()
+  getPublicAndProtectedChats()
 
   if (chat.value) {
     chat.value.scrollTop = chat.value.scrollHeight
@@ -374,7 +397,7 @@ async function getChats() {
   directMessageIdsOnIndex.value = []
 
   while (chats.value[i]) {
-    if (chats.value[i].visibility == 'PROTECTED') {
+    if (chats.value[i].visibility === Visibility.PROTECTED) {
       if (await get('api/chat/isLocked/' + chats.value[i].chat_id + '/' + myIntraId.value)) {
         i++
         continue
@@ -386,19 +409,12 @@ async function getChats() {
   }
 }
 
-async function getChannels() {
-  const channels = await get('api/chat/channels')
-  let i: number = 0
-  channelsOnIndex.value = []
-  channelIdsOnIndex.value = []
-
-  while (channels[i]) {
-    if (channels[i].visibility == 'PUBLIC' || channels[i].visibility == 'PROTECTED') {
-      channelsOnIndex.value.push(channels[i].name)
-      channelIdsOnIndex.value.push(channels[i].chat_id)
-    }
-    i++
-  }
+// TODO: I suspect this should only be called in one spot, so inline it
+async function getPublicAndProtectedChats() {
+  publicChats.value = await get('api/chat/publicChats')
+  protectedChats.value = await get('api/chat/protectedChats')
+  console.log('publicChats', publicChats.value)
+  console.log('protectedChats', protectedChats.value)
 }
 
 chatSocket.on('newMessage', async () => {
@@ -417,22 +433,22 @@ function sendMessage() {
 }
 
 function chatVisibility() {
-  if (visibility.value === 'PUBLIC') {
-    privateButtonClass.value = 'btn btn-primary'
-    visibility.value = 'PRIVATE'
-  } else if (visibility.value === 'PRIVATE') {
+  if (visibility.value === Visibility.PUBLIC) {
     privateButtonClass.value = 'btn btn-info '
-    visibility.value = 'PROTECTED'
+    visibility.value = Visibility.PROTECTED
+  } else if (visibility.value === Visibility.PROTECTED) {
+    privateButtonClass.value = 'btn btn-primary'
+    visibility.value = Visibility.PRIVATE
   } else {
     privateButtonClass.value = 'btn btn-warning'
-    visibility.value = 'PUBLIC'
+    visibility.value = Visibility.PUBLIC
   }
 }
 
 getMyUsername()
 getMyIntraId()
 getChats()
-getChannels()
+getPublicAndProtectedChats()
 </script>
 
 <style scoped>
@@ -448,7 +464,7 @@ getChannels()
 
 .scrollable-container-half {
   width: 100%;
-  height: 450px;
+  height: 350px;
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;
