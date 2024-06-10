@@ -71,10 +71,6 @@ export class User {
   @JoinColumn()
   achievements: Achievements;
 
-  @ManyToMany(() => Chat, (chat) => chat.access_granted)
-  @JoinTable()
-  accessGrantedChats: Chat[];
-
   @ManyToMany(() => Match, (match) => match.players)
   @JoinTable()
   matchHistory: Match[];

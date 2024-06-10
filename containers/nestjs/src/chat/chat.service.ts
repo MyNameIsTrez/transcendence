@@ -57,7 +57,6 @@ export class ChatService {
       hashed_password,
       owner: intra_id,
       admins: [current_user],
-      access_granted: [current_user],
     });
   }
 
@@ -273,18 +272,17 @@ export class ChatService {
   }
 
   public async isLocked(chat_id: string, intra_id: number) {
-    console.log;
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: ['access_granted'] })
+      .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
         if (
-          chat.visibility == Visibility.PUBLIC ||
-          chat.visibility == Visibility.PRIVATE
+          chat.visibility === Visibility.PUBLIC ||
+          chat.visibility === Visibility.PRIVATE
         ) {
           return false;
         }
         if (chat.visibility == Visibility.PROTECTED) {
-          if (chat.access_granted.some((user) => user.intra_id == intra_id))
+          if (chat.users.some((user) => user.intra_id === intra_id))
             return false;
         }
         return true;
@@ -293,11 +291,11 @@ export class ChatService {
 
   public async isPassword(chat_id: string, password: string, intra_id: number) {
     return this.chatRepository
-      .findOne({ where: { chat_id }, relations: ['access_granted'] })
+      .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
         try {
           if (await bcrypt.compare(password, chat.hashed_password)) {
-            chat.access_granted.push(await this.userService.findOne(intra_id));
+            chat.users.push(await this.userService.findOne(intra_id));
             return this.chatRepository.save(chat);
           }
         } catch (err) {
@@ -308,6 +306,8 @@ export class ChatService {
   }
 
   public async changePassword(chat_id: string, password: string) {
+    // TODO: Throw if we aren't the owner of the chat
+
     return this.chatRepository
       .findOne({ where: { chat_id } })
       .then(async (chat) => {
@@ -358,7 +358,6 @@ export class ChatService {
     chat.admins = [];
     chat.banned = [];
     chat.muted = [];
-    chat.access_granted = [];
     await this.chatRepository.save(chat);
     this.chatRepository.remove(chat);
   }
@@ -373,7 +372,6 @@ export class ChatService {
           admins: true,
           banned: true,
           muted: true,
-          access_granted: true,
         },
       })
       .then(async (chat) => {

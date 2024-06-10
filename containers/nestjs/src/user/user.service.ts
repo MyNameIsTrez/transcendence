@@ -142,7 +142,7 @@ export class UserService {
     );
   }
 
-  async chats(intra_id: number): Promise<Chat[]> {
+  async myChats(intra_id: number): Promise<Chat[]> {
     return this.usersRepository
       .findOne({
         where: { intra_id },
@@ -201,7 +201,7 @@ export class UserService {
       },
     });
     const other = await this.findOne(other_intra_id);
-    if (me.intra_id == other_intra_id) return ;
+    if (me.intra_id == other_intra_id) return;
 
     await this.removeFriend(my_intra_id, other_intra_id);
 

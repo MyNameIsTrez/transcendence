@@ -148,11 +148,6 @@ export class ChatController {
     return await this.chatService.getInfo(dto.chat_id, req.user.intra_id);
   }
 
-  @Get('isLocked/:chat_id/:intra_id')
-  async isLocked(@Param() dto: OtherUserDto) {
-    return await this.chatService.isLocked(dto.chat_id, dto.intra_id);
-  }
-
   @Get('validatePassword/:chat_id/:password/:intra_id')
   async isPassword(@Param() dto: PasswordDto) {
     return await this.chatService.isPassword(

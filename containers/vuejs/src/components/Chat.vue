@@ -2,6 +2,7 @@
   <div>
     <button v-if="chatIsOpen" @click="backButton">← Back</button>
     <div v-if="!chatIsOpen">
+      <!-- TODO: Turn these three identical chat list blocks into a shared component -->
       Public chats 🌎
       <div class="scrollable-container-half">
         <div v-for="(chat, index) in publicChats" :key="index" class="line" @click="joinChat(chat)">
@@ -21,18 +22,13 @@
       </div>
       My chats 👤
       <div class="scrollable-container-half">
-        <div
-          v-for="(chat, index) in directMessagesOnIndex"
-          :key="index"
-          class="line"
-          @click="joinChat(chat)"
-        >
-          {{ chat }}
+        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="joinChat(chat)">
+          {{ chat.name }}
         </div>
       </div>
 
       <div v-if="locked">
-        Password of {{ currentChat }}:
+        Password of {{ currentChat?.name }}:
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
       <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
@@ -81,7 +77,7 @@
         </div>
       </div>
 
-      IN CHAT '{{ currentChat }}'
+      In chat '{{ currentChat?.name }}'
       <div v-if="isDirect">(DM)</div>
 
       <div ref="chat" class="scrollable-container">
@@ -145,10 +141,10 @@ const directMessagesOnIndex = ref<string[]>([])
 const directMessageIdsOnIndex = ref<string[]>([])
 const publicChats = ref<Chat[]>([])
 const protectedChats = ref<Chat[]>([])
+const myChats = ref<Chat[]>()
+const currentChat = ref<Chat>()
 const chatHistory = ref<Entry[]>([])
 const chatIsOpen = ref(false)
-const currentChat = ref('')
-const currentChatId = ref('')
 const daysToMute = ref(0)
 const iAmAdmin = ref(false)
 const iAmBanned = ref(false)
@@ -160,7 +156,6 @@ const isProtected = ref(false)
 const locked = ref(false)
 const myIntraId = ref('')
 const myUsername = ref('')
-const chats = ref()
 const newPassword = ref('')
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
@@ -172,32 +167,36 @@ const typedMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
 
 async function leave() {
-  await get('api/chat/leave/' + currentChatId.value)
-  getChats()
-  getPublicAndProtectedChats()
-  chatIsOpen.value = false
+  if (currentChat.value) {
+    await get('api/chat/leave/' + currentChat.value.chat_id)
+    getChats()
+    chatIsOpen.value = false
+  }
 }
 
 async function changePassword() {
-  await post('api/chat/changePassword', {
-    chat_id: currentChatId.value,
-    password: newPassword.value,
-    intra_id: 'foo'
-  })
-  newPassword.value = ''
+  if (currentChat.value) {
+    await post('api/chat/changePassword', {
+      chat_id: currentChat.value.chat_id,
+      password: newPassword.value,
+      intra_id: 'foo'
+    })
+    newPassword.value = ''
+  }
 }
 
 async function changeVisibility() {
-  if (passwordChat.value === '' && visibility.value === Visibility.PROTECTED) return
-  if (passwordChat.value === '') passwordChat.value = 'foo'
-  await post('api/chat/changeVisibility', {
-    chat_id: currentChatId.value,
-    visibility: visibility.value,
-    password: passwordChat.value
-  })
-  passwordChat.value = ''
-  getChats()
-  getPublicAndProtectedChats()
+  if (currentChat.value) {
+    if (passwordChat.value === '' && visibility.value === Visibility.PROTECTED) return
+    if (passwordChat.value === '') passwordChat.value = 'foo'
+    await post('api/chat/changeVisibility', {
+      chat_id: currentChat.value.chat_id,
+      visibility: visibility.value,
+      password: passwordChat.value
+    })
+    passwordChat.value = ''
+    getChats()
+  }
 }
 
 function changeOptionsButton() {
@@ -207,18 +206,22 @@ function changeOptionsButton() {
 }
 
 function backButton() {
-  chatIsOpen.value = !chatIsOpen.value
-  chatSocket.emit('leaveChat', { chatId: currentChat.value })
+  if (currentChat.value) {
+    chatIsOpen.value = !chatIsOpen.value
+    chatSocket.emit('leaveChat', { chatId: currentChat.value })
+  }
 }
 
 async function muteUser() {
-  console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
-  await post('api/chat/mute', {
-    chat_id: currentChatId.value,
-    username: otherUser.value,
-    days: parseInt(daysToMute.value)
-  })
-  daysToMute.value = 0
+  if (currentChat.value) {
+    console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
+    await post('api/chat/mute', {
+      chat_id: currentChat.value.chat_id,
+      username: otherUser.value,
+      days: parseInt(daysToMute.value)
+    })
+    daysToMute.value = 0
+  }
 }
 
 async function getMyIntraId() {
@@ -230,36 +233,44 @@ async function getMyUsername() {
 }
 
 async function kickUser() {
-  await get('api/chat/kick/' + currentChatId.value + '/' + otherUser.value)
-  otherUser.value = ''
-  getChat(currentChat.value)
+  if (currentChat.value) {
+    await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value)
+    otherUser.value = ''
+    getChat()
+  }
 }
 
 async function banUser() {
-  await get('api/chat/ban/' + currentChatId.value + '/' + otherUser.value)
-  otherUser.value = ''
+  if (currentChat.value) {
+    await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value)
+    otherUser.value = ''
+  }
 }
 
 async function addAdmin() {
-  if (iAmAdmin.value === false) {
-    console.log('No admin authorization')
-    return
+  if (currentChat.value) {
+    if (iAmAdmin.value === false) {
+      console.log('No admin authorization')
+      return
+    }
+    console.log('You are admin')
+    const addAdmin = await post('api/chat/addAdminToChat', {
+      chat_id: currentChat.value.chat_id,
+      username: otherUser.value
+    })
+    otherUser.value = ''
   }
-  console.log('You are admin')
-  const addAdmin = await post('api/chat/addAdminToChat', {
-    chat_id: currentChatId.value,
-    username: otherUser.value
-  })
-  otherUser.value = ''
 }
 
 async function addUser() {
-  const add_user = await post('api/chat/addUserToChat', {
-    chat_id: currentChatId.value,
-    username: otherUser.value
-  })
-  otherUser.value = ''
-  getChat(currentChat.value)
+  if (currentChat.value) {
+    const add_user = await post('api/chat/addUserToChat', {
+      chat_id: currentChat.value.chat_id,
+      username: otherUser.value
+    })
+    otherUser.value = ''
+    getChat()
+  }
 }
 
 async function createChat() {
@@ -272,143 +283,105 @@ async function createChat() {
   passwordChat.value = ''
   chatName.value = ''
   getChats()
-  getPublicAndProtectedChats()
 }
 
 async function getInfo() {
-  getChats()
-  getPublicAndProtectedChats()
-  const info = await get('api/chat/info/' + currentChatId.value)
-  console.log('info', info)
-  iAmUser.value = info.isUser
-  iAmAdmin.value = info.isAdmin
-  iAmMute.value = info.isMute
-  iAmOwner.value = info.isOwner
-  isProtected.value = info.isProtected
-  iAmBanned.value = info.isBanned
-  isDirect.value = info.isDirect
+  if (currentChat.value) {
+    getChats()
+    const info = await get('api/chat/info/' + currentChat.value.chat_id)
+    console.log('info', info)
+    iAmUser.value = info.isUser
+    iAmAdmin.value = info.isAdmin
+    iAmMute.value = info.isMute
+    iAmOwner.value = info.isOwner
+    isProtected.value = info.isProtected
+    iAmBanned.value = info.isBanned
+    isDirect.value = info.isDirect
+  }
 }
 
 async function validatePassword() {
-  console.log('password', password.value)
-  const result = await get(
-    'api/chat/validatePassword/' +
-      currentChatId.value +
-      '/' +
-      password.value +
-      '/' +
-      myIntraId.value
-  )
-  console.log('result in validatePassword', result)
-  if (result) {
-    getChat(currentChat.value)
-    console.log('password is correct')
-  } else console.log('password is incorrect')
-  password.value = ''
-}
-
-async function joinChat(chatId: string) {
-  console.log('in joinChat, chatId is', chatId)
-  chatSocket.emit('joinChat', { chatId })
-
-  currentChat.value = chatId
-  chatIsOpen.value = true
-  currentChatId.value = chatId
-
-  // for (let i = 0; channelIdsOnIndex.value[i]; i++) {
-  //   if (channelsOnIndex.value[i] == chat_str) {
-  //     currentChatId.value = channelIdsOnIndex.value[i]
-  //   }
-  // }
-
-  // for (let i = 0; directMessageIdsOnIndex.value[i]; i++) {
-  //   if (directMessagesOnIndex.value[i] == chat_str) {
-  //     currentChatId.value = directMessageIdsOnIndex.value[i]
-  //   }
-  // }
-
-  // await getInfo()
-  // if (iAmBanned.value) return
-
-  // if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
-  //   locked.value = true
-  // } else {
-  //   getChat(chat_str)
-  // }
-
-  console.log('chatIsOpen.value', chatIsOpen.value)
-}
-
-async function getChat(chat_str: string) {
-  locked.value = false
-
-  const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
-  blocked.value = new Set<number>(blockedUsers)
-
-  // TODO: Can this be removed?
-  if (chatIsOpen.value == false) backButton()
-
-  await post('api/chat/addUserToChat', {
-    chat_id: currentChatId.value,
-    username: myUsername.value
-  })
-
-  chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
-    (entry: Entry) => !blocked.value.has(entry.sender)
-  )
-
-  // TODO: REMOVE
-  console.log('chatHistory.value', chatHistory.value)
-
-  await nextTick()
-  getChats()
-  getPublicAndProtectedChats()
-
-  if (chat.value) {
-    chat.value.scrollTop = chat.value.scrollHeight
-  }
-}
-
-async function getChats() {
-  chats.value = await get('api/user/chats')
-  let i: number = 0
-  directMessagesOnIndex.value = []
-  directMessageIdsOnIndex.value = []
-
-  while (chats.value[i]) {
-    if (chats.value[i].visibility === Visibility.PROTECTED) {
-      if (await get('api/chat/isLocked/' + chats.value[i].chat_id + '/' + myIntraId.value)) {
-        i++
-        continue
-      }
+  if (currentChat.value) {
+    console.log('password', password.value)
+    const result = await get(
+      'api/chat/validatePassword/' +
+        currentChat.value.chat_id +
+        '/' +
+        password.value +
+        '/' +
+        myIntraId.value
+    )
+    console.log('result in validatePassword', result)
+    if (result) {
+      getChat()
+      console.log('password is correct')
+    } else {
+      console.error('password is incorrect')
     }
-    directMessagesOnIndex.value.push(chats.value[i].name)
-    directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
-    i++
+    password.value = ''
   }
 }
 
-// TODO: I suspect this should only be called in one spot, so inline it
-async function getPublicAndProtectedChats() {
+async function joinChat(chat: Chat) {
+  chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
+    currentChat.value = chat
+    chatIsOpen.value = true
+  })
+}
+
+async function getChat() {
+  if (currentChat.value) {
+    locked.value = false
+
+    const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
+    blocked.value = new Set<number>(blockedUsers)
+
+    // TODO: Can this be removed?
+    if (chatIsOpen.value == false) backButton()
+
+    await post('api/chat/addUserToChat', {
+      chat_id: currentChat.value.chat_id,
+      username: myUsername.value
+    })
+
+    chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
+      (entry: Entry) => !blocked.value.has(entry.sender)
+    )
+
+    // TODO: REMOVE
+    console.log('chatHistory.value', chatHistory.value)
+
+    await nextTick()
+    getChats()
+
+    if (chat.value) {
+      chat.value.scrollTop = chat.value.scrollHeight
+    }
+  }
+}
+
+// TODO: I suspect this should only be called in one spot, so try to inline it
+async function getChats() {
   publicChats.value = await get('api/chat/publicChats')
   protectedChats.value = await get('api/chat/protectedChats')
-  console.log('publicChats', publicChats.value)
-  console.log('protectedChats', protectedChats.value)
+  myChats.value = await get('api/user/myChats')
 }
 
 chatSocket.on('newMessage', async () => {
-  await getChat(currentChat.value)
+  await getChat()
 })
 
 function sendMessage() {
-  const message = {
-    chatId: currentChatId.value,
-    body: typedMessage.value
+  if (currentChat.value) {
+    const message = {
+      chatId: currentChat.value.chat_id,
+      body: typedMessage.value
+    }
+
+    typedMessage.value = ''
+
+    chatSocket.emit('sendMessage', message)
   }
-
-  typedMessage.value = ''
-
-  chatSocket.emit('sendMessage', message)
 }
 
 function chatVisibility() {
@@ -427,7 +400,6 @@ function chatVisibility() {
 getMyUsername()
 getMyIntraId()
 getChats()
-getPublicAndProtectedChats()
 </script>
 
 <style scoped>
