@@ -13,6 +13,7 @@ import { IsNotEmpty, IsUUID } from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 import TransJwtService from '../../auth/trans-jwt-service';
 import { UserService } from '../../user/user.service';
+import { WsException } from '@nestjs/websockets';
 
 class ChatDto {
   @IsUUID()
@@ -104,8 +105,9 @@ export class ChatGateway {
 
     // console.log('In joinChat(), this.chatToSockets is', this.chatToSockets);
 
-    return { err: 'foo' };
-    // return {};
+    throw new WsException('foo');
+
+    return {};
   }
 
   @SubscribeMessage('leaveChat')

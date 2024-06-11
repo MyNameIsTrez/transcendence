@@ -339,14 +339,7 @@ async function clickedChat(chat: Chat) {
   console.log('pw', pw)
 
   // TODO: Show an error popup when joining fails
-  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, (data) => {
-    if (data.err) {
-      // TODO: Show error popup
-      alertMessage.value = data.err
-      alertPopup.value.show()
-    }
-
-    // console.log('data.err', data.err)
+  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
     currentChat.value = chat
     selectedChat.value = null
     // getChat()
@@ -437,6 +430,11 @@ function getBtnColor(visibility: Visibility) {
       ? 'btn-primary'
       : 'btn-warning'
 }
+
+chatSocket.on('exception', (data) => {
+  alertMessage.value = data.message
+  alertPopup.value.show()
+})
 
 getMyUsername()
 getMyIntraId()
