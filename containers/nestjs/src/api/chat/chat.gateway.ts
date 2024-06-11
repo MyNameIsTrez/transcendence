@@ -100,6 +100,8 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
+    // TODO: Check the password
+
     if (!this.chatToSockets.has(dto.chatId)) {
       this.chatToSockets.set(dto.chatId, new Set());
     }

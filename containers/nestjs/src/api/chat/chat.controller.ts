@@ -141,15 +141,6 @@ export class ChatController {
     return await this.chatService.getInfo(dto.chat_id, req.user.intra_id);
   }
 
-  @Get('validatePassword/:chat_id/:password/:intra_id')
-  async isPassword(@Param() dto: PasswordDto) {
-    return await this.chatService.isPassword(
-      dto.chat_id,
-      dto.password,
-      dto.intra_id,
-    );
-  }
-
   @Post('changePassword')
   async changePassword(@Body() dto: PasswordDto) {
     return await this.chatService.changePassword(dto.chat_id, dto.password);
