@@ -33,7 +33,7 @@
                   <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
-              <AlertPopup :alertType="alertType" :visible="alertVisible">{{
+              <AlertPopup ref="alertPopup" :alertType="alertType" :visible="alertVisible">{{
                 alertMessage
               }}</AlertPopup>
             </span>
@@ -49,7 +49,7 @@
     <GameInvite
       v-for="invite in invitations"
       :key="invite.inviterIntraId"
-      :name="invite.inviterName"
+      :inviterName="invite.inviterName"
       :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
     />
@@ -107,9 +107,8 @@ const alertVisible = ref(false)
 
 const alertType = ref(AlertType.ALERT_SUCCESS)
 
+const alertPopup = ref()
 const alertMessage = ref('Friend request sent')
-
-const isError = ref(true)
 
 class Invitation {
   inviterIntraId: number
@@ -137,21 +136,13 @@ async function sendFriendRequest() {
     .then(() => {
       alertType.value = AlertType.ALERT_SUCCESS
       alertMessage.value = 'Friend request sent'
-      alertVisible.value = true
-      isError.value = false
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
       alertType.value = AlertType.ALERT_WARNING
       alertMessage.value = err.response.data.message
-      alertVisible.value = true
-      isError.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 </script>

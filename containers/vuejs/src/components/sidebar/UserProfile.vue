@@ -64,6 +64,10 @@
       <button class="btn text-xl" @click="handleBlock">
         {{ blocked ? 'Unblock' : 'Block' }}
       </button>
+
+      <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+        alertMessage
+      }}</AlertPopup>
     </div>
   </div>
 </template>
@@ -94,7 +98,8 @@ const alertVisible = ref(false)
 
 const alertType = ref(AlertType.ALERT_SUCCESS)
 
-const alertMessage = ref('Friend request sent')
+const alertPopup = ref()
+const alertMessage = ref('')
 
 const isError = ref(true)
 
@@ -115,8 +120,15 @@ function inviteToGame() {
 }
 
 async function handleBlock() {
-  await get('api/user/' + (blocked.value ? 'un' : '') + 'block/' + intra_id)
-  blocked.value = !blocked.value
+  const url = 'api/user/' + (blocked.value ? 'unblock' : 'block')
+
+  await post(url, { intra_id })
+    .then(() => (blocked.value = !blocked.value))
+    .catch((err) => {
+      console.error('handleBlock error', err)
+      alertMessage.value = err.response.data.message
+      alertPopup.value.show()
+    })
 }
 
 async function sendFriendRequest() {
@@ -124,21 +136,15 @@ async function sendFriendRequest() {
     .then(() => {
       alertType.value = AlertType.ALERT_SUCCESS
       alertMessage.value = 'Friend request sent'
-      alertVisible.value = true
       isError.value = false
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
       alertType.value = AlertType.ALERT_WARNING
       alertMessage.value = err.response.data.message
-      alertVisible.value = true
       isError.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 </script>

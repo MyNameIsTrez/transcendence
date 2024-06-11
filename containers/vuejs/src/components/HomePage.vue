@@ -4,13 +4,13 @@
       <Sidebar />
     </div>
     <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
-      <PongCanvas :game-socket="gameSocket" />
+      <PongCanvas />
     </div>
     <div class="flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
-      <Chat :chat-socket="chatSocket" />
+      <Chat />
     </div>
   </div>
-  <GameHeader :game-socket="gameSocket" />
+  <GameHeader />
 </template>
 
 <script setup lang="ts">
@@ -55,6 +55,7 @@ const chatSocket = getSocket('/chat', opts)
 const userSocket = getSocket('/user', opts)
 
 provide('gameSocket', gameSocket)
+provide('chatSocket', chatSocket)
 provide('userSocket', userSocket)
 
 gameSocket.on('exception', (error) => {

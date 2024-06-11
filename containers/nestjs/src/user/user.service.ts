@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -47,11 +48,8 @@ export class UserService {
   }
 
   async getUser(intra_id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { intra_id },
-      relations: {
-        achievements: true,
-      },
+    const user = await this.findOne(intra_id, {
+      achievements: true,
     });
 
     return {
@@ -80,18 +78,18 @@ export class UserService {
       .sort((a, b) => b.wins - a.wins);
   }
 
-  async findOne(intra_id: number): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ intra_id });
+  async findOne(
+    intra_id: number,
+    relations?: any,
+    select?: any,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { intra_id },
+      relations,
+      select,
+    });
     if (!user) {
       throw new BadRequestException('No user with this intra_id exists');
-    }
-    return user;
-  }
-
-  async findOneByUsername(username: string): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ username });
-    if (!user) {
-      throw new BadRequestException('No user with this username exists');
     }
     return user;
   }
@@ -101,7 +99,7 @@ export class UserService {
   }
 
   async getUsername(intra_id: number): Promise<string> {
-    return this.findOne(intra_id).then((user) => {
+    return await this.findOne(intra_id).then((user) => {
       return user.username;
     });
   }
@@ -141,17 +139,22 @@ export class UserService {
     );
   }
 
-  async chats(intra_id: number): Promise<Chat[]> {
-    return this.usersRepository
-      .findOne({
-        where: { intra_id },
-        relations: {
-          chats: true,
+  public async myChats(intra_id: number): Promise<Chat[]> {
+    return this.findOne(
+      intra_id,
+      {
+        chats: true,
+      },
+      {
+        chats: {
+          chat_id: true,
+          name: true,
+          visibility: true,
         },
-      })
-      .then((user) => {
-        return user?.chats;
-      });
+      },
+    ).then((user) => {
+      return user?.chats;
+    });
   }
 
   async turnOnTwoFactorAuthentication(intra_id: number) {
@@ -189,28 +192,26 @@ export class UserService {
   }
 
   async block(my_intra_id: number, other_intra_id: number) {
-    const me = await this.usersRepository.findOne({
-      where: { intra_id: my_intra_id },
-      relations: {
-        blocked: true,
-      },
+    if (my_intra_id === other_intra_id) {
+      throw new BadRequestException("You can't block yourself");
+    }
+
+    const me = await this.findOne(my_intra_id, {
+      blocked: true,
     });
     const other = await this.findOne(other_intra_id);
-    if (me.intra_id == other_intra_id) return ;
+    if (me.intra_id == other_intra_id) return;
+
+    await this.removeFriend(my_intra_id, other_intra_id);
 
     me.blocked.push(other);
-
-    this.removeFriend(my_intra_id, other_intra_id);
 
     return this.usersRepository.save(me);
   }
 
   async unblock(my_intra_id: number, other_intra_id: number) {
-    const me = await this.usersRepository.findOne({
-      where: { intra_id: my_intra_id },
-      relations: {
-        blocked: true,
-      },
+    const me = await this.findOne(my_intra_id, {
+      blocked: true,
     });
 
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
@@ -219,11 +220,8 @@ export class UserService {
   }
 
   async hasBlocked(my_intra_id: number, other_intra_id: number) {
-    const me = await this.usersRepository.findOne({
-      where: { intra_id: my_intra_id },
-      relations: {
-        blocked: true,
-      },
+    const me = await this.findOne(my_intra_id, {
+      blocked: true,
     });
 
     const blocked = me.blocked.some((user) => user.intra_id === other_intra_id);
@@ -232,32 +230,26 @@ export class UserService {
   }
 
   async blocked(intra_id: number) {
-    return await this.usersRepository
-      .findOne({
-        where: { intra_id },
-        relations: {
-          blocked: true,
-        },
-      })
-      .then(async (user) => {
-        return await Promise.all(
-          user.blocked.map(async (blockedUser) => {
-            const nowMs = Date.now();
-            const lastOnlineMs = (
-              await this.getLastOnline(blockedUser.intra_id)
-            ).getTime();
-            const isOnline =
-              nowMs - lastOnlineMs <
-              this.configService.get('OFFLINE_TIMEOUT_MS');
+    return await this.findOne(intra_id, {
+      blocked: true,
+    }).then(async (user) => {
+      return await Promise.all(
+        user.blocked.map(async (blockedUser) => {
+          const nowMs = Date.now();
+          const lastOnlineMs = (
+            await this.getLastOnline(blockedUser.intra_id)
+          ).getTime();
+          const isOnline =
+            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
 
-            return {
-              name: blockedUser.username,
-              isOnline,
-              intraId: blockedUser.intra_id,
-            };
-          }),
-        );
-      });
+          return {
+            name: blockedUser.username,
+            isOnline,
+            intraId: blockedUser.intra_id,
+          };
+        }),
+      );
+    });
   }
 
   async addWin(intra_id: number) {
@@ -301,26 +293,16 @@ export class UserService {
   }
 
   async getAchievements(intra_id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { intra_id },
-      relations: {
-        achievements: true,
-      },
+    const user = await this.findOne(intra_id, {
+      achievements: true,
     });
     return user.achievements;
   }
 
-  findOneByName(intra_name: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ intra_name: intra_name });
-  }
-
   async sendFriendRequest(sender_id: number, receiver_name: string) {
-    const sender = await this.usersRepository.findOne({
-      where: { intra_id: sender_id },
-      relations: {
-        friends: true,
-        incoming_friend_requests: true,
-      },
+    const sender = await this.findOne(sender_id, {
+      friends: true,
+      incoming_friend_requests: true,
     });
 
     const receiver = await this.usersRepository.findOne({
@@ -328,8 +310,12 @@ export class UserService {
       relations: {
         friends: true,
         incoming_friend_requests: true,
+        blocked: true,
       },
     });
+    if (!receiver) {
+      throw new BadRequestException('No user with this receiver_name exists');
+    }
 
     if (!receiver) {
       throw new BadRequestException('User does not exist');
@@ -351,6 +337,12 @@ export class UserService {
       )
     ) {
       throw new BadRequestException('Friend request already sent');
+    }
+
+    if (receiver.blocked.some((block) => block.intra_id === sender_id)) {
+      throw new BadRequestException(
+        "Can't befriend someone who has blocked you",
+      );
     }
 
     this.unblock(sender_id, receiver.intra_id);
@@ -379,40 +371,31 @@ export class UserService {
   }
 
   async getFriends(intra_id: number) {
-    return await this.usersRepository
-      .findOne({
-        where: { intra_id },
-        relations: {
-          friends: true,
-        },
-      })
-      .then(async (user) => {
-        return await Promise.all(
-          user.friends.map(async (friend) => {
-            const nowMs = Date.now();
-            const lastOnlineMs = (
-              await this.getLastOnline(friend.intra_id)
-            ).getTime();
-            const isOnline =
-              nowMs - lastOnlineMs <
-              this.configService.get('OFFLINE_TIMEOUT_MS');
+    return await this.findOne(intra_id, {
+      friends: true,
+    }).then(async (user) => {
+      return await Promise.all(
+        user.friends.map(async (friend) => {
+          const nowMs = Date.now();
+          const lastOnlineMs = (
+            await this.getLastOnline(friend.intra_id)
+          ).getTime();
+          const isOnline =
+            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
 
-            return {
-              name: friend.username,
-              isOnline,
-              intraId: friend.intra_id,
-            };
-          }),
-        );
-      });
+          return {
+            name: friend.username,
+            isOnline,
+            intraId: friend.intra_id,
+          };
+        }),
+      );
+    });
   }
 
   async getIncomingFriendRequests(intra_id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { intra_id },
-      relations: {
-        incoming_friend_requests: true,
-      },
+    const user = await this.findOne(intra_id, {
+      incoming_friend_requests: true,
     });
     if (user) {
       return user.incoming_friend_requests.map((incoming) => {
@@ -425,18 +408,12 @@ export class UserService {
   }
 
   async acceptFriendRequest(receiver_id: number, sender_id: number) {
-    const receiver = await this.usersRepository.findOne({
-      where: { intra_id: receiver_id },
-      relations: {
-        incoming_friend_requests: true,
-        friends: true,
-      },
+    const receiver = await this.findOne(receiver_id, {
+      incoming_friend_requests: true,
+      friends: true,
     });
-    const sender = await this.usersRepository.findOne({
-      where: { intra_id: sender_id },
-      relations: {
-        friends: true,
-      },
+    const sender = await this.findOne(sender_id, {
+      friends: true,
     });
     sender.friends.push(receiver);
     receiver.friends.push(sender);
@@ -450,11 +427,8 @@ export class UserService {
   }
 
   async declineFriendRequest(receiver_id: number, sender_id: number) {
-    const receiver = await this.usersRepository.findOne({
-      where: { intra_id: receiver_id },
-      relations: {
-        incoming_friend_requests: true,
-      },
+    const receiver = await this.findOne(receiver_id, {
+      incoming_friend_requests: true,
     });
     receiver.incoming_friend_requests.splice(
       receiver.incoming_friend_requests.findIndex(
@@ -466,52 +440,59 @@ export class UserService {
   }
 
   async removeFriend(user_id: number, friend_id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { intra_id: user_id },
-      relations: {
-        friends: true,
-      },
+    const user = await this.findOne(user_id, {
+      friends: true,
     });
-    const friend = await this.usersRepository.findOne({
-      where: { intra_id: friend_id },
-      relations: {
-        friends: true,
-      },
+    const friend = await this.findOne(friend_id, {
+      friends: true,
     });
-    user.friends.splice(
-      user.friends.findIndex((user) => user.intra_id === friend_id),
-      1,
+
+    const myFriendIndex = user.friends.findIndex(
+      (user) => user.intra_id === friend_id,
     );
-    friend.friends.splice(
-      friend.friends.findIndex((user) => user.intra_id === user_id),
-      1,
+    if (myFriendIndex === -1) {
+      return;
+    }
+
+    const otherFriendIndex = friend.friends.findIndex(
+      (user) => user.intra_id === user_id,
     );
+    if (otherFriendIndex === -1) {
+      return;
+    }
+
+    user.friends.splice(myFriendIndex, 1);
+    friend.friends.splice(otherFriendIndex, 1);
+
     this.usersRepository.save(user);
     this.usersRepository.save(friend);
   }
 
-  updateLastOnline(intra_id: number) {
-    this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
+  public async updateLastOnline(intra_id: number) {
+    await this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
   }
 
-  getLastOnline(intra_id: number) {
-    return this.findOne(intra_id).then((user) => {
+  private async getLastOnline(intra_id: number) {
+    return await this.findOne(intra_id).then((user) => {
       return user.lastOnline;
     });
   }
 
-  getMatchHistory(intra_id: number) {
-    return this.usersRepository
-      .findOne({
-        where: { intra_id },
-        relations: [
-          'matchHistory',
-          'matchHistory.players',
-          'matchHistory.disconnectedPlayer',
-        ],
-      })
-      .then((user) => {
-        return user?.matchHistory;
-      });
+  public async getMatchHistory(intra_id: number) {
+    return await this.findOne(intra_id, [
+      'matchHistory',
+      'matchHistory.players',
+      'matchHistory.disconnectedPlayer',
+    ]).then((user) => {
+      return user?.matchHistory;
+    });
+  }
+
+  async getChatsOfUser(intra_id: number) {
+    const user = await this.findOne(intra_id, {
+      chats: true,
+    });
+
+    return user.chats;
   }
 }

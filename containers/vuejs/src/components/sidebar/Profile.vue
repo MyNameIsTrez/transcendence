@@ -6,7 +6,6 @@
           {{ username }}
         </div>
 
-        <!-- Settings menu button -->
         <button class="btn w-32 justify-self-end" onclick="settings.showModal()">Settings</button>
 
         <dialog id="settings" class="modal">
@@ -46,9 +45,12 @@
               </div>
             </div>
 
-            <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
-              alertMessage
-            }}</AlertPopup>
+            <AlertPopup
+              ref="alertPopup"
+              :alertType="AlertType.ALERT_WARNING"
+              :visible="alertVisible"
+              >{{ alertMessage }}</AlertPopup
+            >
           </span>
 
           <!-- Allows clicking outside of the modal to close it -->
@@ -131,6 +133,7 @@ const newUsername = ref('')
 
 const alertVisible = ref(false)
 
+const alertPopup = ref()
 const alertMessage = ref('Name change failed')
 
 const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
@@ -146,10 +149,7 @@ function uploadProfilePicture(event: any) {
     .catch((err) => {
       console.error('profilePicture error', err)
       alertMessage.value = err.response.data.message
-      alertVisible.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 
@@ -163,10 +163,7 @@ function changeUsername() {
     .catch((err) => {
       console.error('setUsername error', err)
       alertMessage.value = err.response.data.message[0]
-      alertVisible.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 

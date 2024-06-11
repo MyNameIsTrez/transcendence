@@ -12,7 +12,7 @@
       />
       <button class="btn" @click="sendAuthCode">Send</button>
     </span>
-    <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">
+    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">
       Code is invalid
     </AlertPopup>
   </div>
@@ -25,6 +25,8 @@ import { useRouter } from 'vue-router'
 import AlertPopup from './AlertPopup.vue'
 import { AlertType } from '../types'
 
+const alertPopup = ref()
+
 const router = useRouter()
 
 const authCode = ref('')
@@ -36,8 +38,6 @@ if (jwt) {
 }
 
 const isTwoFactorAuthenticationEnabled = await get(`2fa/isEnabled`)
-
-const alertVisible = ref(false)
 
 const qr = ref('')
 if (!isTwoFactorAuthenticationEnabled) {
@@ -62,19 +62,13 @@ async function turn2faOff() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      alertVisible.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 
 async function turn2faOn() {
   await post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value }).catch(() => {
-    alertVisible.value = true
-    setTimeout(() => {
-      alertVisible.value = false
-    }, 3500)
+    alertPopup.value.show()
   })
 }
 
@@ -85,10 +79,7 @@ async function authenticateWith2fa() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      alertVisible.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 </script>

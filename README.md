@@ -23,7 +23,7 @@ You can edit backend and frontend files without having to restart the server.
 
 ### Security
 
-- Channel and other passwords have to be hashed
+- Chat and other passwords have to be hashed
 - Protecting against SQL injections
 - Server-side validation
 - .env file
@@ -41,10 +41,10 @@ You can edit backend and frontend files without having to restart the server.
 
 ### Chat
 
-- Channels that are public (optionally with a password)/private
+- Chats that are public (optionally with a password)/private
 - Direct messages
 - Blocking users
-- Channel owner
+- Chat owner
 - Administrators
 - Kicking, banning, muting
 - Inviting to Pong game

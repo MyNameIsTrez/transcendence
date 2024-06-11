@@ -1,7 +1,7 @@
 <template>
   <div ref="pongContainer">
     <canvas id="pong-canvas" ref="canvasRef"> </canvas>
-    <ScoreBoard class="pt-32" :game-socket="gameSocket" />
+    <ScoreBoard class="pt-32" />
   </div>
 </template>
 
@@ -10,9 +10,7 @@ import { ref, onMounted, inject } from 'vue'
 import { Socket } from 'socket.io-client'
 import ScoreBoard from './ScoreBoard.vue'
 
-const props = defineProps(['gameSocket'])
-const gameSocket = props.gameSocket
-
+const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
 gameSocket.on('pong', (data: any) => {

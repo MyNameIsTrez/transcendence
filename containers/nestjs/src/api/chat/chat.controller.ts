@@ -1,6 +1,13 @@
 import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
-import { IsInt, IsEnum, IsNotEmpty, IsUUID, IsPositive } from 'class-validator';
+import {
+  IsInt,
+  IsEnum,
+  IsNotEmpty,
+  IsUUID,
+  IsPositive,
+  ValidateIf,
+} from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
 class CreateDto {
@@ -10,7 +17,7 @@ class CreateDto {
   @IsEnum(Visibility)
   visibility: Visibility;
 
-  // TODO: Only make this required if visiblity is PROTECTED
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
   @IsNotEmpty()
   password: string;
 }
@@ -23,9 +30,6 @@ class NameDto {
 class AddUserDto {
   @IsNotEmpty()
   chat_id: string;
-
-  @IsNotEmpty()
-  username: string;
 }
 
 class OtherUserDto {
@@ -41,7 +45,7 @@ class MuteDto {
   chat_id: string;
 
   @IsNotEmpty()
-  username: string;
+  intra_id: number;
 
   @IsInt()
   @IsPositive()
@@ -66,8 +70,9 @@ class ChangeVisibilityDto {
   @IsEnum(Visibility)
   visibility: Visibility;
 
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
   @IsNotEmpty()
-  password: string;
+  password: string | null;
 }
 
 @Controller('api/chat')
@@ -84,24 +89,21 @@ export class ChatController {
     );
   }
 
-  @Post('addUserToChat')
-  async AddUserToChat(@Body() dto: AddUserDto) {
-    return await this.chatService.addUser(dto.chat_id, dto.username);
-  }
-
   @Post('addAdminToChat')
-  async AddAdminToChat(@Body() dto: AddUserDto) {
-    return await this.chatService.addAdmin(dto.chat_id, dto.username);
+  async addAdminToChat(@Request() req, @Body() dto: AddUserDto) {
+    return await this.chatService.addAdmin(dto.chat_id, req.user.intra_id);
   }
 
-  @Get('kick/:chat_id/:username')
-  async kick(@Param() dto: AddUserDto) {
-    return await this.chatService.kickUser(dto.chat_id, dto.username);
-  }
-
+  // TODO: Change this to @Post(), and get rid of :username
   @Get('ban/:chat_id/:username')
-  async ban(@Param() dto: AddUserDto) {
-    return await this.chatService.banUser(dto.chat_id, dto.username);
+  async ban(@Request() req, @Param() dto: AddUserDto) {
+    return await this.chatService.banUser(dto.chat_id, req.user.intra_id);
+  }
+
+  // TODO: Change this to @Post(), and get rid of :username
+  @Get('kick/:chat_id/:username')
+  async kick(@Request() req, @Param() dto: AddUserDto) {
+    return await this.chatService.kickUser(dto.chat_id, req.user.intra_id);
   }
 
   @Get('name/:chat_id')
@@ -126,7 +128,7 @@ export class ChatController {
 
   @Post('mute')
   async mute(@Body() dto: MuteDto) {
-    return await this.chatService.mute(dto.chat_id, dto.username, dto.days);
+    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days);
   }
 
   @Get('isMute/:chat_id/:intra_id')
@@ -137,20 +139,6 @@ export class ChatController {
   @Get('info/:chat_id')
   async getInfo(@Request() req, @Param() dto: NameDto) {
     return await this.chatService.getInfo(dto.chat_id, req.user.intra_id);
-  }
-
-  @Get('isLocked/:chat_id/:intra_id')
-  async isLocked(@Param() dto: OtherUserDto) {
-    return await this.chatService.isLocked(dto.chat_id, dto.intra_id);
-  }
-
-  @Get('validatePassword/:chat_id/:password/:intra_id')
-  async isPassword(@Param() dto: PasswordDto) {
-    return await this.chatService.isPassword(
-      dto.chat_id,
-      dto.password,
-      dto.intra_id,
-    );
   }
 
   @Post('changePassword')
@@ -167,9 +155,14 @@ export class ChatController {
     );
   }
 
-  @Get('channels')
-  async channels() {
-    return await this.chatService.channels();
+  @Get('publicChats')
+  async getPublicChats(@Request() req) {
+    return await this.chatService.getMyPublicChats(req.user.intra_id);
+  }
+
+  @Get('protectedChats')
+  async getProtectedChats(@Request() req) {
+    return await this.chatService.getMyProtectedChats(req.user.intra_id);
   }
 
   @Get('leave/:chat_id')

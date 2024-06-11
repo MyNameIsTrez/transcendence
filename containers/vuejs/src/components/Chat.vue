@@ -1,125 +1,193 @@
 <template>
   <div>
-    <br />
-    <button v-if="chatIsOpen" @click="changeChatButton">← Back</button><br /><br />
-    <button class="btn btn-success" @click="getChannels(); getChats();">refresh</button><br /><br />
-    <div v-if="!chatIsOpen">
-      PUBLIC AND PROTECTED CHATS
-      <br />
-      <br />
+    <button v-if="currentChat" @click="leaveChat">← Back</button>
+    <div v-if="!currentChat">
+      My chats
+      <span class="material-symbols-outlined align-bottom">person</span>
       <div class="scrollable-container-half">
-        <div
-          v-for="(chat, index) in channelsOnIndex"
-          :key="index"
-          class="line"
-          @click="validateLock(chat)"
-        >
-          {{ chat }}
-        </div>
-      </div>
-      <br />
-      MY CHATS
-      <br />
-      <br />
-      <div class="scrollable-container-half">
-        <div
-          v-for="(chat, index) in directMessagesOnIndex"
-          :key="index"
-          class="line"
-          @click="validateLock(chat)"
-        >
-          {{ chat }}
+        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="clickedChat(chat)">
+          {{ chat.name }}
         </div>
       </div>
 
-      <div v-if="locked">
-        <br /><br />
-        Password of {{ currentChat }}:
-        <input
-          v-model="password"
-          placeholder="Password..."
-          @keyup.enter="validatePassword"
-        /><br /><br />
+      <!-- TODO: Turn these three identical chat list blocks into a shared component -->
+      Public chats
+      <span class="material-symbols-outlined align-bottom">public</span>
+      <div class="scrollable-container-half">
+        <div
+          v-for="(chat, index) in publicChats"
+          :key="index"
+          class="line"
+          @click="clickedChat(chat)"
+        >
+          {{ chat.name }}
+        </div>
       </div>
-      <br />
-      <input v-model="chatName" placeholder="Chat name..." @keyup.enter="createChat" />
-      <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
-      <input
-        v-if="visibility === 'PROTECTED'"
-        v-model="passwordChat"
-        placeholder="Password..."
-        @keyup.enter="createChat"
-      /><br />
-      <button @click="createChat">Create</button>
+
+      Protected chats
+      <span class="material-symbols-outlined align-bottom">lock</span>
+      <div class="scrollable-container-half">
+        <div
+          v-for="(chat, index) in protectedChats"
+          :key="index"
+          class="line"
+          @click="clickedChat(chat)"
+        >
+          {{ chat.name }}
+        </div>
+      </div>
     </div>
-    <div v-if="chatIsOpen">
+    <div v-if="currentChat">
       <div v-if="iAmUser">
-        <button class="btn btn-secondary" @click="leave"> Leave chat </button><br /><br />
+        <button class="btn btn-secondary" @click="leave">Leave chat</button>
       </div>
 
       <div v-if="iAmOwner">
         <div v-if="isProtected">
-          <input
-            v-model="newPassword"
+          <!-- <input
+            v-model="password"
+            type="password"
             placeholder="New password..."
             @keyup.enter="changePassword"
-          /><br />
-          <button @click="changePassword">Change password</button><br /><br />
+          /> -->
+          <button @click="changePassword">Change password</button>
         </div>
-        <button :class="privateButtonClass" @click="chatVisibility">{{ visibility }}</button>
-        <input
-          v-if="visibility === 'PROTECTED'"
-          v-model="passwordChat"
-          placeholder="Password..."
-          @keyup.enter="changeVisibility"
-        /><br />
-        <button @click="changeVisibility">Change visibility</button><br /><br />
+        <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+          {{ visibility }}
+        </button>
+        <button @click="changeVisibility">Change visibility</button>
       </div>
       <div v-if="iAmAdmin">
-        <button @click="changeOptionsButton">{{ optionsButtonText }}</button><br /><br />
-        <div v-if="optionsButton">
-          <input v-model="otherUser" placeholder="42 student..." /><br />
+        <button @click="() => (showOptions = !showOptions)">
+          {{ showOptions ? '~ open options ~' : '~ close options ~' }}
+        </button>
+        <div v-if="showOptions">
+          <!-- <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
-          <button @click="kickUser">/Kick</button>
-          <button @click="banUser">/Ban</button>
-          <button @click="addAdmin">/Make admin</button>
-          <button @click="muteUser">/Mute</button>
-          <input v-model="daysToMute" placeholder="days to mute..." /><br /><br />
+          <button @click="muteUser">Mute</button>
+          <button @click="kickUser">Kick</button>
+          <button @click="banUser">Ban</button>
+          <button @click="addAdmin">Make admin</button> -->
+          <!-- TODO: Use number input here -->
+          <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
         </div>
       </div>
 
-      <br />
+      In chat '{{ currentChat?.name }}'
+      <div v-if="isDirect">(DM)</div>
 
-      IN CHAT '{{ currentChat }}' 
-      <div v-if="isDirect">(DM)</div> <br /><br />
-      <div ref="chat" class="scrollable-container">
-        <div v-for="(entry, index) in chatHistory" :key="index" class="line">
-          <router-link :to="`/user/${entry.sender}`">
-            {{ entry.sender_name + ': ' + entry.body + '\n' }}
+      <div ref="chatRef" class="scrollable-container">
+        <div v-for="(message, index) in chatHistory" :key="index" class="line">
+          <router-link :to="`/user/${message.sender}`">
+            {{ message.sender_name + ': ' + message.body + '\n' }}
           </router-link>
         </div>
       </div>
-      <br />
       <input
         v-if="!iAmMute"
-        v-model="typedMessage"
+        v-model="sentMessage"
         placeholder="Type message..."
         @keyup.enter="sendMessage"
       />
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
+
+    <dialog ref="passwordInputPopup" class="modal">
+      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+        <div class="modal-box w-auto justify-self-center">
+          <!-- Adds a little close button in the top-right corner -->
+          <form method="dialog">
+            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+          </form>
+
+          <h3 class="font-bold text-lg">Enter password</h3>
+
+          <div class="flex pt-4 flex-col space-y-5 justify-self-center">
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Password..."
+              class="input input-bordered w-full max-w-xs"
+              @keyup.enter="createProtectedChat"
+            />
+            <button class="btn btn-info" @click="createProtectedChat">Enter</button>
+          </div>
+        </div>
+      </span>
+
+      <!-- Allows clicking outside of the modal to close it -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">Create new chat</button>
+
+    <dialog ref="chatCreationModal" class="modal">
+      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+        <div class="modal-box w-auto justify-self-center">
+          <!-- Adds a little close button in the top-right corner -->
+          <form method="dialog">
+            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+          </form>
+
+          <h3 class="font-bold text-lg">Create new chat</h3>
+
+          <div class="flex pt-4 flex-col space-y-5">
+            <input
+              class="p-2"
+              v-model="inputChatName"
+              placeholder="Chat name..."
+              @keyup.enter="createChat"
+            />
+
+            <input
+              v-if="visibility === Visibility.PROTECTED"
+              class="p-2"
+              v-model="password"
+              type="password"
+              placeholder="Password..."
+              @keyup.enter="createChat"
+            />
+
+            <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+              {{ visibility }}
+
+              <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
+            </button>
+
+            <button class="btn btn-info" @click="createChat">Create</button>
+
+            <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
+              alertMessage
+            }}</AlertPopup>
+          </div>
+        </div>
+      </span>
+
+      <!-- Allows clicking outside of the modal to close it -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
+      alertMessage
+    }}</AlertPopup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
+import { Socket } from 'socket.io-client'
+import AlertPopup from './AlertPopup.vue'
+import { AlertType } from '../types'
 
-const props = defineProps(['chatSocket'])
-const chatSocket = props.chatSocket
+const chatSocket: Socket = inject('chatSocket')!
 
-class Entry {
+class Message {
   sender_name: string
   sender: number
   body: string
@@ -131,294 +199,355 @@ class Entry {
   }
 }
 
-// VARIABLES
-const blocked = ref(new Set<number>([]))
-const chat = ref()
-const chatName = ref('')
-const directMessagesOnIndex = ref<string[]>([])
-const directMessageIdsOnIndex = ref<string[]>([])
-const channelsOnIndex = ref<string[]>([])
-const channelIdsOnIndex = ref<string[]>([])
-const chatHistory = ref<Entry[]>([])
-const chatIsOpen = ref(false)
-const currentChat = ref('')
-const currentChatId = ref('')
-const daysToMute = ref(0)
-const iAmAdmin = ref(false)
-const iAmBanned = ref(false)
-const iAmMute = ref(false)
-const iAmOwner = ref(false)
-const iAmUser = ref(false)
-const isDirect = ref(false)
-const isProtected = ref(false)
-const locked = ref(false)
+enum Visibility {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  PROTECTED = 'PROTECTED'
+}
+
+class Chat {
+  chat_id: string
+  name: string
+  visibility: Visibility
+
+  constructor(chat_id: string, name: string, visibility: Visibility) {
+    this.chat_id = chat_id
+    this.name = name
+    this.visibility = visibility
+  }
+}
+
+const chatRef = ref()
+const inputChatName = ref('')
+const publicChats = ref<Chat[]>([])
+const protectedChats = ref<Chat[]>([])
+const myChats = ref<Chat[]>()
+const currentChat = ref<Chat | null>(null)
+const selectedChat = ref<Chat | null>(null)
+const chatHistory = ref<Message[]>([])
+// const daysToMute = ref<string>('0')
+const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
+const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
+const iAmOwner = ref(false) // TODO: Replace all usage of this with currentChat.iAmOwner
+const iAmUser = ref(false) // TODO: Replace all usage of this with currentChat.iAmUser
+const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.isDirect
+const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
 const myIntraId = ref('')
 const myUsername = ref('')
-const chats = ref()
-const newPassword = ref('')
-const otherUser = ref('')
-const optionsButtonText = ref('~ open options ~')
-const optionsButton = ref(false)
 const password = ref('')
-const privateButtonClass = ref('btn btn-warning')
-const passwordChat = ref('')
-const typedMessage = ref('')
-const visibility = ref('PUBLIC')
+// const otherUser = ref('')
+const showOptions = ref(false)
+const sentMessage = ref('')
+const visibility = ref(Visibility.PUBLIC)
+
+const alertMessage = ref('')
+const alertPopup = ref()
+const createNewChatAlertPopup = ref()
+
+const passwordInputPopup = ref()
+const chatCreationModal = ref()
 
 async function leave() {
-  await get('api/chat/leave/' + currentChatId.value);
-  getChats()
-  getChannels()
-  chatIsOpen.value = false
+  if (currentChat.value) {
+    await get('api/chat/leave/' + currentChat.value.chat_id).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
+    getChats()
+    currentChat.value = null
+  }
 }
 
 async function changePassword() {
-  await post('api/chat/changePassword', {
-    chat_id: currentChatId.value,
-    password: newPassword.value,
-    intra_id: 'foo'
-  })
-  newPassword.value = ''
+  if (currentChat.value) {
+    await post('api/chat/changePassword', {
+      chat_id: currentChat.value.chat_id,
+      password: password.value,
+      intra_id: 'foo'
+    }).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
+    password.value = ''
+  }
 }
 
 async function changeVisibility() {
-  if (passwordChat.value === '' && visibility.value === 'PROTECTED') return
-  console.log('visibility', visibility.value)
-  if (passwordChat.value === '') passwordChat.value = 'foo'
-  await post('api/chat/changeVisibility', {
-    chat_id: currentChatId.value,
-    visibility: visibility.value,
-    password: passwordChat.value
-  })
-  passwordChat.value = ''
-  getChats()
-  getChannels()
+  if (currentChat.value) {
+    if (password.value === '' && visibility.value === Visibility.PROTECTED) return
+    if (password.value === '') password.value = 'foo'
+    await post('api/chat/changeVisibility', {
+      chat_id: currentChat.value.chat_id,
+      visibility: visibility.value,
+      password: password.value
+    }).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
+    password.value = ''
+    getChats()
+  }
 }
 
-function changeOptionsButton() {
-  optionsButton.value = !optionsButton.value
-  if (optionsButton.value === false) optionsButtonText.value = '~ open options ~'
-  else optionsButtonText.value = '~ close options ~'
-}
-
-function changeChatButton() {
-  chatIsOpen.value = !chatIsOpen.value
-}
-
-async function muteUser() {
-  console.log({ daysToMute: daysToMute.value, t: typeof daysToMute.value }) // TODO: REMOVE
-  await post('api/chat/mute', {
-    chat_id: currentChatId.value,
-    username: otherUser.value,
-    days: parseInt(daysToMute.value)
-  })
-  daysToMute.value = 0
+function leaveChat() {
+  if (currentChat.value) {
+    chatSocket.emit('leaveChat', { chatId: currentChat.value.chat_id })
+    currentChat.value = null
+  }
 }
 
 async function getMyIntraId() {
-  myIntraId.value = await get('api/user/intraId')
+  myIntraId.value = await get('api/user/intraId').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
 }
 
 async function getMyUsername() {
-  myUsername.value = await get('api/user/username')
-}
-
-async function kickUser() {
-  await get('api/chat/kick/' + currentChatId.value + '/' + otherUser.value)
-  otherUser.value = ''
-  getChat(currentChat.value)
-}
-
-async function banUser() {
-  await get('api/chat/ban/' + currentChatId.value + '/' + otherUser.value)
-  otherUser.value = ''
-}
-
-async function addAdmin() {
-  if (iAmAdmin.value === false) {
-    console.log('No admin authorization')
-    return
-  }
-  console.log('You are admin')
-  const addAdmin = await post('api/chat/addAdminToChat', {
-    chat_id: currentChatId.value,
-    username: otherUser.value
+  myUsername.value = await get('api/user/username').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
   })
-  otherUser.value = ''
 }
 
-async function addUser() {
-  const add_user = await post('api/chat/addUserToChat', {
-    chat_id: currentChatId.value,
-    username: otherUser.value
-  })
-  otherUser.value = ''
-  getChat(currentChat.value)
-}
+// async function addUser() {
+//   if (currentChat.value) {
+//     const add_user = await post('api/chat/addUserToChat', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     otherUser.value = ''
+//   }
+// }
+
+// async function muteUser() {
+//   if (currentChat.value) {
+//     // TODO: Let chat_id be passed in the URL between /chat and /mute
+//     await post('api/chat/mute', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId,
+//       days: parseInt(daysToMute.value)
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     daysToMute.value = '0'
+//   }
+// }
+
+// async function kickUser() {
+//   if (currentChat.value) {
+//     // TODO: Turn this into a POST as "api/chat/:chat_id/kick/", and let otherUser be passed as the body
+//     await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     otherUser.value = ''
+//   }
+// }
+
+// async function banUser() {
+//   if (currentChat.value) {
+//     // TODO: Turn this into a POST as "api/chat/:chat_id/ban/", and let otherUser be passed as the body
+//     await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     otherUser.value = ''
+//   }
+// }
+
+// async function addAdmin() {
+//   if (currentChat.value) {
+//     if (iAmAdmin.value === false) {
+//       console.log('No admin authorization')
+//       return
+//     }
+//     console.log('You are admin')
+//     await post('api/chat/addAdminToChat', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     otherUser.value = ''
+//   }
+// }
 
 async function createChat() {
-  if (passwordChat.value === '') passwordChat.value = 'foo'
-  console.log('password', passwordChat.value)
-  const chat = await post('api/chat/create', {
-    name: chatName.value,
+  await post('api/chat/create', {
+    name: inputChatName.value,
     visibility: visibility.value,
-    password: passwordChat.value
+    password: password.value
   })
-  console.log('chat', chat)
-  passwordChat.value = ''
-  chatName.value = ''
-  getChats()
-  getChannels()
+    .then(() => {
+      chatCreationModal.value.close()
+      password.value = ''
+      inputChatName.value = ''
+      getChats()
+    })
+    .catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      createNewChatAlertPopup.value.show()
+    })
 }
 
 async function getInfo() {
-  getChats()
-  getChannels()
-  const info = await get('api/chat/info/' + currentChatId.value)
-  console.log('info', info)
-  iAmUser.value = info.isUser
-  iAmAdmin.value = info.isAdmin
-  iAmMute.value = info.isMute
-  iAmOwner.value = info.isOwner
-  isProtected.value = info.isProtected
-  iAmBanned.value = info.isBanned
-  isDirect.value = info.isDirect
+  if (currentChat.value) {
+    getChats()
+    const info = await get('api/chat/info/' + currentChat.value.chat_id).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
+    console.log('info', info)
+    iAmUser.value = info.isUser
+    iAmAdmin.value = info.isAdmin
+    iAmMute.value = info.isMute
+    iAmOwner.value = info.isOwner
+    isProtected.value = info.isProtected
+    isDirect.value = info.isDirect
+  }
 }
 
-async function validatePassword() {
-  console.log('password', password.value)
-  const result = await get(
-    'api/chat/validatePassword/' +
-      currentChatId.value +
-      '/' +
-      password.value +
-      '/' +
-      myIntraId.value
-  )
-  console.log('result in validatePassword', result)
-  if (result) {
-    getChat(currentChat.value)
-    console.log('password is correct')
-  } else console.log('password is incorrect')
-  password.value = ''
-}
+async function clickedChat(chat: Chat) {
+  selectedChat.value = chat
 
-async function validateLock(chat_str: string) {
-  currentChat.value = chat_str
-
-  for (let i = 0; channelIdsOnIndex.value[i]; i++) {
-    if (channelsOnIndex.value[i] == chat_str) {
-      currentChatId.value = channelIdsOnIndex.value[i]
-    }
-  }
-
-  for (let i = 0; directMessageIdsOnIndex.value[i]; i++) {
-    if (directMessagesOnIndex.value[i] == chat_str) {
-      currentChatId.value = directMessageIdsOnIndex.value[i]
-    }
-  }
-
-  await getInfo()
-  if (iAmBanned.value) return
-
-  if (await get('api/chat/isLocked/' + currentChatId.value + '/' + myIntraId.value)) {
-    locked.value = true
+  if (chat.visibility === Visibility.PROTECTED) {
+    passwordInputPopup.value.showModal()
   } else {
-    getChat(chat_str)
+    chatSocket.emit('joinChat', { chatId: chat.chat_id, password: null }, () => {
+      currentChat.value = chat
+      selectedChat.value = null
+      getChat()
+    })
+  }
+
+  // const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
+  // console.log('pw', pw)
+}
+
+function createNewChat() {
+  console.log('in createNewChat')
+}
+
+async function getChat() {
+  if (currentChat.value) {
+    const blockedUsers = await get('api/user/blocked')
+      .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
+      .catch((err) => {
+        alertMessage.value = err.response.data.message.join('\n')
+        alertPopup.value.show()
+      })
+    const blocked = new Set<number>(blockedUsers)
+
+    chatHistory.value = await get('api/chat/history/' + currentChat.value.chat_id)
+      .then((messages) => messages.filter((message: Message) => !blocked.has(message.sender)))
+      .catch((err) => {
+        alertMessage.value = err.response.data.message.join('\n')
+        alertPopup.value.show()
+      })
+
+    getChats()
+
+    await scrollToBottom()
   }
 }
 
-async function getChat(chat_str: string) {
-  locked.value = false
-
-  const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
-  blocked.value = new Set<number>(blockedUsers)
-  
-  // TODO: Can this be removed?
-  if (chatIsOpen.value == false) changeChatButton()
-  
-  await post('api/chat/addUserToChat', {
-    chat_id: currentChatId.value,
-    username: myUsername.value
-  })
-  
-  chatHistory.value = (await get('api/chat/history/' + currentChatId.value)).filter(
-    (entry: Entry) => !blocked.value.has(entry.sender)
-  )
-
+async function scrollToBottom() {
+  // This forces the chat DOM object to have its scrollHeight updated right now
   await nextTick()
-  getChats()
-  getChannels()
 
-  if (chat.value) {
-    chat.value.scrollTop = chat.value.scrollHeight
+  if (chatRef.value) {
+    chatRef.value.scrollTop = chatRef.value.scrollHeight
   }
 }
 
+// TODO: I suspect this should only be called in one spot, so try to inline it
 async function getChats() {
-  chats.value = await get('api/user/chats')
-  let i: number = 0
-  directMessagesOnIndex.value = []
-  directMessageIdsOnIndex.value = []
-
-  while (chats.value[i]) {
-    if (chats.value[i].visibility == 'PROTECTED') {
-      if (await get('api/chat/isLocked/' + chats.value[i].chat_id + '/' + myIntraId.value)) {
-        i++
-        continue
-      }
-    }
-    directMessagesOnIndex.value.push(chats.value[i].name)
-    directMessageIdsOnIndex.value.push(chats.value[i].chat_id)
-    i++
-  }
+  publicChats.value = await get('api/chat/publicChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
+  protectedChats.value = await get('api/chat/protectedChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
+  myChats.value = await get('api/user/myChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
 }
 
-async function getChannels() {
-  const channels = await get('api/chat/channels')
-  let i: number = 0
-  channelsOnIndex.value = []
-  channelIdsOnIndex.value = []
+chatSocket.on('newMessage', async (message: Message) => {
+  // TODO: Either the frontend or backend should filter for blocked messages
+  chatHistory.value.push(message)
 
-  while (channels[i]) {
-    if (channels[i].visibility == 'PUBLIC' || channels[i].visibility == 'PROTECTED') {
-      channelsOnIndex.value.push(channels[i].name)
-      channelIdsOnIndex.value.push(channels[i].chat_id)
+  // Only scroll down if our scrollbar is already all the way down
+  // This is because we don't want to suddenly scroll down
+  // when we're reading old messages, and someone sends a message
+  //
+  // scrollHeight: total container size
+  // scrollTop: amount of scroll user has done
+  // clientHeight: amount of container a user sees
+  if (chatRef.value) {
+    // The `+ 1.5` accounts for scrollTop sometimes being bigger or smaller than expected
+    if (chatRef.value.scrollTop + chatRef.value.clientHeight + 1.5 >= chatRef.value.scrollHeight) {
+      await scrollToBottom()
     }
-    i++
   }
-}
-
-chatSocket.on('confirm', async () => {
-  typedMessage.value = ''
-  await getChat(currentChat.value)
 })
 
 function sendMessage() {
-  const message = {
-    chatId: currentChatId.value,
-    body: typedMessage.value
+  if (currentChat.value) {
+    const message = {
+      chatId: currentChat.value.chat_id,
+      body: sentMessage.value
+    }
+
+    sentMessage.value = ''
+
+    chatSocket.emit('sendMessage', message)
   }
-  chatSocket.emit('sendMessage', message)
 }
 
 function chatVisibility() {
-  if (visibility.value === 'PUBLIC') {
-    privateButtonClass.value = 'btn btn-primary'
-    visibility.value = 'PRIVATE'
-  } else if (visibility.value === 'PRIVATE') {
-    privateButtonClass.value = 'btn btn-info '
-    visibility.value = 'PROTECTED'
+  if (visibility.value === Visibility.PUBLIC) {
+    visibility.value = Visibility.PROTECTED
+  } else if (visibility.value === Visibility.PROTECTED) {
+    visibility.value = Visibility.PRIVATE
   } else {
-    privateButtonClass.value = 'btn btn-warning'
-    visibility.value = 'PUBLIC'
+    visibility.value = Visibility.PUBLIC
   }
 }
+
+function getBtnColor(visibility: Visibility) {
+  return visibility === Visibility.PUBLIC
+    ? 'btn-primary'
+    : visibility === Visibility.PROTECTED
+      ? 'btn-warning'
+      : 'btn-error'
+}
+
+function getVisibilityIcon(visibility: Visibility) {
+  return visibility === Visibility.PUBLIC
+    ? 'public'
+    : visibility === Visibility.PROTECTED
+      ? 'lock'
+      : 'disabled_visible'
+}
+
+chatSocket.on('exception', (data) => {
+  alertMessage.value = data.message
+  alertPopup.value.show()
+})
 
 getMyUsername()
 getMyIntraId()
 getChats()
-getChannels()
 </script>
 
 <style scoped>
@@ -434,7 +563,7 @@ getChannels()
 
 .scrollable-container-half {
   width: 100%;
-  height: 450px;
+  height: 350px;
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;

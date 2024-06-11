@@ -50,7 +50,7 @@ export default class LobbyManager {
     }
   }
 
-  private async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+  public async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
     const invitations = await this.getInvitations(invitedIntraId);
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
@@ -85,10 +85,7 @@ export default class LobbyManager {
     await lobby.addClient(client);
     this.intraIdToLobby.set(client.data.intra_id, lobby);
 
-    const invitations = await this.getInvitations(invitedIntraId);
-    invitedSockets.forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
-    });
+    await this.removeInvite(invitedSockets, invitedIntraId);
   }
 
   private isUserAlreadyInLobby(user: any): boolean {
@@ -177,22 +174,25 @@ export default class LobbyManager {
   }
 
   public async getInvitations(intra_id: number) {
-    const lobbiesArray = await Array.from(this.lobbies.values());
+    const lobbies = await Array.from(this.lobbies.values());
 
-    return await Promise.all(
-      lobbiesArray.flatMap(async (lobby) =>
+    const filteredLobbies = lobbies.filter(
+      (lobby) =>
         lobby.isPrivate &&
         lobby.invitedIntraId === intra_id &&
-        !lobby.gameHasStarted
-          ? {
-              inviterIntraId: lobby.inviterIntraId,
-              inviterName: await this.userService.getUsername(
-                lobby.inviterIntraId,
-              ),
-              gamemode: lobby.gamemode,
-            }
-          : [],
-      ),
+        !lobby.gameHasStarted,
     );
+
+    const mappedLobbiesArray = await Promise.all(
+      filteredLobbies.map(async (lobby) => {
+        return {
+          inviterIntraId: lobby.inviterIntraId,
+          inviterName: await this.userService.getUsername(lobby.inviterIntraId),
+          gamemode: lobby.gamemode,
+        };
+      }),
+    );
+
+    return mappedLobbiesArray;
   }
 }

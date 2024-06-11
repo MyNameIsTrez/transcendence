@@ -7,10 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { inject, ref } from 'vue'
+import { Socket } from 'socket.io-client'
 
-const props = defineProps(['gameSocket'])
-const gameSocket = props.gameSocket
+const gameSocket: Socket = inject('gameSocket')!
 
 const leftPlayerScore = ref(0)
 const rightPlayerScore = ref(0)

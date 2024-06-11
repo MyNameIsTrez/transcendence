@@ -6,15 +6,27 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsUUID, ValidateIf } from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
-import TransJwtService from 'src/auth/trans-jwt-service';
+import TransJwtService from '../../auth/trans-jwt-service';
+import { UserService } from '../../user/user.service';
+import { Visibility } from '../../chat/chat.entity';
+
+class ChatDto {
+  @IsUUID()
+  chatId: string;
+
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @IsNotEmpty()
+  password: string | null;
+}
 
 class HandleMessageDto {
-  @IsNotEmpty()
+  @IsUUID()
   chatId: string;
 
   @IsNotEmpty()
@@ -31,10 +43,11 @@ export class ChatGateway {
   @WebSocketServer()
   server!: Server;
 
-  public connectedClients = new Set<Socket>();
+  private chatToSockets = new Map<string, Set<Socket>>();
 
   constructor(
     private readonly chatService: ChatService,
+    private readonly userService: UserService,
     private readonly transJwtService: TransJwtService,
   ) {}
 
@@ -63,11 +76,64 @@ export class ChatGateway {
         redirectToLoginPage: true,
       });
     }
-    this.connectedClients.add(client);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.connectedClients.delete(client);
+    this.chatToSockets.forEach((sockets, chatId) => {
+      if (sockets.has(client)) {
+        sockets.delete(client);
+      }
+
+      if (sockets.size <= 0) {
+        this.chatToSockets.delete(chatId);
+      }
+    });
+
+    // console.log(
+    //   'In handleDisconnect(), this.chatToSockets is',
+    //   this.chatToSockets,
+    // );
+  }
+
+  @SubscribeMessage('joinChat')
+  async joinChat(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: ChatDto,
+  ) {
+    // TODO: Check the password
+
+    if (!this.chatToSockets.has(dto.chatId)) {
+      this.chatToSockets.set(dto.chatId, new Set());
+    }
+
+    const sockets = this.chatToSockets.get(dto.chatId);
+
+    sockets.add(client);
+
+    // TODO: We don't need to add ourselves if we're already in it
+    await this.chatService.addUser(dto.chatId, client.data.intra_id);
+
+    return {};
+  }
+
+  @SubscribeMessage('leaveChat')
+  async leaveChat(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: ChatDto,
+  ) {
+    const sockets = this.chatToSockets.get(dto.chatId);
+
+    if (sockets) {
+      sockets.delete(client);
+    }
+
+    if (sockets.size <= 0) {
+      this.chatToSockets.delete(dto.chatId);
+    }
+
+    // console.log('In leaveChat(), this.chatToSockets is', this.chatToSockets);
+
+    return {};
   }
 
   @SubscribeMessage('sendMessage')
@@ -75,23 +141,36 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: HandleMessageDto,
   ) {
-    if (await this.chatService.isMute(dto.chatId, client.data.intra_id))
-      return ;
-    if (await this.chatService.isBanned(dto.chatId, client.data.intra_id))
-      return ;
-    if (!await this.chatService.isUser(dto.chatId, client.data.intra_id))
-      return ;
+    // TODO: Move some of these checks to joinChat()?
+    if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) {
+      // TODO: Ideally this string would tell the user how long they're still muted for
+      throw new WsException("You're currently muted in this chat");
+    }
+    if (await this.chatService.isBanned(dto.chatId, client.data.intra_id)) {
+      throw new WsException("You're banned from this chat");
+    }
+    if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id))) {
+      throw new WsException("You're not a user of this chat");
+    }
+
     await this.chatService.handleMessage(
       client.data.intra_id,
       dto.chatId,
       dto.body,
     );
-    this.letClientsUpdateTheirChats();
-  }
 
-  private letClientsUpdateTheirChats() {
-    for (const client of this.connectedClients.values()) {
-      client.emit('confirm', true);
-    }
+    const sockets = this.chatToSockets.get(dto.chatId) ?? [];
+
+    const senderName = await this.userService.getUsername(client.data.intra_id);
+
+    sockets.forEach((otherClient) => {
+      otherClient.emit('newMessage', {
+        sender: client.data.intra_id,
+        sender_name: senderName,
+        body: dto.body,
+      });
+    });
+
+    return {};
   }
 }
