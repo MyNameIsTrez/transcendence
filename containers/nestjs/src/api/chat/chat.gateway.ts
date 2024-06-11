@@ -140,7 +140,6 @@ export class ChatGateway {
     //   return;
     // if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id)))
     //   return;
-    console.log('received msg');
 
     await this.chatService.handleMessage(
       client.data.intra_id,

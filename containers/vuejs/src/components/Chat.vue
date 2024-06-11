@@ -395,7 +395,7 @@ async function createChat() {
     password: password.value
   })
     .then(() => {
-      chatCreationModal.value.hideModal()
+      chatCreationModal.value.close()
       password.value = ''
       inputChatName.value = ''
       getChats()
