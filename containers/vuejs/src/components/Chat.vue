@@ -147,7 +147,7 @@
               v-model="password"
               type="password"
               placeholder="Password..."
-              @keyup.enter="changeVisibility"
+              @keyup.enter="createChat"
             />
 
             <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
@@ -155,16 +155,6 @@
 
               <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
             </button>
-
-            <!-- <div v-if="selectedChat">
-              Password of '{{ selectedChat.name }}':
-              <input
-                v-model="password"
-                type="password"
-                placeholder="Password..."
-                @keyup.enter="validatePassword"
-              />
-            </div> -->
 
             <button class="btn btn-info" @click="createChat">Create</button>
 
@@ -429,7 +419,7 @@ async function clickedChat(chat: Chat) {
   if (chat.visibility === Visibility.PROTECTED) {
     passwordInputPopup.value.showModal()
   } else {
-    chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
+    chatSocket.emit('joinChat', { chatId: chat.chat_id, password: null }, () => {
       currentChat.value = chat
       selectedChat.value = null
       getChat()
