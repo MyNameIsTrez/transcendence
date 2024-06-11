@@ -39,7 +39,7 @@
 
       <!-- <div v-if="selectedChat">
         Password of '{{ selectedChat.name }}':
-        <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
+        <input v-model="password" type="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div> -->
       <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
@@ -48,6 +48,7 @@
       <input
         v-if="visibility === Visibility.PROTECTED"
         v-model="password"
+        type="password"
         placeholder="Password..."
         @keyup.enter="createChat"
       />
@@ -60,7 +61,12 @@
 
       <div v-if="iAmOwner">
         <div v-if="isProtected">
-          <input v-model="password" placeholder="New password..." @keyup.enter="changePassword" />
+          <input
+            v-model="password"
+            type="password"
+            placeholder="New password..."
+            @keyup.enter="changePassword"
+          />
           <button @click="changePassword">Change password</button>
         </div>
         <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
@@ -69,6 +75,7 @@
         <input
           v-if="visibility === Visibility.PROTECTED"
           v-model="password"
+          type="password"
           placeholder="Password..."
           @keyup.enter="changeVisibility"
         />
