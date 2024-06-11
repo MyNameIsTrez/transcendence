@@ -36,23 +36,6 @@
           {{ chat.name }}
         </div>
       </div>
-
-      <!-- <div v-if="selectedChat">
-        Password of '{{ selectedChat.name }}':
-        <input v-model="password" type="password" placeholder="Password..." @keyup.enter="validatePassword" />
-      </div> -->
-      <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
-      <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
-        {{ visibility }}
-      </button>
-      <input
-        v-if="visibility === Visibility.PROTECTED"
-        v-model="password"
-        type="password"
-        placeholder="Password..."
-        @keyup.enter="createChat"
-      />
-      <button @click="createChat">Create</button>
     </div>
     <div v-if="currentChat">
       <div v-if="iAmUser">
@@ -61,24 +44,17 @@
 
       <div v-if="iAmOwner">
         <div v-if="isProtected">
-          <input
+          <!-- <input
             v-model="password"
             type="password"
             placeholder="New password..."
             @keyup.enter="changePassword"
-          />
+          /> -->
           <button @click="changePassword">Change password</button>
         </div>
         <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
           {{ visibility }}
         </button>
-        <input
-          v-if="visibility === Visibility.PROTECTED"
-          v-model="password"
-          type="password"
-          placeholder="Password..."
-          @keyup.enter="changeVisibility"
-        />
         <button @click="changeVisibility">Change visibility</button>
       </div>
       <div v-if="iAmAdmin">
@@ -119,6 +95,90 @@
     <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
       alertMessage
     }}</AlertPopup>
+
+    <dialog ref="passwordInputPopup" class="modal">
+      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+        <div class="modal-box w-auto justify-self-center">
+          <!-- Adds a little close button in the top-right corner -->
+          <form method="dialog">
+            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+          </form>
+
+          <p class="py-4">Enter this chat room's password</p>
+          <span class="flex justify-self-center">
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Password..."
+              class="input input-bordered w-full max-w-xs"
+              @keyup.enter="createProtectedChat"
+            />
+            <button class="btn" @click="createProtectedChat">Save</button>
+          </span>
+        </div>
+      </span>
+
+      <!-- Allows clicking outside of the modal to close it -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <button :class="'btn btn-info'" onclick="chatCreationModal.showModal()">Create new chat</button>
+
+    <dialog id="chatCreationModal" class="modal">
+      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+        <div class="modal-box w-auto justify-self-center">
+          <!-- Adds a little close button in the top-right corner -->
+          <form method="dialog">
+            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+          </form>
+
+          <h3 class="font-bold text-lg">Create new chat</h3>
+
+          <div class="flex pt-4 flex-col space-y-5">
+            <input
+              class="p-2"
+              v-model="inputChatName"
+              placeholder="Chat name..."
+              @keyup.enter="createChat"
+            />
+
+            <input
+              v-if="visibility === Visibility.PROTECTED"
+              class="p-2"
+              v-model="password"
+              type="password"
+              placeholder="Password..."
+              @keyup.enter="changeVisibility"
+            />
+
+            <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+              {{ visibility }}
+
+              <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
+            </button>
+
+            <!-- <div v-if="selectedChat">
+              Password of '{{ selectedChat.name }}':
+              <input
+                v-model="password"
+                type="password"
+                placeholder="Password..."
+                @keyup.enter="validatePassword"
+              />
+            </div> -->
+
+            <button class="btn btn-info" @click="createChat">Create</button>
+          </div>
+        </div>
+      </span>
+
+      <!-- Allows clicking outside of the modal to close it -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
@@ -187,6 +247,8 @@ const visibility = ref(Visibility.PUBLIC)
 
 const alertMessage = ref('')
 const alertPopup = ref()
+
+const passwordInputPopup = ref()
 
 async function leave() {
   if (currentChat.value) {
@@ -353,15 +415,22 @@ async function getInfo() {
 async function clickedChat(chat: Chat) {
   selectedChat.value = chat
 
-  const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
-  console.log('pw', pw)
+  if (chat.visibility === Visibility.PROTECTED) {
+    passwordInputPopup.value.showModal()
+  } else {
+    chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
+      currentChat.value = chat
+      selectedChat.value = null
+      getChat()
+    })
+  }
 
-  // TODO: Show an error popup when joining fails
-  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
-    currentChat.value = chat
-    selectedChat.value = null
-    getChat()
-  })
+  // const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
+  // console.log('pw', pw)
+}
+
+function createNewChat() {
+  console.log('in createNewChat')
 }
 
 async function getChat() {
@@ -456,10 +525,18 @@ function chatVisibility() {
 
 function getBtnColor(visibility: Visibility) {
   return visibility === Visibility.PUBLIC
-    ? 'btn-info'
+    ? 'btn-primary'
     : visibility === Visibility.PROTECTED
-      ? 'btn-primary'
-      : 'btn-warning'
+      ? 'btn-warning'
+      : 'btn-error'
+}
+
+function getVisibilityIcon(visibility: Visibility) {
+  return visibility === Visibility.PUBLIC
+    ? 'public'
+    : visibility === Visibility.PROTECTED
+      ? 'lock'
+      : 'disabled_visible'
 }
 
 chatSocket.on('exception', (data) => {

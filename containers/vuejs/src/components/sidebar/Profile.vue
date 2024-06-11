@@ -6,7 +6,6 @@
           {{ username }}
         </div>
 
-        <!-- Settings menu button -->
         <button class="btn w-32 justify-self-end" onclick="settings.showModal()">Settings</button>
 
         <dialog id="settings" class="modal">
