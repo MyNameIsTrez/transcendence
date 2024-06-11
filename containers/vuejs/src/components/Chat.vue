@@ -37,10 +37,10 @@
         </div>
       </div>
 
-      <div v-if="selectedChat">
+      <!-- <div v-if="selectedChat">
         Password of '{{ selectedChat.name }}':
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
-      </div>
+      </div> -->
       <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
       <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
         {{ visibility }}
@@ -183,7 +183,10 @@ const alertPopup = ref()
 
 async function leave() {
   if (currentChat.value) {
-    await get('api/chat/leave/' + currentChat.value.chat_id)
+    await get('api/chat/leave/' + currentChat.value.chat_id).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
     getChats()
     currentChat.value = null
   }
@@ -195,6 +198,9 @@ async function changePassword() {
       chat_id: currentChat.value.chat_id,
       password: password.value,
       intra_id: 'foo'
+    }).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
     })
     password.value = ''
   }
@@ -208,6 +214,9 @@ async function changeVisibility() {
       chat_id: currentChat.value.chat_id,
       visibility: visibility.value,
       password: password.value
+    }).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
     })
     password.value = ''
     getChats()
@@ -222,11 +231,17 @@ function leaveChat() {
 }
 
 async function getMyIntraId() {
-  myIntraId.value = await get('api/user/intraId')
+  myIntraId.value = await get('api/user/intraId').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
 }
 
 async function getMyUsername() {
-  myUsername.value = await get('api/user/username')
+  myUsername.value = await get('api/user/username').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
 }
 
 // async function addUser() {
@@ -234,9 +249,11 @@ async function getMyUsername() {
 //     const add_user = await post('api/chat/addUserToChat', {
 //       chat_id: currentChat.value.chat_id,
 //       intra_id: otherUserId
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
-//     getChat()
 //   }
 // }
 
@@ -247,6 +264,9 @@ async function getMyUsername() {
 //       chat_id: currentChat.value.chat_id,
 //       intra_id: otherUserId,
 //       days: parseInt(daysToMute.value)
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
 //     })
 //     daysToMute.value = '0'
 //   }
@@ -255,16 +275,21 @@ async function getMyUsername() {
 // async function kickUser() {
 //   if (currentChat.value) {
 //     // TODO: Turn this into a POST as "api/chat/:chat_id/kick/", and let otherUser be passed as the body
-//     await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value)
+//     await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
 //     otherUser.value = ''
-//     getChat()
 //   }
 // }
 
 // async function banUser() {
 //   if (currentChat.value) {
 //     // TODO: Turn this into a POST as "api/chat/:chat_id/ban/", and let otherUser be passed as the body
-//     await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value)
+//     await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
 //     otherUser.value = ''
 //   }
 // }
@@ -276,19 +301,25 @@ async function getMyUsername() {
 //       return
 //     }
 //     console.log('You are admin')
-//     const addAdmin = await post('api/chat/addAdminToChat', {
+//     await post('api/chat/addAdminToChat', {
 //       chat_id: currentChat.value.chat_id,
 //       intra_id: otherUserId
+//     }).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
 //   }
 // }
 
 async function createChat() {
-  const chat = await post('api/chat/create', {
+  await post('api/chat/create', {
     name: inputChatName.value,
     visibility: visibility.value,
     password: password.value
+  }).catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
   })
   password.value = ''
   inputChatName.value = ''
@@ -298,7 +329,10 @@ async function createChat() {
 async function getInfo() {
   if (currentChat.value) {
     getChats()
-    const info = await get('api/chat/info/' + currentChat.value.chat_id)
+    const info = await get('api/chat/info/' + currentChat.value.chat_id).catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
     console.log('info', info)
     iAmUser.value = info.isUser
     iAmAdmin.value = info.isAdmin
@@ -307,29 +341,6 @@ async function getInfo() {
     isProtected.value = info.isProtected
     isDirect.value = info.isDirect
   }
-}
-
-async function validatePassword() {
-  // TODO: Clean up
-  // if (currentChat.value) {
-  //   console.log('password', password.value)
-  //   const result = await get(
-  //     'api/chat/validatePassword/' +
-  //       currentChat.value.chat_id +
-  //       '/' +
-  //       password.value +
-  //       '/' +
-  //       myIntraId.value
-  //   )
-  //   console.log('result in validatePassword', result)
-  //   if (result) {
-  //     getChat()
-  //     console.log('password is correct')
-  //   } else {
-  //     console.error('password is incorrect')
-  //   }
-  //   password.value = ''
-  // }
 }
 
 async function clickedChat(chat: Chat) {
@@ -342,29 +353,32 @@ async function clickedChat(chat: Chat) {
   chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
     currentChat.value = chat
     selectedChat.value = null
-    // getChat()
+    getChat()
   })
 }
 
-// async function getChat() {
-//   if (currentChat.value) {
-//     const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
-//     const blocked = new Set<number>(blockedUsers)
+async function getChat() {
+  if (currentChat.value) {
+    const blockedUsers = await get('api/user/blocked')
+      .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
+      .catch((err) => {
+        alertMessage.value = err.response.data.message.join('\n')
+        alertPopup.value.show()
+      })
+    const blocked = new Set<number>(blockedUsers)
 
-//     await post('api/chat/addUserToChat', {
-//       chat_id: currentChat.value.chat_id,
-//       username: myUsername.value
-//     })
+    chatHistory.value = await get('api/chat/history/' + currentChat.value.chat_id)
+      .then((messages) => messages.filter((message: Message) => !blocked.has(message.sender)))
+      .catch((err) => {
+        alertMessage.value = err.response.data.message.join('\n')
+        alertPopup.value.show()
+      })
 
-//     chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
-//       (message: Message) => !blocked.has(message.sender)
-//     )
+    getChats()
 
-//     getChats()
-
-//     await scrollToBottom()
-//   }
-// }
+    await scrollToBottom()
+  }
+}
 
 async function scrollToBottom() {
   // This forces the chat DOM object to have its scrollHeight updated right now
@@ -377,12 +391,22 @@ async function scrollToBottom() {
 
 // TODO: I suspect this should only be called in one spot, so try to inline it
 async function getChats() {
-  publicChats.value = await get('api/chat/publicChats')
-  protectedChats.value = await get('api/chat/protectedChats')
-  myChats.value = await get('api/user/myChats')
+  publicChats.value = await get('api/chat/publicChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
+  protectedChats.value = await get('api/chat/protectedChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
+  myChats.value = await get('api/user/myChats').catch((err) => {
+    alertMessage.value = err.response.data.message.join('\n')
+    alertPopup.value.show()
+  })
 }
 
 chatSocket.on('newMessage', async (message: Message) => {
+  // TODO: Either the frontend or backend should filter for blocked messages
   chatHistory.value.push(message)
 
   // Only scroll down if our scrollbar is already all the way down
