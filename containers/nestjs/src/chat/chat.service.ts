@@ -60,8 +60,8 @@ export class ChatService {
     });
   }
 
-  async addUser(chat_id: string, username: string) {
-    const user = await this.userService.findOneByUsername(username);
+  async addUser(chat_id: string, intra_id: number) {
+    const user = await this.userService.findOne(intra_id);
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
@@ -74,12 +74,13 @@ export class ChatService {
       });
   }
 
-  async addAdmin(chat_id: string, username: string) {
+  async addAdmin(chat_id: string, intra_id: number) {
+    // TODO: Don't allow adminning someone who isn't the owner
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
         chat.users.forEach(async (user) => {
-          if (username === user.username) {
+          if (intra_id === user.intra_id) {
             chat.admins.push(user);
             await this.chatRepository.save(chat);
           }
@@ -100,24 +101,35 @@ export class ChatService {
       });
   }
 
-  public async banUser(chat_id: string, username: string) {
-    if (!(await this.kickUser(chat_id, username))) return false;
+  public async banUser(chat_id: string, intra_id: number) {
+    // TODO: Don't allow us to ban someone, when we aren't an admin/owner
+    // TODO: Don't allow us to ban the owner
+    // TODO: Don't allow us to ban ourselves
+    // TODO: Don't allow admins to ban other admins
+    // TODO: DO allow the owner to ban admins
+    // TODO: Don't call kickUser() from this method
+    if (!(await this.kickUser(chat_id, intra_id))) return false;
 
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        const user = await this.userService.findOneByUsername(username);
+        const user = await this.userService.findOne(intra_id);
         chat.banned.push(user);
         const result = await this.chatRepository.save(chat);
         return !!result;
       });
   }
 
-  public async kickUser(chat_id: string, username: string) {
+  public async kickUser(chat_id: string, intra_id: number) {
+    // TODO: Don't allow us to kick someone, when we aren't an admin/owner
+    // TODO: Don't allow us to kick the owner
+    // TODO: Don't allow us to kick ourselves
+    // TODO: Don't allow admins to kick other admins
+    // TODO: DO allow the owner to kick admins
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, admins: true } })
       .then(async (chat) => {
-        const user = await this.userService.findOneByUsername(username);
+        const user = await this.userService.findOne(intra_id);
         if (chat.owner == user.intra_id) return false;
 
         chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
@@ -233,11 +245,18 @@ export class ChatService {
       });
   }
 
-  public async mute(chat_id: string, username: string, days: number) {
+  public async mute(chat_id: string, intra_id: number, days: number) {
+    // TODO: Remove "admins: true"?
+
+    // TODO: Don't allow us to mute someone, when we aren't an admin/owner
+    // TODO: Don't allow us to mute the owner
+    // TODO: Don't allow us to mute ourselves
+    // TODO: Don't allow admins to mute other admins
+    // TODO: DO allow the owner to mute admins
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { admins: true, muted: true } })
       .then(async (chat) => {
-        const user = await this.userService.findOneByUsername(username);
+        const user = await this.userService.findOne(intra_id);
         if (chat.owner == user.intra_id) return;
         if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
 

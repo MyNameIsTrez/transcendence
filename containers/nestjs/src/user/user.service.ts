@@ -89,14 +89,6 @@ export class UserService {
     return user;
   }
 
-  async findOneByUsername(username: string): Promise<User> {
-    const user = await this.usersRepository.findOneBy({ username });
-    if (!user) {
-      throw new BadRequestException('No user with this username exists');
-    }
-    return user;
-  }
-
   hasUser(intra_id: number) {
     return this.usersRepository.existsBy({ intra_id });
   }

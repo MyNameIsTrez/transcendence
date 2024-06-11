@@ -104,7 +104,8 @@ export class ChatGateway {
 
     // console.log('In joinChat(), this.chatToSockets is', this.chatToSockets);
 
-    return {};
+    return { err: 'foo' };
+    // return {};
   }
 
   @SubscribeMessage('leaveChat')

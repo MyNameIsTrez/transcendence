@@ -30,9 +30,6 @@ class NameDto {
 class AddUserDto {
   @IsNotEmpty()
   chat_id: string;
-
-  @IsNotEmpty()
-  username: string;
 }
 
 class OtherUserDto {
@@ -48,7 +45,7 @@ class MuteDto {
   chat_id: string;
 
   @IsNotEmpty()
-  username: string;
+  intra_id: number;
 
   @IsInt()
   @IsPositive()
@@ -73,10 +70,9 @@ class ChangeVisibilityDto {
   @IsEnum(Visibility)
   visibility: Visibility;
 
-  // TODO: Use this here? The function using this dto will then need to make this argument optional
-  // @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
   @IsNotEmpty()
-  password: string;
+  password: string | null;
 }
 
 @Controller('api/chat')
@@ -94,23 +90,25 @@ export class ChatController {
   }
 
   @Post('addUserToChat')
-  async AddUserToChat(@Body() dto: AddUserDto) {
-    return await this.chatService.addUser(dto.chat_id, dto.username);
+  async AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
+    return await this.chatService.addUser(dto.chat_id, req.user.intra_id);
   }
 
   @Post('addAdminToChat')
-  async AddAdminToChat(@Body() dto: AddUserDto) {
-    return await this.chatService.addAdmin(dto.chat_id, dto.username);
+  async AddAdminToChat(@Request() req, @Body() dto: AddUserDto) {
+    return await this.chatService.addAdmin(dto.chat_id, req.user.intra_id);
   }
 
-  @Get('kick/:chat_id/:username')
-  async kick(@Param() dto: AddUserDto) {
-    return await this.chatService.kickUser(dto.chat_id, dto.username);
-  }
-
+  // TODO: Change this to @Post(), and get rid of :username
   @Get('ban/:chat_id/:username')
-  async ban(@Param() dto: AddUserDto) {
-    return await this.chatService.banUser(dto.chat_id, dto.username);
+  async ban(@Request() req, @Param() dto: AddUserDto) {
+    return await this.chatService.banUser(dto.chat_id, req.user.intra_id);
+  }
+
+  // TODO: Change this to @Post(), and get rid of :username
+  @Get('kick/:chat_id/:username')
+  async kick(@Request() req, @Param() dto: AddUserDto) {
+    return await this.chatService.kickUser(dto.chat_id, req.user.intra_id);
   }
 
   @Get('name/:chat_id')
@@ -135,7 +133,7 @@ export class ChatController {
 
   @Post('mute')
   async mute(@Body() dto: MuteDto) {
-    return await this.chatService.mute(dto.chat_id, dto.username, dto.days);
+    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days);
   }
 
   @Get('isMute/:chat_id/:intra_id')
