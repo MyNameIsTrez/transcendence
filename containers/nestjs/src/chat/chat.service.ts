@@ -205,7 +205,7 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        return chat.users.some((user) => user.intra_id == intra_id);
+        return chat.users.some((user) => user.intra_id === intra_id);
       });
   }
 
@@ -357,7 +357,31 @@ export class ChatService {
       });
   }
 
-  public async getPublicChats() {
+  public async getMyPublicChats(intra_id: number) {
+    const publicChats = await this.getPublicChats();
+
+    const userChats = await this.userService.getChatsOfUser(intra_id);
+
+    return publicChats.filter(
+      (publicChat) =>
+        !userChats.some((userChat) => userChat.chat_id == publicChat.chat_id),
+    );
+  }
+
+  public async getMyProtectedChats(intra_id: number) {
+    const protectedChats = await this.getProtectedChats();
+
+    const userChats = await this.userService.getChatsOfUser(intra_id);
+
+    return protectedChats.filter(
+      (protectedChat) =>
+        !userChats.some(
+          (userChat) => userChat.chat_id == protectedChat.chat_id,
+        ),
+    );
+  }
+
+  private async getPublicChats() {
     return this.chatRepository.find({
       where: [{ visibility: Visibility.PUBLIC }],
       select: {
@@ -368,7 +392,7 @@ export class ChatService {
     });
   }
 
-  public async getProtectedChats() {
+  private async getProtectedChats() {
     return this.chatRepository.find({
       where: [{ visibility: Visibility.PROTECTED }],
       select: {

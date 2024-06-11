@@ -165,13 +165,13 @@ export class ChatController {
   }
 
   @Get('publicChats')
-  async getPublicChats() {
-    return await this.chatService.getPublicChats();
+  async getPublicChats(@Request() req) {
+    return await this.chatService.getMyPublicChats(req.user.intra_id);
   }
 
   @Get('protectedChats')
-  async getProtectedChats() {
-    return await this.chatService.getProtectedChats();
+  async getProtectedChats(@Request() req) {
+    return await this.chatService.getMyProtectedChats(req.user.intra_id);
   }
 
   @Get('leave/:chat_id')
