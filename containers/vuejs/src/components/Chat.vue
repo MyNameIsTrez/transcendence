@@ -42,7 +42,7 @@
       </button>
       <input
         v-if="visibility === Visibility.PROTECTED"
-        v-model="passwordChat"
+        v-model="password"
         placeholder="Password..."
         @keyup.enter="createChat"
       />
@@ -55,11 +55,7 @@
 
       <div v-if="iAmOwner">
         <div v-if="isProtected">
-          <input
-            v-model="newPassword"
-            placeholder="New password..."
-            @keyup.enter="changePassword"
-          />
+          <input v-model="password" placeholder="New password..." @keyup.enter="changePassword" />
           <button @click="changePassword">Change password</button>
         </div>
         <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
@@ -67,7 +63,7 @@
         </button>
         <input
           v-if="visibility === Visibility.PROTECTED"
-          v-model="passwordChat"
+          v-model="password"
           placeholder="Password..."
           @keyup.enter="changeVisibility"
         />
@@ -162,12 +158,7 @@ const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.
 const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
 const myIntraId = ref('')
 const myUsername = ref('')
-
-// TODO: Refactor so there's just a single password <input> div that we read the password from
 const password = ref('')
-const newPassword = ref('')
-const passwordChat = ref('')
-
 const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
@@ -186,23 +177,23 @@ async function changePassword() {
   if (currentChat.value) {
     await post('api/chat/changePassword', {
       chat_id: currentChat.value.chat_id,
-      password: newPassword.value,
+      password: password.value,
       intra_id: 'foo'
     })
-    newPassword.value = ''
+    password.value = ''
   }
 }
 
 async function changeVisibility() {
   if (currentChat.value) {
-    if (passwordChat.value === '' && visibility.value === Visibility.PROTECTED) return
-    if (passwordChat.value === '') passwordChat.value = 'foo'
+    if (password.value === '' && visibility.value === Visibility.PROTECTED) return
+    if (password.value === '') password.value = 'foo'
     await post('api/chat/changeVisibility', {
       chat_id: currentChat.value.chat_id,
       visibility: visibility.value,
-      password: passwordChat.value
+      password: password.value
     })
-    passwordChat.value = ''
+    password.value = ''
     getChats()
   }
 }
@@ -281,13 +272,12 @@ async function addUser() {
 }
 
 async function createChat() {
-  // if (passwordChat.value === '') passwordChat.value = 'foo'
   const chat = await post('api/chat/create', {
     name: inputChatName.value,
     visibility: visibility.value,
-    password: passwordChat.value
+    password: password.value
   })
-  passwordChat.value = ''
+  password.value = ''
   inputChatName.value = ''
   getChats()
 }
@@ -331,18 +321,16 @@ async function validatePassword() {
 async function clickedChat(chat: Chat) {
   selectedChat.value = chat
 
-  const body = { chatId: chat.chat_id }
+  // TODO: Get the password
+  const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
+  console.log('pw', pw)
 
-  if (chat.visibility === Visibility.PROTECTED) {
-    // TODO: Add the password
-    body.password = ;
-  }
-
-  chatSocket.emit('joinChat', body, () => {
-    currentChat.value = chat
-    selectedChat.value = null
-    getChat()
-  })
+  // TODO: Show an error popup when joining fails
+  // chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
+  //   currentChat.value = chat
+  //   selectedChat.value = null
+  //   getChat()
+  // })
 }
 
 async function getChat() {
