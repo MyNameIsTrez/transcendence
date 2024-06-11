@@ -6,18 +6,23 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID, ValidateIf } from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 import TransJwtService from '../../auth/trans-jwt-service';
 import { UserService } from '../../user/user.service';
-import { WsException } from '@nestjs/websockets';
+import { Visibility } from '../../chat/chat.entity';
 
 class ChatDto {
   @IsUUID()
   chatId: string;
+
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @IsNotEmpty()
+  password: string | null;
 }
 
 class HandleMessageDto {
@@ -135,11 +140,16 @@ export class ChatGateway {
     @MessageBody() dto: HandleMessageDto,
   ) {
     // TODO: Move some of these checks to joinChat()?
-    // if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) return;
-    // if (await this.chatService.isBanned(dto.chatId, client.data.intra_id))
-    //   return;
-    // if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id)))
-    //   return;
+    if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) {
+      // TODO: Ideally this string would tell the user how long they're still muted for
+      throw new WsException("You're currently muted in this chat");
+    }
+    if (await this.chatService.isBanned(dto.chatId, client.data.intra_id)) {
+      throw new WsException("You're banned from this chat");
+    }
+    if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id))) {
+      throw new WsException("You're not a user of this chat");
+    }
 
     await this.chatService.handleMessage(
       client.data.intra_id,
