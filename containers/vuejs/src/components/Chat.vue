@@ -75,15 +75,18 @@
         <button @click="changeVisibility">Change visibility</button>
       </div>
       <div v-if="iAmAdmin">
-        <button @click="changeOptionsButton">{{ optionsButtonText }}</button>
-        <div v-if="optionsButton">
+        <button @click="() => (showOptions = !showOptions)">
+          {{ showOptions ? '~ open options ~' : '~ close options ~' }}
+        </button>
+        <div v-if="showOptions">
           <!-- <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
           <button @click="muteUser">Mute</button>
           <button @click="kickUser">Kick</button>
           <button @click="banUser">Ban</button>
-          <button @click="addAdmin">Make admin</button>
-          <input v-model="daysToMute" placeholder="days to mute..." /> -->
+          <button @click="addAdmin">Make admin</button> -->
+          <!-- TODO: Use number input here -->
+          <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
         </div>
       </div>
 
@@ -99,12 +102,16 @@
       </div>
       <input
         v-if="!iAmMute"
-        v-model="typedMessage"
+        v-model="sentMessage"
         placeholder="Type message..."
         @keyup.enter="sendMessage"
       />
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
+
+    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
+      alertMessage
+    }}</AlertPopup>
   </div>
 </template>
 
@@ -113,6 +120,8 @@ import { inject, ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
 import { Socket } from 'socket.io-client'
+import AlertPopup from './AlertPopup.vue'
+import { AlertType } from '../types'
 
 const chatSocket: Socket = inject('chatSocket')!
 
@@ -165,10 +174,12 @@ const myIntraId = ref('')
 const myUsername = ref('')
 const password = ref('')
 // const otherUser = ref('')
-const optionsButtonText = ref('~ open options ~')
-const optionsButton = ref(false)
-const typedMessage = ref('')
+const showOptions = ref(false)
+const sentMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
+
+const alertMessage = ref('')
+const alertPopup = ref()
 
 async function leave() {
   if (currentChat.value) {
@@ -201,12 +212,6 @@ async function changeVisibility() {
     password.value = ''
     getChats()
   }
-}
-
-function changeOptionsButton() {
-  optionsButton.value = !optionsButton.value
-  if (optionsButton.value === false) optionsButtonText.value = '~ open options ~'
-  else optionsButtonText.value = '~ close options ~'
 }
 
 function leaveChat() {
@@ -330,12 +335,18 @@ async function validatePassword() {
 async function clickedChat(chat: Chat) {
   selectedChat.value = chat
 
-  // TODO: Get the password
   const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
   console.log('pw', pw)
 
   // TODO: Show an error popup when joining fails
-  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
+  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, (data) => {
+    if (data.err) {
+      // TODO: Show error popup
+      alertMessage.value = data.err
+      alertPopup.value.show()
+    }
+
+    // console.log('data.err', data.err)
     currentChat.value = chat
     selectedChat.value = null
     // getChat()
@@ -400,10 +411,10 @@ function sendMessage() {
   if (currentChat.value) {
     const message = {
       chatId: currentChat.value.chat_id,
-      body: typedMessage.value
+      body: sentMessage.value
     }
 
-    typedMessage.value = ''
+    sentMessage.value = ''
 
     chatSocket.emit('sendMessage', message)
   }

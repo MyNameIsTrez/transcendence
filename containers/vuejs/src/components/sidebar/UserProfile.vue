@@ -65,7 +65,7 @@
         {{ blocked ? 'Unblock' : 'Block' }}
       </button>
 
-      <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+      <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
         alertMessage
       }}</AlertPopup>
     </div>
@@ -98,6 +98,7 @@ const alertVisible = ref(false)
 
 const alertType = ref(AlertType.ALERT_SUCCESS)
 
+const alertPopup = ref()
 const alertMessage = ref('')
 
 const isError = ref(true)
@@ -126,10 +127,7 @@ async function handleBlock() {
     .catch((err) => {
       console.error('handleBlock error', err)
       alertMessage.value = err.response.data.message
-      alertVisible.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 
@@ -138,21 +136,15 @@ async function sendFriendRequest() {
     .then(() => {
       alertType.value = AlertType.ALERT_SUCCESS
       alertMessage.value = 'Friend request sent'
-      alertVisible.value = true
       isError.value = false
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
       alertType.value = AlertType.ALERT_WARNING
       alertMessage.value = err.response.data.message
-      alertVisible.value = true
       isError.value = true
-      setTimeout(() => {
-        alertVisible.value = false
-      }, 3500)
+      alertPopup.value.show()
     })
 }
 </script>

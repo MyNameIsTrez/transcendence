@@ -1,6 +1,6 @@
 <template>
   <div class="game-header" v-if="!startOfGame">
-    <AlertPopup :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
+    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
       alertMessage
     }}</AlertPopup>
 
@@ -36,14 +36,13 @@ import { Socket } from 'socket.io-client'
 
 const gameSocket: Socket = inject('gameSocket')!
 
-const alertVisible = ref(false)
-
 const gameTitle = ref('PONG')
 const endOfGame = ref(false)
 const startOfGame = ref(false)
 const queueing = ref(false)
 
 const alertMessage = ref('')
+const alertPopup = ref()
 
 if (!localStorage.getItem('gamemode')) {
   localStorage.setItem('gamemode', 'normal')
@@ -85,10 +84,7 @@ gameSocket.on('inQueue', (data: any) => {
 
 gameSocket.on('exception', (error: any) => {
   alertMessage.value = error.message
-  alertVisible.value = true
-  setTimeout(() => {
-    alertVisible.value = false
-  }, 2500)
+  alertPopup.value.show()
 })
 </script>
 

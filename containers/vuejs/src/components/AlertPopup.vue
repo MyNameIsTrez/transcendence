@@ -1,8 +1,5 @@
 <template>
-  <div
-    role="alert"
-    :class="`alert ${alertType} w-auto flex justify-center ${visible ? 'visible' : 'invisible'}`"
-  >
+  <div role="alert" v-if="visible" :class="`alert ${alertType} w-auto flex justify-center}`">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       class="stroke-current shrink-0 h-6 w-6"
@@ -16,13 +13,23 @@
 </template>
 
 <script setup lang="ts">
-import type { PropType } from 'vue'
+import { ref, type PropType } from 'vue'
 import { AlertType } from '../types'
 
 const props = defineProps({
-  alertType: String as PropType<AlertType>,
-  visible: Boolean
+  alertType: String as PropType<AlertType>
 })
+
+let visible = ref(false)
+
+function show() {
+  visible.value = true
+  setTimeout(() => {
+    visible.value = false
+  }, 3500)
+}
+
+defineExpose({ show })
 
 const svgPath =
   props.alertType === AlertType.ALERT_INFO
