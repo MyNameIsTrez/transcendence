@@ -2,8 +2,17 @@
   <div>
     <button v-if="currentChat" @click="leaveChat">← Back</button>
     <div v-if="!currentChat">
+      My chats
+      <span class="material-symbols-outlined align-bottom">person</span>
+      <div class="scrollable-container-half">
+        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="clickedChat(chat)">
+          {{ chat.name }}
+        </div>
+      </div>
+
       <!-- TODO: Turn these three identical chat list blocks into a shared component -->
-      Public chats 🌎
+      Public chats
+      <span class="material-symbols-outlined align-bottom">public</span>
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in publicChats"
@@ -14,7 +23,9 @@
           {{ chat.name }}
         </div>
       </div>
-      Protected chats 🔒
+
+      Protected chats
+      <span class="material-symbols-outlined align-bottom">lock</span>
       <div class="scrollable-container-half">
         <div
           v-for="(chat, index) in protectedChats"
@@ -22,12 +33,6 @@
           class="line"
           @click="clickedChat(chat)"
         >
-          {{ chat.name }}
-        </div>
-      </div>
-      My chats 👤
-      <div class="scrollable-container-half">
-        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="clickedChat(chat)">
           {{ chat.name }}
         </div>
       </div>
