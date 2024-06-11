@@ -38,7 +38,7 @@
       </div>
 
       <div v-if="selectedChat">
-        Password of {{ selectedChat.name }}'':
+        Password of '{{ selectedChat.name }}':
         <input v-model="password" placeholder="Password..." @keyup.enter="validatePassword" />
       </div>
       <input v-model="inputChatName" placeholder="Chat name..." @keyup.enter="createChat" />
@@ -77,13 +77,13 @@
       <div v-if="iAmAdmin">
         <button @click="changeOptionsButton">{{ optionsButtonText }}</button>
         <div v-if="optionsButton">
-          <input v-model="otherUser" placeholder="42 student..." />
+          <!-- <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
-          <button @click="kickUser">/Kick</button>
-          <button @click="banUser">/Ban</button>
-          <button @click="addAdmin">/Make admin</button>
-          <button @click="muteUser">/Mute</button>
-          <input v-model="daysToMute" placeholder="days to mute..." />
+          <button @click="muteUser">Mute</button>
+          <button @click="kickUser">Kick</button>
+          <button @click="banUser">Ban</button>
+          <button @click="addAdmin">Make admin</button>
+          <input v-model="daysToMute" placeholder="days to mute..." /> -->
         </div>
       </div>
 
@@ -154,7 +154,7 @@ const myChats = ref<Chat[]>()
 const currentChat = ref<Chat | null>(null)
 const selectedChat = ref<Chat | null>(null)
 const chatHistory = ref<Message[]>([])
-const daysToMute = ref<string>('0')
+// const daysToMute = ref<string>('0')
 const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
 const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
 const iAmOwner = ref(false) // TODO: Replace all usage of this with currentChat.iAmOwner
@@ -164,7 +164,7 @@ const isProtected = ref(false) // TODO: Replace all usage of this with currentCh
 const myIntraId = ref('')
 const myUsername = ref('')
 const password = ref('')
-const otherUser = ref('')
+// const otherUser = ref('')
 const optionsButtonText = ref('~ open options ~')
 const optionsButton = ref(false)
 const typedMessage = ref('')
@@ -216,17 +216,6 @@ function leaveChat() {
   }
 }
 
-async function muteUser() {
-  if (currentChat.value) {
-    await post('api/chat/mute', {
-      chat_id: currentChat.value.chat_id,
-      username: otherUser.value,
-      days: parseInt(daysToMute.value)
-    })
-    daysToMute.value = '0'
-  }
-}
-
 async function getMyIntraId() {
   myIntraId.value = await get('api/user/intraId')
 }
@@ -235,46 +224,60 @@ async function getMyUsername() {
   myUsername.value = await get('api/user/username')
 }
 
-async function kickUser() {
-  if (currentChat.value) {
-    await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value)
-    otherUser.value = ''
-    getChat()
-  }
-}
+// async function addUser() {
+//   if (currentChat.value) {
+//     const add_user = await post('api/chat/addUserToChat', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId
+//     })
+//     otherUser.value = ''
+//     getChat()
+//   }
+// }
 
-async function banUser() {
-  if (currentChat.value) {
-    await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value)
-    otherUser.value = ''
-  }
-}
+// async function muteUser() {
+//   if (currentChat.value) {
+//     // TODO: Let chat_id be passed in the URL between /chat and /mute
+//     await post('api/chat/mute', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId,
+//       days: parseInt(daysToMute.value)
+//     })
+//     daysToMute.value = '0'
+//   }
+// }
 
-async function addAdmin() {
-  if (currentChat.value) {
-    if (iAmAdmin.value === false) {
-      console.log('No admin authorization')
-      return
-    }
-    console.log('You are admin')
-    const addAdmin = await post('api/chat/addAdminToChat', {
-      chat_id: currentChat.value.chat_id,
-      username: otherUser.value
-    })
-    otherUser.value = ''
-  }
-}
+// async function kickUser() {
+//   if (currentChat.value) {
+//     // TODO: Turn this into a POST as "api/chat/:chat_id/kick/", and let otherUser be passed as the body
+//     await get('api/chat/kick/' + currentChat.value.chat_id + '/' + otherUser.value)
+//     otherUser.value = ''
+//     getChat()
+//   }
+// }
 
-async function addUser() {
-  if (currentChat.value) {
-    const add_user = await post('api/chat/addUserToChat', {
-      chat_id: currentChat.value.chat_id,
-      username: otherUser.value
-    })
-    otherUser.value = ''
-    getChat()
-  }
-}
+// async function banUser() {
+//   if (currentChat.value) {
+//     // TODO: Turn this into a POST as "api/chat/:chat_id/ban/", and let otherUser be passed as the body
+//     await get('api/chat/ban/' + currentChat.value.chat_id + '/' + otherUser.value)
+//     otherUser.value = ''
+//   }
+// }
+
+// async function addAdmin() {
+//   if (currentChat.value) {
+//     if (iAmAdmin.value === false) {
+//       console.log('No admin authorization')
+//       return
+//     }
+//     console.log('You are admin')
+//     const addAdmin = await post('api/chat/addAdminToChat', {
+//       chat_id: currentChat.value.chat_id,
+//       intra_id: otherUserId
+//     })
+//     otherUser.value = ''
+//   }
+// }
 
 async function createChat() {
   const chat = await post('api/chat/create', {
@@ -302,25 +305,26 @@ async function getInfo() {
 }
 
 async function validatePassword() {
-  if (currentChat.value) {
-    console.log('password', password.value)
-    const result = await get(
-      'api/chat/validatePassword/' +
-        currentChat.value.chat_id +
-        '/' +
-        password.value +
-        '/' +
-        myIntraId.value
-    )
-    console.log('result in validatePassword', result)
-    if (result) {
-      getChat()
-      console.log('password is correct')
-    } else {
-      console.error('password is incorrect')
-    }
-    password.value = ''
-  }
+  // TODO: Clean up
+  // if (currentChat.value) {
+  //   console.log('password', password.value)
+  //   const result = await get(
+  //     'api/chat/validatePassword/' +
+  //       currentChat.value.chat_id +
+  //       '/' +
+  //       password.value +
+  //       '/' +
+  //       myIntraId.value
+  //   )
+  //   console.log('result in validatePassword', result)
+  //   if (result) {
+  //     getChat()
+  //     console.log('password is correct')
+  //   } else {
+  //     console.error('password is incorrect')
+  //   }
+  //   password.value = ''
+  // }
 }
 
 async function clickedChat(chat: Chat) {
@@ -331,32 +335,32 @@ async function clickedChat(chat: Chat) {
   console.log('pw', pw)
 
   // TODO: Show an error popup when joining fails
-  // chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
-  //   currentChat.value = chat
-  //   selectedChat.value = null
-  //   getChat()
-  // })
+  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: pw }, () => {
+    currentChat.value = chat
+    selectedChat.value = null
+    // getChat()
+  })
 }
 
-async function getChat() {
-  if (currentChat.value) {
-    const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
-    const blocked = new Set<number>(blockedUsers)
+// async function getChat() {
+//   if (currentChat.value) {
+//     const blockedUsers = (await get('api/user/blocked')).map((user: any) => user.intra_id)
+//     const blocked = new Set<number>(blockedUsers)
 
-    await post('api/chat/addUserToChat', {
-      chat_id: currentChat.value.chat_id,
-      username: myUsername.value
-    })
+//     await post('api/chat/addUserToChat', {
+//       chat_id: currentChat.value.chat_id,
+//       username: myUsername.value
+//     })
 
-    chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
-      (message: Message) => !blocked.has(message.sender)
-    )
+//     chatHistory.value = (await get('api/chat/history/' + currentChat.value.chat_id)).filter(
+//       (message: Message) => !blocked.has(message.sender)
+//     )
 
-    getChats()
+//     getChats()
 
-    await scrollToBottom()
-  }
-}
+//     await scrollToBottom()
+//   }
+// }
 
 async function scrollToBottom() {
   // This forces the chat DOM object to have its scrollHeight updated right now
