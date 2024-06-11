@@ -92,10 +92,6 @@
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
 
-    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
-      alertMessage
-    }}</AlertPopup>
-
     <dialog ref="passwordInputPopup" class="modal">
       <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
         <div class="modal-box w-auto justify-self-center">
@@ -172,7 +168,7 @@
 
             <button class="btn btn-info" @click="createChat">Create</button>
 
-            <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
+            <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
               alertMessage
             }}</AlertPopup>
           </div>
@@ -184,6 +180,10 @@
         <button>close</button>
       </form>
     </dialog>
+
+    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
+      alertMessage
+    }}</AlertPopup>
   </div>
 </template>
 
@@ -252,6 +252,7 @@ const visibility = ref(Visibility.PUBLIC)
 
 const alertMessage = ref('')
 const alertPopup = ref()
+const createNewChatAlertPopup = ref()
 
 const passwordInputPopup = ref()
 const chatCreationModal = ref()
@@ -401,7 +402,7 @@ async function createChat() {
     })
     .catch((err) => {
       alertMessage.value = err.response.data.message.join('\n')
-      alertPopup.value.show()
+      createNewChatAlertPopup.value.show()
     })
 }
 
