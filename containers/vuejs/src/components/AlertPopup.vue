@@ -16,6 +16,8 @@
 import { ref, type PropType } from 'vue'
 import { AlertType } from '../types'
 
+let timeoutId: ReturnType<typeof setTimeout>
+
 const props = defineProps({
   alertType: String as PropType<AlertType>
 })
@@ -24,7 +26,10 @@ let visible = ref(false)
 
 function show() {
   visible.value = true
-  setTimeout(() => {
+
+  clearTimeout(timeoutId)
+
+  timeoutId = setTimeout(() => {
     visible.value = false
   }, 3500)
 }
