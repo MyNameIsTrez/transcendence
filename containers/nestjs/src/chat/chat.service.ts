@@ -12,6 +12,7 @@ import { Chat, Visibility } from './chat.entity';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
+import { WsException } from '@nestjs/websockets';
 
 class Info {
   isAdmin: boolean;
@@ -65,9 +66,15 @@ export class ChatService {
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        if (chat.users.some((me) => me.intra_id == user.intra_id)) return;
-        if (chat.banned.some((banned) => banned.intra_id == user.intra_id))
+        if (chat.users.some((other) => other.intra_id == user.intra_id)) {
+          // TODO: Do we want this?
+          // throw new WsException("You're already in this chat");
+
           return;
+        }
+        if (chat.banned.some((banned) => banned.intra_id == user.intra_id)) {
+          throw new WsException('You have been banned from this chat');
+        }
 
         chat.users.push(user);
         await this.chatRepository.save(chat);

@@ -103,9 +103,8 @@ export class ChatGateway {
 
     sockets.add(client);
 
-    // console.log('In joinChat(), this.chatToSockets is', this.chatToSockets);
-
-    throw new WsException('foo');
+    // TODO: We don't need to add ourselves if we're already in it
+    await this.chatService.addUser(dto.chatId, client.data.intra_id);
 
     return {};
   }
@@ -126,6 +125,8 @@ export class ChatGateway {
     }
 
     // console.log('In leaveChat(), this.chatToSockets is', this.chatToSockets);
+
+    return {};
   }
 
   @SubscribeMessage('sendMessage')
@@ -134,11 +135,12 @@ export class ChatGateway {
     @MessageBody() dto: HandleMessageDto,
   ) {
     // TODO: Move some of these checks to joinChat()?
-    if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) return;
-    if (await this.chatService.isBanned(dto.chatId, client.data.intra_id))
-      return;
-    if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id)))
-      return;
+    // if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) return;
+    // if (await this.chatService.isBanned(dto.chatId, client.data.intra_id))
+    //   return;
+    // if (!(await this.chatService.isUser(dto.chatId, client.data.intra_id)))
+    //   return;
+    console.log('received msg');
 
     await this.chatService.handleMessage(
       client.data.intra_id,
@@ -157,5 +159,7 @@ export class ChatGateway {
         body: dto.body,
       });
     });
+
+    return {};
   }
 }

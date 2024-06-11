@@ -89,13 +89,8 @@ export class ChatController {
     );
   }
 
-  @Post('addUserToChat')
-  async AddUserToChat(@Request() req, @Body() dto: AddUserDto) {
-    return await this.chatService.addUser(dto.chat_id, req.user.intra_id);
-  }
-
   @Post('addAdminToChat')
-  async AddAdminToChat(@Request() req, @Body() dto: AddUserDto) {
+  async addAdminToChat(@Request() req, @Body() dto: AddUserDto) {
     return await this.chatService.addAdmin(dto.chat_id, req.user.intra_id);
   }
 
