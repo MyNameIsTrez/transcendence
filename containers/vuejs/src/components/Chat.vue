@@ -104,8 +104,9 @@
             <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
           </form>
 
-          <p class="py-4">Enter this chat room's password</p>
-          <span class="flex justify-self-center">
+          <h3 class="font-bold text-lg">Enter password</h3>
+
+          <div class="flex pt-4 flex-col space-y-5 justify-self-center">
             <input
               v-model="password"
               type="password"
@@ -113,8 +114,8 @@
               class="input input-bordered w-full max-w-xs"
               @keyup.enter="createProtectedChat"
             />
-            <button class="btn" @click="createProtectedChat">Save</button>
-          </span>
+            <button class="btn btn-info" @click="createProtectedChat">Enter</button>
+          </div>
         </div>
       </span>
 
@@ -124,9 +125,9 @@
       </form>
     </dialog>
 
-    <button :class="'btn btn-info'" onclick="chatCreationModal.showModal()">Create new chat</button>
+    <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">Create new chat</button>
 
-    <dialog id="chatCreationModal" class="modal">
+    <dialog ref="chatCreationModal" class="modal">
       <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
         <div class="modal-box w-auto justify-self-center">
           <!-- Adds a little close button in the top-right corner -->
@@ -170,6 +171,10 @@
             </div> -->
 
             <button class="btn btn-info" @click="createChat">Create</button>
+
+            <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
+              alertMessage
+            }}</AlertPopup>
           </div>
         </div>
       </span>
@@ -249,6 +254,7 @@ const alertMessage = ref('')
 const alertPopup = ref()
 
 const passwordInputPopup = ref()
+const chatCreationModal = ref()
 
 async function leave() {
   if (currentChat.value) {
@@ -386,13 +392,17 @@ async function createChat() {
     name: inputChatName.value,
     visibility: visibility.value,
     password: password.value
-  }).catch((err) => {
-    alertMessage.value = err.response.data.message.join('\n')
-    alertPopup.value.show()
   })
-  password.value = ''
-  inputChatName.value = ''
-  getChats()
+    .then(() => {
+      chatCreationModal.value.hideModal()
+      password.value = ''
+      inputChatName.value = ''
+      getChats()
+    })
+    .catch((err) => {
+      alertMessage.value = err.response.data.message.join('\n')
+      alertPopup.value.show()
+    })
 }
 
 async function getInfo() {
