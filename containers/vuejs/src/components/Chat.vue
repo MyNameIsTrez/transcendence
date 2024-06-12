@@ -51,6 +51,12 @@
             <h3 class="font-bold text-lg">Create new chat</h3>
 
             <div class="flex pt-4 flex-col space-y-5">
+              <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+                {{ visibility }}
+
+                <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
+              </button>
+
               <input
                 class="p-2"
                 v-model="inputChatName"
@@ -66,12 +72,6 @@
                 placeholder="Password..."
                 @keyup.enter="createChat"
               />
-
-              <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
-                {{ visibility }}
-
-                <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
-              </button>
 
               <button class="btn btn-info" @click="createChat">Create</button>
 
@@ -443,9 +443,9 @@ function enterProtectedChat(chat: Chat | null, password: string) {
   chatSocket.emit('joinChat', { chatId: chat.chat_id, password }, () => {
     passwordInputPopup.value.close()
 
-    currentChat.value = chat
     selectedChat.value = null
-    getChat()
+
+    openChat(chat)
   })
 }
 
