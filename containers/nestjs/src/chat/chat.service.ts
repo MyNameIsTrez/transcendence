@@ -63,21 +63,33 @@ export class ChatService {
 
   async addUser(chat_id: string, intra_id: number) {
     const user = await this.userService.findOne(intra_id);
+
     return this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true, banned: true } })
       .then(async (chat) => {
-        if (chat.users.some((other) => other.intra_id == user.intra_id)) {
-          // TODO: Do we want this?
-          // throw new WsException("You're already in this chat");
-
-          return;
+        if (chat.users.some((other) => other.intra_id === user.intra_id)) {
+          throw new WsException("You're already in this chat");
         }
-        if (chat.banned.some((banned) => banned.intra_id == user.intra_id)) {
+        if (chat.banned.some((banned) => banned.intra_id === user.intra_id)) {
           throw new WsException('You have been banned from this chat');
         }
 
         chat.users.push(user);
         await this.chatRepository.save(chat);
+      });
+  }
+
+  async openChat(chat_id: string, intra_id: number) {
+    const user = await this.userService.findOne(intra_id);
+
+    return this.chatRepository
+      .findOne({ where: { chat_id }, relations: { users: true } })
+      .then(async (chat) => {
+        if (!chat.users.some((other) => other.intra_id === user.intra_id)) {
+          throw new WsException(
+            "You can't enter a chat you haven't joined yet",
+          );
+        }
       });
   }
 
@@ -315,19 +327,11 @@ export class ChatService {
       });
   }
 
-  public async isPassword(chat_id: string, password: string, intra_id: number) {
-    return this.chatRepository
+  public async isCorrectPassword(chat_id: string, password: string) {
+    return await this.chatRepository
       .findOne({ where: { chat_id }, relations: { users: true } })
       .then(async (chat) => {
-        try {
-          if (await bcrypt.compare(password, chat.hashed_password)) {
-            chat.users.push(await this.userService.findOne(intra_id));
-            return this.chatRepository.save(chat);
-          }
-        } catch (err) {
-          console.log(err);
-          throw new InternalServerErrorException('Comparing password failed');
-        }
+        return await bcrypt.compare(password, chat.hashed_password);
       });
   }
 
@@ -440,5 +444,13 @@ export class ChatService {
 
         this.chatRepository.save(chat);
       });
+  }
+
+  public async get(chat_id: string) {
+    const chat = await this.chatRepository.findOneBy({ chat_id });
+    if (!chat) {
+      throw new BadRequestException('No chat with this chat_id exists');
+    }
+    return chat;
   }
 }

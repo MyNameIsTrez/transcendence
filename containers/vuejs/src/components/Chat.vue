@@ -1,11 +1,12 @@
 <template>
   <div>
     <button v-if="currentChat" @click="leaveChat">← Back</button>
+
     <div v-if="!currentChat">
       My chats
       <span class="material-symbols-outlined align-bottom">person</span>
       <div class="scrollable-container-half">
-        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="clickedChat(chat)">
+        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="openChat(chat)">
           {{ chat.name }}
         </div>
       </div>
@@ -18,7 +19,7 @@
           v-for="(chat, index) in publicChats"
           :key="index"
           class="line"
-          @click="clickedChat(chat)"
+          @click="clickedPublicChat(chat)"
         >
           {{ chat.name }}
         </div>
@@ -31,15 +32,13 @@
           v-for="(chat, index) in protectedChats"
           :key="index"
           class="line"
-          @click="clickedChat(chat)"
+          @click="clickedProtectedChat(chat)"
         >
           {{ chat.name }}
         </div>
       </div>
 
-      <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">
-        Create chat
-      </button>
+      <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">Create chat</button>
 
       <dialog ref="chatCreationModal" class="modal">
         <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
@@ -89,6 +88,7 @@
         </form>
       </dialog>
     </div>
+
     <div v-if="currentChat">
       <div v-if="iAmUser">
         <button class="btn btn-secondary" @click="leave">Leave chat</button>
@@ -160,9 +160,11 @@
               type="password"
               placeholder="Password..."
               class="input input-bordered w-full max-w-xs"
-              @keyup.enter="createProtectedChat"
+              @keyup.enter="enterProtectedChat(selectedChat, password)"
             />
-            <button class="btn btn-info" @click="createProtectedChat">Enter</button>
+            <button class="btn btn-info" @click="enterProtectedChat(selectedChat, password)">
+              Enter
+            </button>
           </div>
         </div>
       </span>
@@ -255,7 +257,7 @@ async function leave() {
       alertMessage.value = err.response.data.message.join('\n')
       alertPopup.value.show()
     })
-    getChats()
+    // getChats()
     currentChat.value = null
   }
 }
@@ -287,7 +289,7 @@ async function changeVisibility() {
       alertPopup.value.show()
     })
     password.value = ''
-    getChats()
+    // getChats()
   }
 }
 
@@ -390,7 +392,7 @@ async function createChat() {
       chatCreationModal.value.close()
       password.value = ''
       inputChatName.value = ''
-      getChats()
+      // getChats()
     })
     .catch((err) => {
       alertMessage.value = err.response.data.message.join('\n')
@@ -398,42 +400,55 @@ async function createChat() {
     })
 }
 
-async function getInfo() {
-  if (currentChat.value) {
-    getChats()
-    const info = await get('api/chat/info/' + currentChat.value.chat_id).catch((err) => {
-      alertMessage.value = err.response.data.message.join('\n')
-      alertPopup.value.show()
-    })
-    console.log('info', info)
-    iAmUser.value = info.isUser
-    iAmAdmin.value = info.isAdmin
-    iAmMute.value = info.isMute
-    iAmOwner.value = info.isOwner
-    isProtected.value = info.isProtected
-    isDirect.value = info.isDirect
-  }
+// async function getInfo() {
+//   if (currentChat.value) {
+//     getChats()
+//     const info = await get('api/chat/info/' + currentChat.value.chat_id).catch((err) => {
+//       alertMessage.value = err.response.data.message.join('\n')
+//       alertPopup.value.show()
+//     })
+//     console.log('info', info)
+//     iAmUser.value = info.isUser
+//     iAmAdmin.value = info.isAdmin
+//     iAmMute.value = info.isMute
+//     iAmOwner.value = info.isOwner
+//     isProtected.value = info.isProtected
+//     isDirect.value = info.isDirect
+//   }
+// }
+
+function openChat(chat: Chat) {
+  chatSocket.emit('openChat', { chatId: chat.chat_id }, () => {
+    currentChat.value = chat
+    getChat()
+  })
 }
 
-async function clickedChat(chat: Chat) {
+function clickedPublicChat(chat: Chat) {
+  chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
+    openChat(chat)
+  })
+}
+
+function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
-  if (chat.visibility === Visibility.PROTECTED) {
-    passwordInputPopup.value.showModal()
-  } else {
-    chatSocket.emit('joinChat', { chatId: chat.chat_id, password: null }, () => {
-      currentChat.value = chat
-      selectedChat.value = null
-      getChat()
-    })
-  }
-
-  // const pw = chat.visibility === Visibility.PROTECTED ? password.value : null
-  // console.log('pw', pw)
+  passwordInputPopup.value.showModal()
 }
 
-function createNewChat() {
-  console.log('in createNewChat')
+function enterProtectedChat(chat: Chat | null, password: string) {
+  if (!chat) {
+    console.error("chat wasn't supposed to be null")
+    return
+  }
+
+  chatSocket.emit('joinChat', { chatId: chat.chat_id, password }, () => {
+    passwordInputPopup.value.close()
+
+    currentChat.value = chat
+    selectedChat.value = null
+    getChat()
+  })
 }
 
 async function getChat() {
@@ -453,8 +468,6 @@ async function getChat() {
         alertPopup.value.show()
       })
 
-    getChats()
-
     await scrollToBottom()
   }
 }
@@ -468,7 +481,6 @@ async function scrollToBottom() {
   }
 }
 
-// TODO: I suspect this should only be called in one spot, so try to inline it
 async function getChats() {
   publicChats.value = await get('api/chat/publicChats').catch((err) => {
     alertMessage.value = err.response.data.message.join('\n')

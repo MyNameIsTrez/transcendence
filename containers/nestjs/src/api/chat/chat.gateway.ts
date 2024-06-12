@@ -1,4 +1,9 @@
-import { ValidationPipe, UsePipes, UseFilters } from '@nestjs/common';
+import {
+  ValidationPipe,
+  UsePipes,
+  UseFilters,
+  Injectable,
+} from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -10,19 +15,60 @@ import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
-import { IsNotEmpty, IsUUID, ValidateIf } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsUUID,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 import TransJwtService from '../../auth/trans-jwt-service';
 import { UserService } from '../../user/user.service';
 import { Visibility } from '../../chat/chat.entity';
+import { BaseEntity } from 'typeorm';
+
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class PasswordConstraint implements ValidatorConstraintInterface {
+  constructor(private readonly chatService: ChatService) {}
+
+  async validate(
+    password: string | undefined,
+    validationArguments?: ValidationArguments,
+  ): Promise<boolean> {
+    const dto = validationArguments.object as JoinChatDto;
+    const chat = await this.chatService.get(dto.chatId);
+
+    if (chat.visibility !== Visibility.PROTECTED) {
+      return true;
+    }
+
+    if (!password) {
+      throw new WsException('Password required for protected chat');
+    }
+
+    if (!(await this.chatService.isCorrectPassword(dto.chatId, password))) {
+      throw new WsException('Incorrect password');
+    }
+
+    return true;
+  }
+}
+
+// TODO: Try to get rid of "extends BaseEntity"
+class JoinChatDto extends BaseEntity {
+  @IsUUID()
+  chatId: string;
+
+  @Validate(PasswordConstraint)
+  password: string;
+}
 
 class ChatDto {
   @IsUUID()
   chatId: string;
-
-  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
-  @IsNotEmpty()
-  password: string | null;
 }
 
 class HandleMessageDto {
@@ -98,10 +144,19 @@ export class ChatGateway {
   @SubscribeMessage('joinChat')
   async joinChat(
     @ConnectedSocket() client: Socket,
+    @MessageBody() dto: JoinChatDto,
+  ) {
+    // Throws if the user was already in the chat
+    await this.chatService.addUser(dto.chatId, client.data.intra_id);
+
+    return {};
+  }
+
+  @SubscribeMessage('openChat')
+  async openChat(
+    @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
-    // TODO: Check the password
-
     if (!this.chatToSockets.has(dto.chatId)) {
       this.chatToSockets.set(dto.chatId, new Set());
     }
@@ -110,8 +165,7 @@ export class ChatGateway {
 
     sockets.add(client);
 
-    // TODO: We don't need to add ourselves if we're already in it
-    await this.chatService.addUser(dto.chatId, client.data.intra_id);
+    await this.chatService.openChat(dto.chatId, client.data.intra_id);
 
     return {};
   }
@@ -125,13 +179,11 @@ export class ChatGateway {
 
     if (sockets) {
       sockets.delete(client);
-    }
 
-    if (sockets.size <= 0) {
-      this.chatToSockets.delete(dto.chatId);
+      if (sockets.size <= 0) {
+        this.chatToSockets.delete(dto.chatId);
+      }
     }
-
-    // console.log('In leaveChat(), this.chatToSockets is', this.chatToSockets);
 
     return {};
   }
