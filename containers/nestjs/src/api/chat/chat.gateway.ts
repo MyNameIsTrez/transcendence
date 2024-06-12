@@ -39,7 +39,7 @@ export class PasswordConstraint implements ValidatorConstraintInterface {
     validationArguments?: ValidationArguments,
   ): Promise<boolean> {
     const dto = validationArguments.object as JoinChatDto;
-    const chat = await this.chatService.get(dto.chatId);
+    const chat = await this.chatService.getChat(dto.chatId);
 
     if (chat.visibility !== Visibility.PROTECTED) {
       return true;
