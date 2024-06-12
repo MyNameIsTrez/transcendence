@@ -36,6 +36,58 @@
           {{ chat.name }}
         </div>
       </div>
+
+      <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">
+        Create chat
+      </button>
+
+      <dialog ref="chatCreationModal" class="modal">
+        <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+          <div class="modal-box w-auto justify-self-center">
+            <!-- Adds a little close button in the top-right corner -->
+            <form method="dialog">
+              <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+            </form>
+
+            <h3 class="font-bold text-lg">Create new chat</h3>
+
+            <div class="flex pt-4 flex-col space-y-5">
+              <input
+                class="p-2"
+                v-model="inputChatName"
+                placeholder="Chat name..."
+                @keyup.enter="createChat"
+              />
+
+              <input
+                v-if="visibility === Visibility.PROTECTED"
+                class="p-2"
+                v-model="password"
+                type="password"
+                placeholder="Password..."
+                @keyup.enter="createChat"
+              />
+
+              <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+                {{ visibility }}
+
+                <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
+              </button>
+
+              <button class="btn btn-info" @click="createChat">Create</button>
+
+              <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
+                alertMessage
+              }}</AlertPopup>
+            </div>
+          </div>
+        </span>
+
+        <!-- Allows clicking outside of the modal to close it -->
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
     <div v-if="currentChat">
       <div v-if="iAmUser">
@@ -111,56 +163,6 @@
               @keyup.enter="createProtectedChat"
             />
             <button class="btn btn-info" @click="createProtectedChat">Enter</button>
-          </div>
-        </div>
-      </span>
-
-      <!-- Allows clicking outside of the modal to close it -->
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
-
-    <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">Create new chat</button>
-
-    <dialog ref="chatCreationModal" class="modal">
-      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-        <div class="modal-box w-auto justify-self-center">
-          <!-- Adds a little close button in the top-right corner -->
-          <form method="dialog">
-            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
-          </form>
-
-          <h3 class="font-bold text-lg">Create new chat</h3>
-
-          <div class="flex pt-4 flex-col space-y-5">
-            <input
-              class="p-2"
-              v-model="inputChatName"
-              placeholder="Chat name..."
-              @keyup.enter="createChat"
-            />
-
-            <input
-              v-if="visibility === Visibility.PROTECTED"
-              class="p-2"
-              v-model="password"
-              type="password"
-              placeholder="Password..."
-              @keyup.enter="createChat"
-            />
-
-            <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
-              {{ visibility }}
-
-              <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
-            </button>
-
-            <button class="btn btn-info" @click="createChat">Create</button>
-
-            <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
-              alertMessage
-            }}</AlertPopup>
           </div>
         </div>
       </span>
