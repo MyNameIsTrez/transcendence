@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { Chat, Visibility } from './chat.entity';
@@ -61,10 +61,13 @@ export class ChatService {
     });
   }
 
-  public async getChat(where: any, relations?: any) {
+  public async getChat(
+    where: FindOptionsWhere<Chat> | FindOptionsWhere<Chat>[],
+    relations?: FindOptionsRelations<Chat>,
+  ) {
     const chat = await this.chatRepository.findOne({
       where,
-      relations,
+      relations: relations ?? {},
     });
     if (!chat) {
       throw new BadRequestException("Couldn't find chat");
@@ -72,7 +75,7 @@ export class ChatService {
     return chat;
   }
 
-  private async getChats(where: any, select?: any) {
+  private async getChats(where: any, select: any) {
     const chats = await this.chatRepository.find({
       where,
       select,
@@ -204,7 +207,7 @@ export class ChatService {
   }
 
   public async getName(chat_id: string) {
-    return (await this.getChat(chat_id)).name;
+    return (await this.getChat({ chat_id })).name;
   }
 
   public async getHistory(chat_id: string) {

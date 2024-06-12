@@ -1,11 +1,10 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   StreamableFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsSelect, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
@@ -80,13 +79,13 @@ export class UserService {
 
   async findOne(
     intra_id: number,
-    relations?: any,
-    select?: any,
+    relations?: FindOptionsRelations<User>,
+    select?: FindOptionsSelect<User>,
   ): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { intra_id },
-      relations,
-      select,
+      relations: relations ?? {},
+      select: select ?? {},
     });
     if (!user) {
       throw new BadRequestException('No user with this intra_id exists');
@@ -479,11 +478,12 @@ export class UserService {
   }
 
   public async getMatchHistory(intra_id: number) {
-    return await this.findOne(intra_id, [
-      'matchHistory',
-      'matchHistory.players',
-      'matchHistory.disconnectedPlayer',
-    ]).then((user) => {
+    return await this.findOne(intra_id, {
+      matchHistory: {
+        players: true,
+        disconnectedPlayer: true,
+      },
+    }).then((user) => {
       return user?.matchHistory;
     });
   }
