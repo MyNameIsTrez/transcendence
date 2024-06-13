@@ -64,10 +64,6 @@
       <button class="btn text-xl" @click="handleBlock">
         {{ blocked ? 'Unblock' : 'Block' }}
       </button>
-
-      <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">{{
-        alertMessage
-      }}</AlertPopup>
     </div>
   </div>
 </template>
@@ -77,9 +73,10 @@ import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
-import { inject, ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
-import { AlertType } from '../../types'
+
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
@@ -93,15 +90,6 @@ const profilePicture = await getImage(`api/user/profilePicture/${intra_id}`)
 const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
 const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))
-
-const alertVisible = ref(false)
-
-const alertType = ref(AlertType.ALERT_SUCCESS)
-
-const alertPopup = ref()
-const alertMessage = ref('')
-
-const isError = ref(true)
 
 const friends = ref(await get('api/user/friends'))
 const isFriend = ref(friends.value.findIndex((item) => item.intraId === user.intra_id))
@@ -126,25 +114,18 @@ async function handleBlock() {
     .then(() => (blocked.value = !blocked.value))
     .catch((err) => {
       console.error('handleBlock error', err)
-      alertMessage.value = err.response.data.message
-      alertPopup.value.show()
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
 
 async function sendFriendRequest() {
   await post('api/user/sendFriendRequest', { intra_name: user.intra_name })
     .then(() => {
-      alertType.value = AlertType.ALERT_SUCCESS
-      alertMessage.value = 'Friend request sent'
-      isError.value = false
-      alertPopup.value.show()
+      alertPopup.value.showSuccess('Friend request sent')
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
-      alertType.value = AlertType.ALERT_WARNING
-      alertMessage.value = err.response.data.message
-      isError.value = true
-      alertPopup.value.show()
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
 </script>

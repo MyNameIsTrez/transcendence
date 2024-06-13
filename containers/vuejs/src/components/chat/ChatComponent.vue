@@ -63,11 +63,14 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, ref, type PropType } from 'vue'
+import { inject, nextTick, ref, type PropType, type Ref } from 'vue'
 import Chat from './ChatClass'
 import type { Socket } from 'socket.io-client'
 import type Message from './MessageClass'
 import { get } from '../../httpRequests'
+import AlertPopup from '../AlertPopup.vue'
+
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const chatSocket: Socket = inject('chatSocket')!
 
@@ -128,9 +131,7 @@ async function getChat() {
     const blockedUsers = await get('api/user/blocked')
       .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
       .catch((err) => {
-        // TODO: Bring back
-        // alertMessage.value = getErrorMessage(err.response.data.message)
-        // alertPopup.value.show()
+        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
       })
     const blocked = new Set<number>(blockedUsers)
 
@@ -143,13 +144,18 @@ async function getChat() {
           })
       )
       .catch((err) => {
-        // TODO: Bring back
-        // alertMessage.value = getErrorMessage(err.response.data.message)
-        // alertPopup.value.show()
+        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
       })
 
     await scrollToBottom()
   }
+}
+
+function getErrorMessage(msg: string | string[]) {
+  if (typeof msg === 'string') {
+    return msg
+  }
+  return msg.join('\n')
 }
 
 const emit = defineEmits(['onCloseChat'])

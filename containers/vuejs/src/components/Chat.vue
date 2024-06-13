@@ -72,10 +72,6 @@
               />
 
               <button class="btn btn-info" @click="createChat">Create</button>
-
-              <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
-                alertMessage
-              }}</AlertPopup>
             </div>
           </div>
         </span>
@@ -90,25 +86,23 @@
     <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
 
     <PasswordModal ref="passwordInputPopup" @onEnter="enterProtectedChat"> </PasswordModal>
-
-    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
-      alertMessage
-    }}</AlertPopup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { inject, ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
 import { Socket } from 'socket.io-client'
-import AlertPopup from './AlertPopup.vue'
 import PasswordModal from './chat/PasswordModal.vue'
 import ChatComponent from './chat/ChatComponent.vue'
 import { AlertType } from '../types'
 import Chat from './chat/ChatClass'
 import Message from './chat/MessageClass'
 import Visibility from './chat/VisibilityEnum'
+import AlertPopup from './AlertPopup.vue'
+
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const chatSocket: Socket = inject('chatSocket')!
 
@@ -130,10 +124,6 @@ const password = ref('') // TODO: Get rid of this
 // const otherUser = ref('')
 const showOptions = ref(false)
 const visibility = ref(Visibility.PUBLIC)
-
-const alertMessage = ref('')
-const alertPopup = ref()
-const createNewChatAlertPopup = ref()
 
 const passwordInputPopup = ref()
 const chatCreationModal = ref()
@@ -189,15 +179,13 @@ function closeChat() {
 
 async function getMyIntraId() {
   myIntraId.value = await get('api/user/intraId').catch((err) => {
-    alertMessage.value = getErrorMessage(err.response.data.message)
-    alertPopup.value.show()
+    alertPopup.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
 async function getMyUsername() {
   myUsername.value = await get('api/user/username').catch((err) => {
-    alertMessage.value = getErrorMessage(err.response.data.message)
-    alertPopup.value.show()
+    alertPopup.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
@@ -337,14 +325,11 @@ function enterProtectedChat(password_: string) {
 
 async function getChats() {
   myChats.value = await get('api/user/myChats').catch((err) => {
-    alertMessage.value = getErrorMessage(err.response.data.message)
-    alertPopup.value.show()
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 
   publicAndProtectedChats.value = await get('api/chats').catch((err) => {
-    console.error('err', err)
-    alertMessage.value = getErrorMessage(err.response.data.message)
-    alertPopup.value.show()
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
@@ -392,8 +377,7 @@ function getErrorMessage(msg: string | string[]) {
 }
 
 chatSocket.on('exception', (data) => {
-  alertMessage.value = getErrorMessage(data.message)
-  alertPopup.value.show()
+  alertPopup.value.showWarning(getErrorMessage(data.message))
 })
 
 function getPublicChats() {
