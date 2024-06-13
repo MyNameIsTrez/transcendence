@@ -15,9 +15,9 @@
             type="password"
             placeholder="Password..."
             class="input input-bordered w-full max-w-xs"
-            @keyup.enter="onEnter(password)"
+            @keyup.enter="onEnter"
           />
-          <button class="btn btn-info" @click="onEnter(password)">Enter</button>
+          <button class="btn btn-info" @click="onEnter">Enter</button>
         </div>
       </div>
     </span>
@@ -37,8 +37,8 @@ const password = ref('')
 
 const emit = defineEmits(['onEnter'])
 
-async function onEnter(password_: string) {
-  emit('onEnter', password_)
+async function onEnter() {
+  emit('onEnter', password.value)
   password.value = ''
 }
 

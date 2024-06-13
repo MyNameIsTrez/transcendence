@@ -221,8 +221,8 @@ export class ChatGateway {
     return {};
   }
 
-  @SubscribeMessage('leaveChat')
-  async leaveChat(
+  @SubscribeMessage('closeChat')
+  async closeChat(
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {

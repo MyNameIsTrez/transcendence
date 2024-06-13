@@ -1,7 +1,5 @@
 <template>
   <div>
-    <button v-if="currentChat" @click="leaveChat">← Back</button>
-
     <div v-if="!currentChat">
       My chats
       <span class="material-symbols-outlined align-bottom">person</span>
@@ -89,67 +87,7 @@
       </dialog>
     </div>
 
-    <div v-if="currentChat">
-      <div v-if="iAmUser">
-        <button class="btn btn-secondary" @click="leave">Leave chat</button>
-      </div>
-
-      <div v-if="iAmOwner">
-        <div v-if="isProtected">
-          <!-- <input
-            v-model="password"
-            type="password"
-            placeholder="New password..."
-            @keyup.enter="changePassword"
-          /> -->
-          <button @click="changePassword">Change password</button>
-        </div>
-        <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
-          {{ visibility }}
-        </button>
-        <!-- <button @click="changeVisibility">Change visibility</button> -->
-      </div>
-      <div v-if="iAmAdmin">
-        <button @click="() => (showOptions = !showOptions)">
-          {{ showOptions ? '~ open options ~' : '~ close options ~' }}
-        </button>
-        <div v-if="showOptions">
-          <!-- <input v-model="otherUser" placeholder="42 student..." />
-          <button @click="addUser">Add</button>
-          <button @click="muteUser">Mute</button>
-          <button @click="kickUser">Kick</button>
-          <button @click="banUser">Ban</button>
-          <button @click="addAdmin">Make admin</button> -->
-          <!-- TODO: Use number input here -->
-          <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
-        </div>
-      </div>
-
-      In chat '{{ currentChat?.name }}'
-      <div v-if="isDirect">(DM)</div>
-
-      <div ref="chatRef" class="scrollable-container">
-        <div v-for="(message, index) in chatHistory" :key="index" class="line">
-          <router-link :to="`/user/${message.sender}`">
-            {{
-              message.sender_name +
-              ' at ' +
-              message.date.toLocaleTimeString([], { timeStyle: 'short' }) +
-              ': ' +
-              message.body +
-              '\n'
-            }}
-          </router-link>
-        </div>
-      </div>
-      <input
-        v-if="!iAmMute"
-        v-model="sentMessage"
-        placeholder="Type message..."
-        @keyup.enter="sendMessage"
-      />
-      <button v-if="!iAmMute" @click="sendMessage">Send</button>
-    </div>
+    <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
 
     <PasswordModal ref="passwordInputPopup" @onEnter="enterProtectedChat"> </PasswordModal>
 
@@ -166,6 +104,7 @@ import { nextTick } from 'vue'
 import { Socket } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
 import PasswordModal from './chat/PasswordModal.vue'
+import ChatComponent from './chat/ChatComponent.vue'
 import { AlertType } from '../types'
 import Chat from './chat/ChatClass'
 import Message from './chat/MessageClass'
@@ -173,13 +112,11 @@ import Visibility from './chat/VisibilityEnum'
 
 const chatSocket: Socket = inject('chatSocket')!
 
-const chatRef = ref()
 const inputChatName = ref('')
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
 const selectedChat = ref<Chat | null>(null)
-const chatHistory = ref<Message[]>([])
 // const daysToMute = ref<string>('0')
 const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
 const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
@@ -192,7 +129,6 @@ const myUsername = ref('')
 const password = ref('') // TODO: Get rid of this
 // const otherUser = ref('')
 const showOptions = ref(false)
-const sentMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
 
 const alertMessage = ref('')
@@ -202,30 +138,30 @@ const createNewChatAlertPopup = ref()
 const passwordInputPopup = ref()
 const chatCreationModal = ref()
 
-async function leave() {
-  if (currentChat.value) {
-    await get('api/chats/leave/' + currentChat.value.chat_id).catch((err) => {
-      alertMessage.value = getErrorMessage(err.response.data.message)
-      alertPopup.value.show()
-    })
-    // getChats()
-    currentChat.value = null
-  }
-}
+// async function leave() {
+//   if (currentChat.value) {
+//     await get('api/chats/leave/' + currentChat.value.chat_id).catch((err) => {
+//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertPopup.value.show()
+//     })
+//     // getChats()
+//     currentChat.value = null
+//   }
+// }
 
-async function changePassword() {
-  if (currentChat.value) {
-    await post('api/chats/changePassword', {
-      chat_id: currentChat.value.chat_id,
-      password: password.value,
-      intra_id: 'foo'
-    }).catch((err) => {
-      alertMessage.value = getErrorMessage(err.response.data.message)
-      alertPopup.value.show()
-    })
-    password.value = ''
-  }
-}
+// async function changePassword() {
+//   if (currentChat.value) {
+//     await post('api/chats/changePassword', {
+//       chat_id: currentChat.value.chat_id,
+//       password: password.value,
+//       intra_id: 'foo'
+//     }).catch((err) => {
+//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertPopup.value.show()
+//     })
+//     password.value = ''
+//   }
+// }
 
 // async function changeVisibility() {
 //   if (currentChat.value) {
@@ -244,9 +180,9 @@ async function changePassword() {
 //   }
 // }
 
-function leaveChat() {
+function closeChat() {
   if (currentChat.value) {
-    chatSocket.emit('leaveChat', { chatId: currentChat.value.chat_id })
+    chatSocket.emit('closeChat', { chatId: currentChat.value.chat_id })
     currentChat.value = null
   }
 }
@@ -369,7 +305,6 @@ async function createChat() {
 function openChat(chat: Chat) {
   chatSocket.emit('openChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
-    getChat()
   })
 }
 
@@ -400,42 +335,6 @@ function enterProtectedChat(password_: string) {
   })
 }
 
-async function getChat() {
-  if (currentChat.value) {
-    const blockedUsers = await get('api/user/blocked')
-      .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
-      .catch((err) => {
-        alertMessage.value = getErrorMessage(err.response.data.message)
-        alertPopup.value.show()
-      })
-    const blocked = new Set<number>(blockedUsers)
-
-    chatHistory.value = await get('api/chats/history/' + currentChat.value.chat_id)
-      .then((messages) =>
-        messages
-          .filter((message: Message) => !blocked.has(message.sender))
-          .map((message: Message) => {
-            return { ...message, date: new Date(message.date) } // Serialize date
-          })
-      )
-      .catch((err) => {
-        alertMessage.value = getErrorMessage(err.response.data.message)
-        alertPopup.value.show()
-      })
-
-    await scrollToBottom()
-  }
-}
-
-async function scrollToBottom() {
-  // This forces the chat DOM object to have its scrollHeight updated right now
-  await nextTick()
-
-  if (chatRef.value) {
-    chatRef.value.scrollTop = chatRef.value.scrollHeight
-  }
-}
-
 async function getChats() {
   myChats.value = await get('api/user/myChats').catch((err) => {
     alertMessage.value = getErrorMessage(err.response.data.message)
@@ -449,27 +348,6 @@ async function getChats() {
   })
 }
 
-chatSocket.on('newMessage', async (message: Message) => {
-  message.date = new Date(message.date)
-
-  // TODO: Either the frontend or backend should filter for blocked messages
-  chatHistory.value.push(message)
-
-  // Only scroll down if our scrollbar is already all the way down
-  // This is because we don't want to suddenly scroll down
-  // when we're reading old messages, and someone sends a message
-  //
-  // scrollHeight: total container size
-  // scrollTop: amount of scroll user has done
-  // clientHeight: amount of container a user sees
-  if (chatRef.value) {
-    // The `+ 1.5` accounts for scrollTop sometimes being bigger or smaller than expected
-    if (chatRef.value.scrollTop + chatRef.value.clientHeight + 1.5 >= chatRef.value.scrollHeight) {
-      await scrollToBottom()
-    }
-  }
-})
-
 chatSocket.on('addMyChat', async (chat: Chat) => {
   myChats.value.push(chat)
 })
@@ -479,19 +357,6 @@ chatSocket.on('addChat', async (chat: Chat) => {
   }
 })
 chatSocket.on('removeChat', async (chat: Chat) => {})
-
-function sendMessage() {
-  if (currentChat.value) {
-    const message = {
-      chatId: currentChat.value.chat_id,
-      body: sentMessage.value
-    }
-
-    sentMessage.value = ''
-
-    chatSocket.emit('sendMessage', message)
-  }
-}
 
 function chatVisibility() {
   if (visibility.value === Visibility.PUBLIC) {
