@@ -30,7 +30,6 @@ import { Socket } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
-
 const gameSocket: Socket = inject('gameSocket')!
 
 const gameTitle = ref('PONG')

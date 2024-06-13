@@ -77,10 +77,10 @@ import { inject, ref, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
+const gameSocket: Socket = inject('gameSocket')!
 
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
-const gameSocket: Socket = inject('gameSocket')!
 
 const user = await get(`api/user/other/${intra_id}`)
 const username = user.username

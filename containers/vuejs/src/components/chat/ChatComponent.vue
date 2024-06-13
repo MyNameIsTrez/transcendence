@@ -71,7 +71,6 @@ import { get } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
-
 const chatSocket: Socket = inject('chatSocket')!
 
 const props = defineProps({

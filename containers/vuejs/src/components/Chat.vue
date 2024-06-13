@@ -3,41 +3,17 @@
     <div v-if="!currentChat">
       My chats
       <span class="material-symbols-outlined align-bottom">person</span>
-      <div class="scrollable-container-half">
-        <div v-for="(chat, index) in myChats" :key="index" class="line" @click="openChat(chat)">
-          {{ chat.name }}
-        </div>
-      </div>
+      <ChatList :chatsFn="() => myChats" :onClickFn="openChat" />
 
-      <!-- TODO: Turn these three identical chat list blocks into a shared component -->
       Public chats
       <span class="material-symbols-outlined align-bottom">public</span>
-      <div class="scrollable-container-half">
-        <div
-          v-for="(chat, index) in getPublicChats()"
-          :key="index"
-          class="line"
-          @click="clickedPublicChat(chat)"
-        >
-          {{ chat.name }}
-        </div>
-      </div>
+      <ChatList :chatsFn="getPublicChats" :onClickFn="clickedPublicChat" />
 
       Protected chats
       <span class="material-symbols-outlined align-bottom">lock</span>
-      <div class="scrollable-container-half">
-        <div
-          v-for="(chat, index) in getProtectedChats()"
-          :key="index"
-          class="line"
-          @click="clickedProtectedChat(chat)"
-        >
-          {{ chat.name }}
-        </div>
-      </div>
+      <ChatList :chatsFn="getProtectedChats" :onClickFn="clickedProtectedChat" />
 
       <button :class="'btn btn-info'" @click="chatCreationModal.show()">Create chat</button>
-
       <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
     </div>
 
@@ -49,40 +25,34 @@
 
 <script setup lang="ts">
 import { inject, ref, type Ref } from 'vue'
-import { get, post } from '../httpRequests'
-import { nextTick } from 'vue'
+import { get } from '../httpRequests'
 import { Socket } from 'socket.io-client'
 import ChatCreationModal from './chat/ChatCreationModal.vue'
 import PasswordModal from './chat/PasswordModal.vue'
 import ChatComponent from './chat/ChatComponent.vue'
-import { AlertType } from '../types'
-import Chat from './chat/ChatClass'
-import Message from './chat/MessageClass'
-import Visibility from './chat/VisibilityEnum'
+import ChatList from './chat/ChatList.vue'
 import AlertPopup from './AlertPopup.vue'
+import Chat from './chat/ChatClass'
+import Visibility from './chat/VisibilityEnum'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
-
 const chatSocket: Socket = inject('chatSocket')!
 
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
 const selectedChat = ref<Chat | null>(null)
-// const daysToMute = ref<string>('0')
-const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
-const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
-const iAmOwner = ref(false) // TODO: Replace all usage of this with currentChat.iAmOwner
-const iAmUser = ref(false) // TODO: Replace all usage of this with currentChat.iAmUser
-const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.isDirect
-const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
-const myIntraId = ref('')
-const myUsername = ref('')
-// const otherUser = ref('')
-const showOptions = ref(false)
-
 const passwordModal = ref()
 const chatCreationModal = ref()
+// const daysToMute = ref<string>('0')
+// const iAmAdmin = ref(false) // TODO: Replace all usage of this with currentChat.iAmAdmin
+// const iAmMute = ref(false) // TODO: Replace all usage of this with currentChat.iAmMute
+// const iAmOwner = ref(false) // TODO: Replace all usage of this with currentChat.iAmOwner
+// const iAmUser = ref(false) // TODO: Replace all usage of this with currentChat.iAmUser
+// const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.isDirect
+// const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
+// const otherUser = ref('')
+// const showOptions = ref(false)
 
 // async function leave() {
 //   if (currentChat.value) {
@@ -131,18 +101,6 @@ function closeChat() {
     chatSocket.emit('closeChat', { chatId: currentChat.value.chat_id })
     currentChat.value = null
   }
-}
-
-async function getMyIntraId() {
-  myIntraId.value = await get('api/user/intraId').catch((err) => {
-    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
-  })
-}
-
-async function getMyUsername() {
-  myUsername.value = await get('api/user/username').catch((err) => {
-    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
-  })
 }
 
 // async function addUser() {
@@ -314,8 +272,6 @@ function getProtectedChats() {
   )
 }
 
-getMyUsername()
-getMyIntraId()
 getChats()
 </script>
 
