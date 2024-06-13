@@ -67,7 +67,10 @@ export class UserService {
   async getLeaderboard() {
     const users = await this.usersRepository.find();
 
+    const allow_debug_user = this.configService.get('VITE_ALLOW_DEBUG_USER');
+
     return users
+      .filter((user) => user.intra_id !== 42 || allow_debug_user)
       .map((user) => {
         return {
           name: user.username,
