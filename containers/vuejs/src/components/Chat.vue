@@ -134,7 +134,7 @@
             {{
               message.sender_name +
               ' at ' +
-              message.date.toLocaleTimeString() +
+              message.date.toLocaleTimeString([], {timeStyle: 'short'}) +
               ': ' +
               message.body +
               '\n'
