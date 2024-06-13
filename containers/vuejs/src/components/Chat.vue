@@ -36,56 +36,14 @@
         </div>
       </div>
 
-      <button :class="'btn btn-info'" @click="chatCreationModal.showModal()">Create chat</button>
+      <button :class="'btn btn-info'" @click="chatCreationModal.show()">Create chat</button>
 
-      <dialog ref="chatCreationModal" class="modal">
-        <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-          <div class="modal-box w-auto justify-self-center">
-            <!-- Adds a little close button in the top-right corner -->
-            <form method="dialog">
-              <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
-            </form>
-
-            <h3 class="font-bold text-lg">Create new chat</h3>
-
-            <div class="flex pt-4 flex-col space-y-5">
-              <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
-                {{ visibility }}
-
-                <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
-              </button>
-
-              <input
-                class="p-2"
-                v-model="inputChatName"
-                placeholder="Chat name..."
-                @keyup.enter="createChat"
-              />
-
-              <input
-                v-if="visibility === Visibility.PROTECTED"
-                class="p-2"
-                v-model="password"
-                type="password"
-                placeholder="Password..."
-                @keyup.enter="createChat"
-              />
-
-              <button class="btn btn-info" @click="createChat">Create</button>
-            </div>
-          </div>
-        </span>
-
-        <!-- Allows clicking outside of the modal to close it -->
-        <form method="dialog" class="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
+      <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
     </div>
 
     <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
 
-    <PasswordModal ref="passwordInputPopup" @onEnter="enterProtectedChat"> </PasswordModal>
+    <PasswordModal ref="passwordModal" @onEnter="enterProtectedChat"> </PasswordModal>
   </div>
 </template>
 
@@ -94,6 +52,7 @@ import { inject, ref, type Ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
 import { Socket } from 'socket.io-client'
+import ChatCreationModal from './chat/ChatCreationModal.vue'
 import PasswordModal from './chat/PasswordModal.vue'
 import ChatComponent from './chat/ChatComponent.vue'
 import { AlertType } from '../types'
@@ -106,7 +65,6 @@ const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const chatSocket: Socket = inject('chatSocket')!
 
-const inputChatName = ref('')
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
@@ -120,12 +78,10 @@ const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.
 const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
 const myIntraId = ref('')
 const myUsername = ref('')
-const password = ref('') // TODO: Get rid of this
 // const otherUser = ref('')
 const showOptions = ref(false)
-const visibility = ref(Visibility.PUBLIC)
 
-const passwordInputPopup = ref()
+const passwordModal = ref()
 const chatCreationModal = ref()
 
 // async function leave() {
@@ -179,13 +135,13 @@ function closeChat() {
 
 async function getMyIntraId() {
   myIntraId.value = await get('api/user/intraId').catch((err) => {
-    alertPopup.showWarning(getErrorMessage(err.response.data.message))
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
 async function getMyUsername() {
   myUsername.value = await get('api/user/username').catch((err) => {
-    alertPopup.showWarning(getErrorMessage(err.response.data.message))
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
@@ -257,22 +213,6 @@ async function getMyUsername() {
 //   }
 // }
 
-async function createChat() {
-  chatSocket.emit(
-    'create',
-    {
-      name: inputChatName.value,
-      visibility: visibility.value,
-      password: password.value
-    },
-    () => {
-      chatCreationModal.value.close()
-      password.value = ''
-      inputChatName.value = ''
-    }
-  )
-}
-
 // async function getInfo() {
 //   if (currentChat.value) {
 //     getChats()
@@ -305,7 +245,7 @@ function clickedPublicChat(chat: Chat) {
 function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
-  passwordInputPopup.value.show()
+  passwordModal.value.show()
 }
 
 function enterProtectedChat(password_: string) {
@@ -315,7 +255,7 @@ function enterProtectedChat(password_: string) {
   }
 
   chatSocket.emit('joinChat', { chatId: selectedChat.value.chat_id, password: password_ }, () => {
-    passwordInputPopup.value.hide()
+    passwordModal.value.hide()
 
     openChat(selectedChat.value!)
 
@@ -342,32 +282,6 @@ chatSocket.on('addChat', async (chat: Chat) => {
   }
 })
 chatSocket.on('removeChat', async (chat: Chat) => {})
-
-function chatVisibility() {
-  if (visibility.value === Visibility.PUBLIC) {
-    visibility.value = Visibility.PROTECTED
-  } else if (visibility.value === Visibility.PROTECTED) {
-    visibility.value = Visibility.PRIVATE
-  } else {
-    visibility.value = Visibility.PUBLIC
-  }
-}
-
-function getBtnColor(visibility: Visibility) {
-  return visibility === Visibility.PUBLIC
-    ? 'btn-primary'
-    : visibility === Visibility.PROTECTED
-      ? 'btn-warning'
-      : 'btn-error'
-}
-
-function getVisibilityIcon(visibility: Visibility) {
-  return visibility === Visibility.PUBLIC
-    ? 'public'
-    : visibility === Visibility.PROTECTED
-      ? 'lock'
-      : 'disabled_visible'
-}
 
 function getErrorMessage(msg: string | string[]) {
   if (typeof msg === 'string') {

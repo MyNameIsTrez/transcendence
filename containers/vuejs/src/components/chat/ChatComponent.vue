@@ -15,7 +15,7 @@
           /> -->
   <!-- <button @click="changePassword">Change password</button>
       </div>
-      <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
+      <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
         {{ visibility }}
       </button> -->
   <!-- <button @click="changeVisibility">Change visibility</button> -->
@@ -82,6 +82,8 @@ const muted = ref(false)
 const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
 const chatRef = ref()
+
+const emit = defineEmits(['onCloseChat'])
 
 function sendMessage() {
   if (props.currentChat) {
@@ -157,8 +159,6 @@ function getErrorMessage(msg: string | string[]) {
   }
   return msg.join('\n')
 }
-
-const emit = defineEmits(['onCloseChat'])
 
 getChat()
 </script>
