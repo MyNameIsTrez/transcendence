@@ -138,11 +138,11 @@ const alertMessage = ref('Name change failed')
 
 const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
 
-function uploadProfilePicture(event: any) {
+async function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
-  post('api/user/profilePicture', data)
+  await post('api/user/profilePicture', data)
     .then(async () => {
       profilePicture.value = await getImage(`api/user/profilePicture/${me.intra_id}`)
     })
@@ -153,8 +153,8 @@ function uploadProfilePicture(event: any) {
     })
 }
 
-function changeUsername() {
-  post('api/user/setUsername', { username: newUsername.value })
+async function changeUsername() {
+  await post('api/user/setUsername', { username: newUsername.value })
     .then(async () => {
       me = await get(`api/user/me`)
       username.value = me.username

@@ -134,7 +134,7 @@
             {{
               message.sender_name +
               ' at ' +
-              message.date.toLocaleTimeString([], {timeStyle: 'short'}) +
+              message.date.toLocaleTimeString([], { timeStyle: 'short' }) +
               ': ' +
               message.body +
               '\n'
@@ -151,36 +151,7 @@
       <button v-if="!iAmMute" @click="sendMessage">Send</button>
     </div>
 
-    <dialog ref="passwordInputPopup" class="modal">
-      <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-        <div class="modal-box w-auto justify-self-center">
-          <!-- Adds a little close button in the top-right corner -->
-          <form method="dialog">
-            <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
-          </form>
-
-          <h3 class="font-bold text-lg">Enter password</h3>
-
-          <div class="flex pt-4 flex-col space-y-5 justify-self-center">
-            <input
-              v-model="password"
-              type="password"
-              placeholder="Password..."
-              class="input input-bordered w-full max-w-xs"
-              @keyup.enter="enterProtectedChat(selectedChat, password)"
-            />
-            <button class="btn btn-info" @click="enterProtectedChat(selectedChat, password)">
-              Enter
-            </button>
-          </div>
-        </div>
-      </span>
-
-      <!-- Allows clicking outside of the modal to close it -->
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+    <PasswordModal ref="passwordInputPopup" @onEnter="enterProtectedChat"> </PasswordModal>
 
     <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING">{{
       alertMessage
@@ -194,41 +165,13 @@ import { get, post } from '../httpRequests'
 import { nextTick } from 'vue'
 import { Socket } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
+import PasswordModal from './chat/PasswordModal.vue'
 import { AlertType } from '../types'
+import Chat from './chat/ChatClass'
+import Message from './chat/MessageClass'
+import Visibility from './chat/VisibilityEnum'
 
 const chatSocket: Socket = inject('chatSocket')!
-
-class Message {
-  sender_name: string
-  sender: number
-  body: string
-  date: Date
-
-  constructor(sender_name: string, sender: number, body: string, date: Date) {
-    this.sender_name = sender_name
-    this.sender = sender
-    this.body = body
-    this.date = date
-  }
-}
-
-enum Visibility {
-  PUBLIC = 'PUBLIC',
-  PRIVATE = 'PRIVATE',
-  PROTECTED = 'PROTECTED'
-}
-
-class Chat {
-  chat_id: string
-  name: string
-  visibility: Visibility
-
-  constructor(chat_id: string, name: string, visibility: Visibility) {
-    this.chat_id = chat_id
-    this.name = name
-    this.visibility = visibility
-  }
-}
 
 const chatRef = ref()
 const inputChatName = ref('')
@@ -246,7 +189,7 @@ const isDirect = ref(false) // TODO: Replace all usage of this with currentChat.
 const isProtected = ref(false) // TODO: Replace all usage of this with currentChat.isProtected
 const myIntraId = ref('')
 const myUsername = ref('')
-const password = ref('')
+const password = ref('') // TODO: Get rid of this
 // const otherUser = ref('')
 const showOptions = ref(false)
 const sentMessage = ref('')
@@ -439,24 +382,22 @@ function clickedPublicChat(chat: Chat) {
 function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
-  passwordInputPopup.value.showModal()
+  passwordInputPopup.value.show()
 }
 
-function enterProtectedChat(chat: Chat | null, password_: string) {
-  if (!chat) {
-    console.error("chat wasn't supposed to be null")
+function enterProtectedChat(password_: string) {
+  if (!selectedChat.value) {
+    console.error("selectedChat wasn't supposed to be null")
     return
   }
 
-  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: password_ }, () => {
-    passwordInputPopup.value.close()
+  chatSocket.emit('joinChat', { chatId: selectedChat.value.chat_id, password: password_ }, () => {
+    passwordInputPopup.value.hide()
+
+    openChat(selectedChat.value!)
 
     selectedChat.value = null
-
-    openChat(chat)
   })
-
-  password.value = ''
 }
 
 async function getChat() {
