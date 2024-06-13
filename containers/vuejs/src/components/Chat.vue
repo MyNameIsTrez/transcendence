@@ -442,19 +442,21 @@ function clickedProtectedChat(chat: Chat) {
   passwordInputPopup.value.showModal()
 }
 
-function enterProtectedChat(chat: Chat | null, password: string) {
+function enterProtectedChat(chat: Chat | null, password_: string) {
   if (!chat) {
     console.error("chat wasn't supposed to be null")
     return
   }
 
-  chatSocket.emit('joinChat', { chatId: chat.chat_id, password }, () => {
+  chatSocket.emit('joinChat', { chatId: chat.chat_id, password: password_ }, () => {
     passwordInputPopup.value.close()
 
     selectedChat.value = null
 
     openChat(chat)
   })
+
+  password.value = ''
 }
 
 async function getChat() {
