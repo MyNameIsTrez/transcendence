@@ -16,7 +16,7 @@
       >
     </li>
     <br />
-    <li>
+    <li v-if="allow_debug_user">
       <a :href="address + ':' + backend_port + '/loginFoo'">Log in as the debug user</a>
     </li>
   </ul>
@@ -40,6 +40,7 @@ const router = useRouter()
 const intra_client_id = import.meta.env.VITE_INTRA_CLIENT_ID
 const address = encodeURI(import.meta.env.VITE_ADDRESS)
 const backend_port = import.meta.env.VITE_BACKEND_PORT
+const allow_debug_user = import.meta.env.VITE_ALLOW_DEBUG_USER === 'true'
 
 if (extractJwtFromUrl()) {
   router.replace({ path: '/' })

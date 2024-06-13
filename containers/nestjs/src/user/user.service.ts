@@ -18,7 +18,9 @@ export class UserService {
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
   ) {
-    this.createFooUser();
+    if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
+      this.createFooUser();
+    }
   }
 
   // Adds a dummy user that is used to play against oneself during development
