@@ -8,7 +8,9 @@
     >
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="`${svgPath}`" />
     </svg>
-    <slot />
+    <span class="first-letter:uppercase">
+      <slot />
+    </span>
   </div>
 </template>
 
