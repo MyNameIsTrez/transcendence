@@ -1,7 +1,5 @@
 <template>
   <div>
-    <button v-if="currentChat" @click="leaveChat">← Back</button>
-
     <div v-if="!currentChat">
       My chats
       <span class="material-symbols-outlined align-bottom">person</span>
@@ -90,40 +88,123 @@
     </div>
 
     <div v-if="currentChat">
-      <div v-if="iAmUser">
-        <button class="btn btn-secondary" @click="leave">Leave chat</button>
+      <div class="flex flex-row space-x-2 m-2">
+        <button @click="leaveChat" class="btn bg-base-100">
+          <span class="material-symbols-outlined"> arrow_back </span>
+        </button>
+        <button @click="memberList.showModal()" class="btn bg-base-100">
+          <span class="material-symbols-outlined"> group </span>
+        </button>
+        <button @click="chatSettings.showModal()" class="btn bg-base-100">
+          <span class="material-symbols-outlined"> settings </span>
+        </button>
       </div>
+      <dialog ref="memberList" class="modal">
+        <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+          <div class="modal-box w-auto justify-self-center">
+            <!-- Adds a little close button in the top-right corner -->
+            <form method="dialog">
+              <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+            </form>
 
-      <div v-if="iAmOwner">
-        <div v-if="isProtected">
-          <!-- <input
+            <h3 class="font-bold text-lg">Members</h3>
+
+            <div class="flex pt-4 flex-col space-y-5">
+              <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
+                alertMessage
+              }}</AlertPopup>
+            </div>
+          </div>
+        </span>
+
+        <!-- Allows clicking outside of the modal to close it -->
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <dialog ref="chatSettings" class="modal">
+        <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+          <div class="modal-box w-auto justify-self-center">
+            <!-- Adds a little close button in the top-right corner -->
+            <form method="dialog">
+              <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+            </form>
+
+            <h3 class="font-bold text-lg">Settings</h3>
+
+            <div class="flex pt-4 flex-col space-y-5">
+              <button
+                :class="'btn ' + getBtnColor(currentChatVisibility)"
+                @click="rotateCurrentChatVisibility"
+              >
+                {{ currentChatVisibility }}
+
+                <span class="material-symbols-outlined">
+                  {{ getVisibilityIcon(currentChatVisibility) }}
+                </span>
+              </button>
+
+              <input class="p-2" v-model="chatName" placeholder="Chat name..." />
+              <!-- @keyup.enter="createChat" TODO: Put back within input above with the right func()-->
+
+              <input
+                v-if="currentChatVisibility === Visibility.PROTECTED"
+                class="p-2"
+                v-model="password"
+                type="password"
+                placeholder="New password..."
+                @keyup.enter="createChat"
+              />
+
+              <button class="btn btn-info">Save changes</button>
+              <!-- @click="createChat" TODO: Put back within input above with the right func()-->
+
+              <AlertPopup ref="createNewChatAlertPopup" :alertType="AlertType.ALERT_WARNING">{{
+                alertMessage
+              }}</AlertPopup>
+            </div>
+          </div>
+        </span>
+
+        <!-- Allows clicking outside of the modal to close it -->
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <!-- <div v-if="iAmUser">
+        <button class="btn btn-secondary" @click="leave">Leave chat</button>
+      </div> -->
+
+      <!-- <div v-if="iAmOwner"> -->
+      <!-- <div v-if="isProtected">
+          <input
             v-model="password"
             type="password"
             placeholder="New password..."
             @keyup.enter="changePassword"
-          /> -->
+          />
           <button @click="changePassword">Change password</button>
         </div>
         <button :class="'btn ' + getBtnColor(visibility)" @click="chatVisibility">
           {{ visibility }}
         </button>
-        <!-- <button @click="changeVisibility">Change visibility</button> -->
-      </div>
-      <div v-if="iAmAdmin">
+        <button @click="changeVisibility">Change visibility</button>
+      </div> -->
+      <!-- <div v-if="iAmAdmin">
         <button @click="() => (showOptions = !showOptions)">
           {{ showOptions ? '~ open options ~' : '~ close options ~' }}
         </button>
         <div v-if="showOptions">
-          <!-- <input v-model="otherUser" placeholder="42 student..." />
+          <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
           <button @click="muteUser">Mute</button>
           <button @click="kickUser">Kick</button>
           <button @click="banUser">Ban</button>
           <button @click="addAdmin">Make admin</button> -->
-          <!-- TODO: Use number input here -->
-          <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
+      <!-- TODO: Use number input here -->
+      <!-- <input v-model="daysToMute" placeholder="days to mute..." />
         </div>
-      </div>
+      </div> -->
 
       In chat '{{ currentChat?.name }}'
       <div v-if="isDirect">(DM)</div>
@@ -223,6 +304,7 @@ class Chat {
 
 const chatRef = ref()
 const inputChatName = ref('')
+const chatName = ref('')
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>()
 const currentChat = ref<Chat | null>(null)
@@ -242,6 +324,7 @@ const password = ref('')
 const showOptions = ref(false)
 const sentMessage = ref('')
 const visibility = ref(Visibility.PUBLIC)
+const currentChatVisibility = ref(Visibility.PUBLIC)
 
 const alertMessage = ref('')
 const alertPopup = ref()
@@ -249,6 +332,8 @@ const createNewChatAlertPopup = ref()
 
 const passwordInputPopup = ref()
 const chatCreationModal = ref()
+const chatSettings = ref()
+const memberList = ref()
 
 async function leave() {
   if (currentChat.value) {
@@ -418,6 +503,8 @@ async function createChat() {
 function openChat(chat: Chat) {
   chatSocket.emit('openChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
+    chatName.value = chat.name
+    currentChatVisibility.value = chat.visibility
     getChat()
   })
 }
@@ -511,8 +598,8 @@ chatSocket.on('newMessage', async (message: Message) => {
   }
 })
 
-chatSocket.on('addChat', async (chat: AddChat) => {})
-chatSocket.on('removeChat', async (chat: RemoveChat) => {})
+chatSocket.on('addChat', async (chat: any) => {})
+chatSocket.on('removeChat', async (chat: any) => {})
 
 function sendMessage() {
   if (currentChat.value) {
@@ -524,6 +611,16 @@ function sendMessage() {
     sentMessage.value = ''
 
     chatSocket.emit('sendMessage', message)
+  }
+}
+
+function rotateCurrentChatVisibility() {
+  if (currentChatVisibility.value === Visibility.PUBLIC) {
+    currentChatVisibility.value = Visibility.PROTECTED
+  } else if (currentChatVisibility.value === Visibility.PROTECTED) {
+    currentChatVisibility.value = Visibility.PRIVATE
+  } else {
+    currentChatVisibility.value = Visibility.PUBLIC
   }
 }
 
