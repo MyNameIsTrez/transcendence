@@ -224,7 +224,7 @@ class Chat {
 const chatRef = ref()
 const inputChatName = ref('')
 const publicAndProtectedChats = ref<Chat[]>([])
-const myChats = ref<Chat[]>()
+const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
 const selectedChat = ref<Chat | null>(null)
 const chatHistory = ref<Message[]>([])
@@ -382,20 +382,19 @@ async function getMyUsername() {
 // }
 
 async function createChat() {
-  await post('api/chats/create', {
-    name: inputChatName.value,
-    visibility: visibility.value,
-    password: password.value
-  })
-    .then(() => {
+  chatSocket.emit(
+    'create',
+    {
+      name: inputChatName.value,
+      visibility: visibility.value,
+      password: password.value
+    },
+    () => {
       chatCreationModal.value.close()
       password.value = ''
       inputChatName.value = ''
-    })
-    .catch((err) => {
-      alertMessage.value = getErrorMessage(err.response.data.message)
-      createNewChatAlertPopup.value.show()
-    })
+    }
+  )
 }
 
 // async function getInfo() {
@@ -511,8 +510,15 @@ chatSocket.on('newMessage', async (message: Message) => {
   }
 })
 
-chatSocket.on('addChat', async (chat: AddChat) => {})
-chatSocket.on('removeChat', async (chat: RemoveChat) => {})
+chatSocket.on('addMyChat', async (chat: Chat) => {
+  myChats.value.push(chat)
+})
+chatSocket.on('addChat', async (chat: Chat) => {
+  if (chat.visibility !== Visibility.PRIVATE) {
+    publicAndProtectedChats.value.push(chat)
+  }
+})
+chatSocket.on('removeChat', async (chat: Chat) => {})
 
 function sendMessage() {
   if (currentChat.value) {
@@ -566,30 +572,22 @@ chatSocket.on('exception', (data) => {
 })
 
 function getPublicChats() {
-  if (!myChats.value) {
-    return
-  }
-
   const publicChats = publicAndProtectedChats.value.filter(
     (chat) => chat.visibility === Visibility.PUBLIC
   )
 
   return publicChats.filter((publicChat) =>
-    myChats.value!.every((myChat) => myChat.chat_id !== publicChat.chat_id)
+    myChats.value.every((myChat) => myChat.chat_id !== publicChat.chat_id)
   )
 }
 
 function getProtectedChats() {
-  if (!myChats.value) {
-    return
-  }
-
   const protectedChats = publicAndProtectedChats.value.filter(
     (chat) => chat.visibility === Visibility.PROTECTED
   )
 
   return protectedChats.filter((protectedChat) =>
-    myChats.value!.every((myChat) => myChat.chat_id !== protectedChat.chat_id)
+    myChats.value.every((myChat) => myChat.chat_id !== protectedChat.chat_id)
   )
 }
 

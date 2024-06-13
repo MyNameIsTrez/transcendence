@@ -16,9 +16,11 @@ import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
 import {
+  IsEnum,
   IsNotEmpty,
   IsUUID,
   Validate,
+  ValidateIf,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -57,6 +59,18 @@ export class PasswordConstraint implements ValidatorConstraintInterface {
   }
 }
 
+class CreateDto {
+  @IsNotEmpty()
+  name: string;
+
+  @IsEnum(Visibility)
+  visibility: Visibility;
+
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @IsNotEmpty()
+  password: string;
+}
+
 // TODO: Try to get rid of "extends BaseEntity"
 class JoinChatDto extends BaseEntity {
   @IsUUID()
@@ -89,6 +103,7 @@ export class ChatGateway {
   @WebSocketServer()
   server!: Server;
 
+  private connectedClients = new Set<Socket>();
   private chatToSockets = new Map<string, Set<Socket>>();
 
   constructor(
@@ -122,23 +137,59 @@ export class ChatGateway {
         redirectToLoginPage: true,
       });
     }
+
+    this.connectedClients.add(client);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     this.chatToSockets.forEach((sockets, chatId) => {
-      if (sockets.has(client)) {
-        sockets.delete(client);
-      }
-
-      if (sockets.size <= 0) {
-        this.chatToSockets.delete(chatId);
-      }
+      this.removeChatSocket(sockets, client, chatId);
     });
 
-    // console.log(
-    //   'In handleDisconnect(), this.chatToSockets is',
-    //   this.chatToSockets,
-    // );
+    this.connectedClients.delete(client);
+  }
+
+  private async removeChatSocket(
+    sockets: Set<Socket>,
+    socket: Socket,
+    chatId: string,
+  ) {
+    if (sockets.has(socket)) {
+      sockets.delete(socket);
+    }
+
+    if (sockets.size <= 0) {
+      this.chatToSockets.delete(chatId);
+    }
+  }
+
+  @SubscribeMessage('create')
+  async create(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: CreateDto,
+  ) {
+    const chat = await this.chatService.create(
+      client.data.intra_id,
+      dto.name,
+      dto.visibility,
+      dto.password,
+    );
+
+    const sentChat = {
+      chat_id: chat.chat_id,
+      name: chat.name,
+      visibility: chat.visibility,
+    };
+
+    client.emit('addMyChat', sentChat);
+
+    if (chat.visibility !== Visibility.PRIVATE) {
+      for (const socket of this.connectedClients.values()) {
+        socket.emit('addChat', sentChat);
+      }
+    }
+
+    return {};
   }
 
   @SubscribeMessage('joinChat')
@@ -178,11 +229,7 @@ export class ChatGateway {
     const sockets = this.chatToSockets.get(dto.chatId);
 
     if (sockets) {
-      sockets.delete(client);
-
-      if (sockets.size <= 0) {
-        this.chatToSockets.delete(dto.chatId);
-      }
+      this.removeChatSocket(sockets, client, dto.chatId);
     }
 
     return {};

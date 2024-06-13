@@ -10,18 +10,6 @@ import {
 } from 'class-validator';
 import { Visibility } from 'src/chat/chat.entity';
 
-class CreateDto {
-  @IsNotEmpty()
-  name: string;
-
-  @IsEnum(Visibility)
-  visibility: Visibility;
-
-  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
-  @IsNotEmpty()
-  password: string;
-}
-
 class NameDto {
   @IsUUID()
   chat_id: string;
@@ -82,16 +70,6 @@ export class ChatController {
   @Get()
   public async getChats() {
     return await this.chatService.getPublicAndProtectedChats();
-  }
-
-  @Post('create')
-  public async create(@Request() req, @Body() dto: CreateDto) {
-    return await this.chatService.create(
-      req.user.intra_id,
-      dto.name,
-      dto.visibility,
-      dto.password,
-    );
   }
 
   @Post('addAdminToChat')
