@@ -252,10 +252,13 @@ export class ChatGateway {
       throw new WsException("You're not a user of this chat");
     }
 
+    const date = new Date();
+
     await this.chatService.handleMessage(
       client.data.intra_id,
       dto.chatId,
       dto.body,
+      date,
     );
 
     const sockets = this.chatToSockets.get(dto.chatId) ?? [];
@@ -267,6 +270,7 @@ export class ChatGateway {
         sender: client.data.intra_id,
         sender_name: senderName,
         body: dto.body,
+        date: date,
       });
     });
 

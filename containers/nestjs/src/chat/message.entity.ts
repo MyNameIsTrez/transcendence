@@ -15,6 +15,9 @@ export class Message {
   @Column()
   body: string;
 
+  @Column()
+  date: Date;
+
   @ManyToOne(() => Chat, (chat) => chat.history)
   chat: Chat;
 }

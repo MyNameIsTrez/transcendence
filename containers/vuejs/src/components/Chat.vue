@@ -131,7 +131,14 @@
       <div ref="chatRef" class="scrollable-container">
         <div v-for="(message, index) in chatHistory" :key="index" class="line">
           <router-link :to="`/user/${message.sender}`">
-            {{ message.sender_name + ': ' + message.body + '\n' }}
+            {{
+              message.sender_name +
+              ' at ' +
+              message.date.toLocaleTimeString() +
+              ': ' +
+              message.body +
+              '\n'
+            }}
           </router-link>
         </div>
       </div>
@@ -195,11 +202,13 @@ class Message {
   sender_name: string
   sender: number
   body: string
+  date: Date
 
-  constructor(sender_name: string, sender: number, body: string) {
+  constructor(sender_name: string, sender: number, body: string, date: Date) {
     this.sender_name = sender_name
     this.sender = sender
     this.body = body
+    this.date = date
   }
 }
 
@@ -459,7 +468,13 @@ async function getChat() {
     const blocked = new Set<number>(blockedUsers)
 
     chatHistory.value = await get('api/chats/history/' + currentChat.value.chat_id)
-      .then((messages) => messages.filter((message: Message) => !blocked.has(message.sender)))
+      .then((messages) =>
+        messages
+          .filter((message: Message) => !blocked.has(message.sender))
+          .map((message: Message) => {
+            return { ...message, date: new Date(message.date) } // Serialize date
+          })
+      )
       .catch((err) => {
         alertMessage.value = getErrorMessage(err.response.data.message)
         alertPopup.value.show()
@@ -492,6 +507,8 @@ async function getChats() {
 }
 
 chatSocket.on('newMessage', async (message: Message) => {
+  message.date = new Date(message.date)
+
   // TODO: Either the frontend or backend should filter for blocked messages
   chatHistory.value.push(message)
 
