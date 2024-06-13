@@ -27,7 +27,7 @@ export class AuthService {
     const formData = new FormData();
 
     formData.set('grant_type', 'authorization_code');
-    formData.set('client_id', this.configService.get('INTRA_CLIENT_ID'));
+    formData.set('client_id', this.configService.get('VITE_INTRA_CLIENT_ID'));
     formData.set(
       'client_secret',
       this.configService.get('INTRA_CLIENT_SECRET'),
@@ -50,7 +50,7 @@ export class AuthService {
         const access_token: string = j.access_token;
         if (access_token === undefined) {
           throw new UnauthorizedException(
-            'Could not retrieve your 42 access token',
+            'Could not retrieve your 42 access token; INTRA_CLIENT_SECRET in your .env has likely been outdated by intra!',
           );
         }
         return access_token;
