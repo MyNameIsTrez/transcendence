@@ -13,10 +13,14 @@ import {
 import { AuthService } from './auth.service';
 import { Public } from './auth.decorator';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Get('login')
@@ -49,6 +53,12 @@ export class AuthController {
   @Get('loginFoo')
   @Redirect()
   async loginFoo() {
+    if (!this.configService.get('VITE_ALLOW_DEBUG_USER')) {
+      throw new UnauthorizedException(
+        'Logging in as the debug user has been disabled',
+      );
+    }
+
     return {
       url:
         process.env.VITE_ADDRESS +

@@ -26,10 +26,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         INTRA_CLIENT_SECRET: Joi.string(),
 
         VITE_INTRA_CLIENT_ID: Joi.string(),
-
         VITE_ADDRESS: Joi.string().uri(),
         VITE_BACKEND_PORT: Joi.number().integer().positive(),
         VITE_HEARTBEAT_RATE_MS: Joi.number().integer().positive(),
+        VITE_ALLOW_DEBUG_USER: Joi.boolean(),
 
         JWT_SECRET: Joi.string(),
 
