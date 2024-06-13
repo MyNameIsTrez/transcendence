@@ -44,13 +44,6 @@
                 >
               </div>
             </div>
-
-            <AlertPopup
-              ref="alertPopup"
-              :alertType="AlertType.ALERT_WARNING"
-              :visible="alertVisible"
-              >{{ alertMessage }}</AlertPopup
-            >
           </span>
 
           <!-- Allows clicking outside of the modal to close it -->
@@ -116,9 +109,12 @@
 import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
-import { AlertType } from '../../types'
+
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
+
+const newUsername = ref('')
 
 let me = await get(`api/user/me`)
 
@@ -129,32 +125,24 @@ const intraId = me.intra_id
 const profilePicture = ref(await getImage(`api/user/profilePicture/${me.intra_id}`))
 const isTwoFactorAuthenticationEnabled = me.isTwoFactorAuthenticationEnabled
 
-const newUsername = ref('')
-
-const alertVisible = ref(false)
-
-const alertPopup = ref()
-const alertMessage = ref('Name change failed')
-
 const matchHistory = await get(`api/user/matchHistory/${me.intra_id}`)
 
-function uploadProfilePicture(event: any) {
+async function uploadProfilePicture(event: any) {
   let data = new FormData()
   data.append('name', 'profilePicture')
   data.append('file', event.target.files[0])
-  post('api/user/profilePicture', data)
+  await post('api/user/profilePicture', data)
     .then(async () => {
       profilePicture.value = await getImage(`api/user/profilePicture/${me.intra_id}`)
     })
     .catch((err) => {
       console.error('profilePicture error', err)
-      alertMessage.value = err.response.data.message
-      alertPopup.value.show()
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
 
-function changeUsername() {
-  post('api/user/setUsername', { username: newUsername.value })
+async function changeUsername() {
+  await post('api/user/setUsername', { username: newUsername.value })
     .then(async () => {
       me = await get(`api/user/me`)
       username.value = me.username
@@ -162,8 +150,7 @@ function changeUsername() {
     })
     .catch((err) => {
       console.error('setUsername error', err)
-      alertMessage.value = err.response.data.message[0]
-      alertPopup.value.show()
+      alertPopup.value.showWarning(err.response.data.message[0])
     })
 }
 

@@ -33,13 +33,13 @@ const emit = defineEmits(['update'])
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function acceptFriendRequest() {
-  post('api/user/acceptFriendRequest', { sender_id: props.intraId }).then(() => {
+  await post('api/user/acceptFriendRequest', { sender_id: props.intraId }).then(() => {
     emit('update')
   })
 }
 
 async function declineFriendRequest() {
-  post('api/user/declineFriendRequest', { sender_id: props.intraId }).then(() => {
+  await post('api/user/declineFriendRequest', { sender_id: props.intraId }).then(() => {
     emit('update')
   })
 }
