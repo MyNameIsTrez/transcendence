@@ -45,31 +45,31 @@
 
     <div ref="chatRef" class="scrollable-container flex flex-col gap-y-2">
       <div v-for="(message, index) in chatHistory" :key="index">
-        <router-link :to="`/user/${message.sender}`">
-          <div class="flex flex-row gap-x-2">
-            <div>
-              <div :class="`w-16 h-16 avatar mask mask-squircle`">
+        <div class="flex flex-row gap-x-2">
+          <div>
+            <div :class="`w-16 h-16 avatar mask mask-squircle`">
+              <router-link :to="`/user/${message.sender}`">
                 <img
                   class="rounded"
                   :src="`${profilePictures.get(message.sender)}`"
                   alt="Profile picture"
                 />
-              </div>
-            </div>
-
-            <div class="flex flex-row items-baseline gap-x-2">
-              <div class="flex flex-col">
-                <div class="font-bold">{{ message.sender_name }}</div>
-
-                <div class="text-gray-200 text-sm">{{ message.body }}</div>
-              </div>
-
-              <div class="text-xs text-gray-300">
-                {{ message.date.toLocaleTimeString([], { timeStyle: 'short' }) }}
-              </div>
+              </router-link>
             </div>
           </div>
-        </router-link>
+
+          <div class="flex flex-row items-baseline gap-x-2">
+            <div class="flex flex-col">
+              <div class="font-bold">{{ message.sender_name }}</div>
+
+              <div class="text-gray-200 text-sm">{{ message.body }}</div>
+            </div>
+
+            <div class="text-xs text-gray-300">
+              {{ message.date.toLocaleTimeString([], { timeStyle: 'short' }) }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
