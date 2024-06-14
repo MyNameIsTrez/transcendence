@@ -1,6 +1,6 @@
 <template>
   <div class="scrollable-container-half">
-    <div v-for="(chat, index) in chatsFn()" :key="index" class="line" @click="onClickFn(chat)">
+    <div v-for="chat in chatsFn()" :key="chat.chat_id" class="line" @click="onClickFn(chat)">
       {{ chat.name }}
     </div>
   </div>

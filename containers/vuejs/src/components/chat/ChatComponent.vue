@@ -1,64 +1,86 @@
 <template>
-  <button @click="emit('onCloseChat')">← Back</button>
+  <div class="flex flex-col gap-y-2 mt-2">
+    <button @click="emit('onCloseChat')" class="flex gap-x-4">
+      <span class="material-symbols-outlined"> arrow_back </span>
+      {{ currentChat?.name }}
+    </button>
 
-  <!-- <div v-if="iAmUser">
+    <!-- <div v-if="iAmUser">
       <button class="btn btn-secondary" @click="leave">Leave chat</button>
     </div> -->
 
-  <!-- <div v-if="iAmOwner">
+    <!-- <div v-if="iAmOwner">
       <div v-if="isProtected"> -->
-  <!-- <input
+    <!-- <input
             v-model="password"
             type="password"
             placeholder="New password..."
             @keyup.enter="changePassword"
           /> -->
-  <!-- <button @click="changePassword">Change password</button>
+    <!-- <button @click="changePassword">Change password</button>
       </div>
       <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
         {{ visibility }}
       </button> -->
-  <!-- <button @click="changeVisibility">Change visibility</button> -->
-  <!-- </div> -->
+    <!-- <button @click="changeVisibility">Change visibility</button> -->
+    <!-- </div> -->
 
-  <!-- <div v-if="iAmAdmin">
+    <!-- <div v-if="iAmAdmin">
       <button @click="() => (showOptions = !showOptions)">
         {{ showOptions ? '~ open options ~' : '~ close options ~' }}
       </button>
       <div v-if="showOptions"> -->
-  <!-- <input v-model="otherUser" placeholder="42 student..." />
+    <!-- <input v-model="otherUser" placeholder="42 student..." />
           <button @click="addUser">Add</button>
           <button @click="muteUser">Mute</button>
           <button @click="kickUser">Kick</button>
           <button @click="banUser">Ban</button>
           <button @click="addAdmin">Make admin</button> -->
-  <!-- TODO: Use number input here -->
-  <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
-  <!-- </div>
+    <!-- TODO: Use number input here -->
+    <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
+    <!-- </div>
     </div> -->
 
-  In chat '{{ currentChat?.name }}'
-  <!-- <div v-if="isDirect">(DM)</div> -->
+    <!-- <div v-if="isDirect">(DM)</div> -->
 
-  <div ref="chatRef" class="scrollable-container">
-    <div v-for="(message, index) in chatHistory" :key="index" class="line">
-      <router-link :to="`/user/${message.sender}`">
-        {{
-          message.sender_name +
-          ' at ' +
-          message.date.toLocaleTimeString([], { timeStyle: 'short' }) +
-          ': ' +
-          message.body +
-          '\n'
-        }}
-      </router-link>
+    <div ref="chatRef" class="scrollable-container flex flex-col gap-y-2">
+      <div v-for="(message, index) in chatHistory" :key="index">
+        <div class="flex flex-row gap-x-2">
+          <div>
+            <div :class="`w-16 h-16 avatar mask mask-squircle`">
+              <router-link :to="`/user/${message.sender}`">
+                <img
+                  class="rounded"
+                  :src="`${profilePictures.get(message.sender)}`"
+                  alt="Profile picture"
+                />
+              </router-link>
+            </div>
+          </div>
+
+          <div class="flex flex-row items-baseline gap-x-2">
+            <div class="flex flex-col">
+              <div class="font-bold">{{ message.sender_name }}</div>
+
+              <div class="text-gray-200 text-sm">{{ message.body }}</div>
+            </div>
+
+            <div class="text-xs text-gray-300">
+              {{ message.date.toLocaleTimeString([], { timeStyle: 'short' }) }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div v-if="!muted">
-    <input v-model="sentMessageRef" placeholder="Type message..." @keyup.enter="sendMessage" />
-
-    <button @click="sendMessage">Send</button>
+    <div v-if="!muted">
+      <input
+        v-model="sentMessageRef"
+        placeholder="Message..."
+        @keyup.enter="sendMessage"
+        class="w-full rounded-lg p-2 text-gray-800 bg-gray-200"
+      />
+    </div>
   </div>
 </template>
 
@@ -67,7 +89,7 @@ import { inject, nextTick, ref, type PropType, type Ref } from 'vue'
 import Chat from './ChatClass'
 import type { Socket } from 'socket.io-client'
 import type Message from './MessageClass'
-import { get } from '../../httpRequests'
+import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
@@ -81,6 +103,7 @@ const muted = ref(false)
 const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
 const chatRef = ref()
+const profilePictures = ref(new Map<Message['sender'], string>())
 
 const emit = defineEmits(['onCloseChat'])
 
@@ -91,14 +114,16 @@ function sendMessage() {
       body: sentMessageRef.value
     }
 
-    sentMessageRef.value = ''
-
-    chatSocket.emit('sendMessage', message)
+    chatSocket.emit('sendMessage', message, () => {
+      sentMessageRef.value = ''
+    })
   }
 }
 
 chatSocket.on('newMessage', async (message: Message) => {
   message.date = new Date(message.date)
+
+  await retrieveProfilePicture(message.sender)
 
   // TODO: Either the frontend or backend should filter for blocked messages
   chatHistory.value.push(message)
@@ -117,6 +142,16 @@ chatSocket.on('newMessage', async (message: Message) => {
     }
   }
 })
+
+async function retrieveProfilePicture(sender: Message['sender']) {
+  if (!profilePictures.value.has(sender)) {
+    await getImage('api/user/profilePicture/' + sender)
+      .then((pfp) => profilePictures.value.set(sender, pfp))
+      .catch((err) => {
+        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+      })
+  }
+}
 
 async function scrollToBottom() {
   // This forces the chat DOM object to have its scrollHeight updated right now
@@ -147,6 +182,8 @@ async function getChat() {
       .catch((err) => {
         alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
       })
+
+    await chatHistory.value.forEach(async (message) => await retrieveProfilePicture(message.sender))
 
     await scrollToBottom()
   }
