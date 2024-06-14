@@ -1,19 +1,44 @@
 <template>
   <div>
     <div v-if="!currentChat">
-      My chats
-      <span class="material-symbols-outlined align-bottom">person</span>
-      <ChatList :chatsFn="() => myChats" :onClickFn="openChat" />
+      <button class="btn w-[26%] text-xs" @click="viewedBrowserRef = ViewedBrowser.MY_CHATS">
+        My chats
+        <span class="material-symbols-outlined align-bottom">person</span>
+      </button>
+      <button class="btn w-[34%] text-xs" @click="viewedBrowserRef = ViewedBrowser.PUBLIC_CHATS">
+        Public chats
+        <span class="material-symbols-outlined align-bottom">public</span>
+      </button>
+      <button class="btn w-[40%] text-xs" @click="viewedBrowserRef = ViewedBrowser.PROTECTED_CHATS">
+        Protected chats
+        <span class="material-symbols-outlined align-bottom">lock</span>
+      </button>
 
-      Public chats
-      <span class="material-symbols-outlined align-bottom">public</span>
-      <ChatList :chatsFn="getPublicChats" :onClickFn="clickedPublicChat" />
+      <ChatList
+        v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
+        :chatsFn="() => myChats"
+        :onClickFn="openChat"
+      />
 
-      Protected chats
-      <span class="material-symbols-outlined align-bottom">lock</span>
-      <ChatList :chatsFn="getProtectedChats" :onClickFn="clickedProtectedChat" />
+      <ChatList
+        v-if="viewedBrowserRef === ViewedBrowser.PUBLIC_CHATS"
+        :chatsFn="getPublicChats"
+        :onClickFn="clickedPublicChat"
+      />
 
-      <button :class="'btn btn-info'" @click="chatCreationModal.show()">Create chat</button>
+      <ChatList
+        v-if="viewedBrowserRef === ViewedBrowser.PROTECTED_CHATS"
+        :chatsFn="getProtectedChats"
+        :onClickFn="clickedProtectedChat"
+      />
+
+      <button
+        v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
+        :class="'btn btn-info'"
+        @click="chatCreationModal.show()"
+      >
+        Create chat
+      </button>
       <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
     </div>
 
@@ -35,9 +60,16 @@ import AlertPopup from './AlertPopup.vue'
 import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
 
+enum ViewedBrowser {
+  MY_CHATS,
+  PUBLIC_CHATS,
+  PROTECTED_CHATS
+}
+
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
 
+const viewedBrowserRef = ref(ViewedBrowser.MY_CHATS)
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
