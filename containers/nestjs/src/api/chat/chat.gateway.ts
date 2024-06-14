@@ -19,6 +19,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsUUID,
+  MaxLength,
   Validate,
   ValidateIf,
   ValidationArguments,
@@ -30,6 +31,7 @@ import TransJwtService from '../../auth/trans-jwt-service';
 import { UserService } from '../../user/user.service';
 import { Visibility } from '../../chat/chat.entity';
 import { BaseEntity } from 'typeorm';
+import { Transform, TransformFnParams } from 'class-transformer';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -89,6 +91,10 @@ class HandleMessageDto {
   @IsUUID()
   chatId: string;
 
+  @MaxLength(2000, {
+    message: 'Message is too long',
+  })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   @IsNotEmpty()
   body: string;
 }
