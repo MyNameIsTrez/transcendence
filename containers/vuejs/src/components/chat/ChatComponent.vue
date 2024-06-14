@@ -114,9 +114,9 @@ function sendMessage() {
       body: sentMessageRef.value
     }
 
-    sentMessageRef.value = ''
-
-    chatSocket.emit('sendMessage', message)
+    chatSocket.emit('sendMessage', message, () => {
+      sentMessageRef.value = ''
+    })
   }
 }
 
