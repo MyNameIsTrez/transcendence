@@ -1,44 +1,52 @@
 <template>
   <div>
-    <div v-if="!currentChat">
-      <button class="btn w-[26%] text-xs" @click="viewedBrowserRef = ViewedBrowser.MY_CHATS">
-        My chats
-        <span class="material-symbols-outlined align-bottom">person</span>
-      </button>
-      <button class="btn w-[34%] text-xs" @click="viewedBrowserRef = ViewedBrowser.PUBLIC_CHATS">
-        Public chats
-        <span class="material-symbols-outlined align-bottom">public</span>
-      </button>
-      <button class="btn w-[40%] text-xs" @click="viewedBrowserRef = ViewedBrowser.PROTECTED_CHATS">
-        Protected chats
-        <span class="material-symbols-outlined align-bottom">lock</span>
-      </button>
+    <div v-if="!currentChat" class="flex flex-col">
+      <div>
+        <button class="btn w-[26%] text-xs" @click="viewedBrowserRef = ViewedBrowser.MY_CHATS">
+          My chats
+          <span class="material-symbols-outlined align-bottom">person</span>
+        </button>
+        <button class="btn w-[34%] text-xs" @click="viewedBrowserRef = ViewedBrowser.PUBLIC_CHATS">
+          Public chats
+          <span class="material-symbols-outlined align-bottom">public</span>
+        </button>
+        <button
+          class="btn w-[40%] text-xs"
+          @click="viewedBrowserRef = ViewedBrowser.PROTECTED_CHATS"
+        >
+          Protected chats
+          <span class="material-symbols-outlined align-bottom">lock</span>
+        </button>
+      </div>
 
-      <ChatList
-        v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
-        :chatsFn="() => myChats"
-        :onClickFn="openChat"
-      />
+      <div class="flex flex-col gap-y-2">
+        <ChatList
+          v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
+          :chatsFn="() => myChats"
+          :onClickFn="openChat"
+        />
 
-      <ChatList
-        v-if="viewedBrowserRef === ViewedBrowser.PUBLIC_CHATS"
-        :chatsFn="getPublicChats"
-        :onClickFn="clickedPublicChat"
-      />
+        <ChatList
+          v-if="viewedBrowserRef === ViewedBrowser.PUBLIC_CHATS"
+          :chatsFn="getPublicChats"
+          :onClickFn="clickedPublicChat"
+        />
 
-      <ChatList
-        v-if="viewedBrowserRef === ViewedBrowser.PROTECTED_CHATS"
-        :chatsFn="getProtectedChats"
-        :onClickFn="clickedProtectedChat"
-      />
+        <ChatList
+          v-if="viewedBrowserRef === ViewedBrowser.PROTECTED_CHATS"
+          :chatsFn="getProtectedChats"
+          :onClickFn="clickedProtectedChat"
+        />
 
-      <button
-        v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
-        :class="'btn btn-info'"
-        @click="chatCreationModal.show()"
-      >
-        Create chat
-      </button>
+        <button
+          v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
+          :class="'btn btn-info'"
+          @click="chatCreationModal.show()"
+        >
+          Create chat
+        </button>
+      </div>
+
       <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
     </div>
 
