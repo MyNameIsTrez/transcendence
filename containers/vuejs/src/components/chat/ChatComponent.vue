@@ -115,6 +115,10 @@ function sendMessage() {
       body: sentMessageRef.value
     }
 
+    if (message.body.trim().length === 0) {
+      return
+    }
+
     chatSocket.emit('sendMessage', message, () => {
       sentMessageRef.value = ''
     })
