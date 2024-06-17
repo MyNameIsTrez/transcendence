@@ -133,6 +133,7 @@ export class UserController {
 
   @Post('sendFriendRequest')
   async sendFriendRequest(@Request() req, @Body() body) {
+    console.log('in sendFriendRequest');
     await this.userService.sendFriendRequest(
       req.user.intra_id,
       body.intra_name,
