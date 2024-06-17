@@ -8,7 +8,7 @@ import { Gamemode } from '../user/match.entity';
 
 @Injectable()
 export class GameService {
-  lobbyManager: LobbyManager;
+  private lobbyManager: LobbyManager;
 
   constructor(
     private readonly userService: UserService,
@@ -136,5 +136,9 @@ export class GameService {
 
     const mySockets = clients.get(client.data.intra_id);
     await this.lobbyManager.updateInvitations(mySockets, client.data.intra_id);
+  }
+
+  public async getInvitations(intra_id: number) {
+    return await this.lobbyManager.getInvitations(intra_id);
   }
 }

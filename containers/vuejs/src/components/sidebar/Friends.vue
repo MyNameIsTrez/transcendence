@@ -113,7 +113,7 @@ class Invitation {
     this.gamemode = gamemode
   }
 }
-const invitations = ref<Invitation[]>([])
+const invitations = ref<Invitation[]>(await get('api/game/invitations'))
 gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
