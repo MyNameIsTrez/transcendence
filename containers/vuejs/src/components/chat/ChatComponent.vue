@@ -1,9 +1,17 @@
 <template>
-  <div class="flex flex-col gap-y-2 mt-2">
-    <button @click="emit('onCloseChat')" class="flex gap-x-4">
-      <span class="material-symbols-outlined"> arrow_back </span>
-      {{ currentChat?.name }}
-    </button>
+  <div class="flex flex-col gap-y-2">
+    <div class="flex">
+      <button :class="'btn btn-accent'" @click="emit('onCloseChat')">
+        <span class="material-symbols-outlined"> arrow_back </span>
+      </button>
+      <button :class="'btn btn-primary ml-auto'" @click="emit('onCloseChat')">
+        <span class="material-symbols-outlined"> group </span>
+      </button>
+      <button :class="'btn btn-warning'" @click="chatSettingsModal.show()">
+        <span class="material-symbols-outlined"> settings </span>
+      </button>
+    </div>
+    {{ currentChat?.name }}
 
     <!-- <div v-if="iAmUser">
       <button class="btn btn-secondary" @click="leave">Leave chat</button>
@@ -82,6 +90,11 @@
         class="w-full rounded-lg p-2 text-gray-800 bg-gray-200"
       />
     </div>
+    <ChatSettingsModal
+      ref="chatSettingsModal"
+      @onCloseSettingsModal="chatSettingsModal.hide()"
+      :currentChat="currentChat"
+    />
   </div>
 </template>
 
@@ -92,6 +105,7 @@ import type { Socket } from 'socket.io-client'
 import type Message from './MessageClass'
 import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
+import ChatSettingsModal from './ChatSettingsModal.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
@@ -105,6 +119,7 @@ const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
 const chatRef = ref()
 const profilePictures = ref(new Map<Message['sender'], string>())
+const chatSettingsModal = ref()
 
 const emit = defineEmits(['onCloseChat'])
 
