@@ -60,13 +60,14 @@
 
           <div class="flex flex-row items-baseline gap-x-2">
             <div class="flex flex-col">
-              <div class="font-bold">{{ message.sender_name }}</div>
+              <div class="flex flex-row items-baseline gap-x-2">
+                <div class="font-bold">{{ message.sender_name }}</div>
+                <div class="text-xs text-gray-300">
+                  {{ message.date.toLocaleTimeString([], { timeStyle: 'short' }) }}
+                </div>
+              </div>
 
               <div class="text-gray-200 text-sm">{{ message.body }}</div>
-            </div>
-
-            <div class="text-xs text-gray-300">
-              {{ message.date.toLocaleTimeString([], { timeStyle: 'short' }) }}
             </div>
           </div>
         </div>
