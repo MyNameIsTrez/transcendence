@@ -30,13 +30,16 @@ export default class LobbyManager {
     this.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
+  public isInQueue(intra_id: number) {
+    return this.intraIdToLobby.has(intra_id);
+  }
+
   public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
     if (!lobby) {
       throw new WsException("Can't leave queue when not in a lobby");
     }
 
-    this.removeClient(client);
     client.emit('inQueue', { inQueue: false });
 
     if (lobby.isPrivate) {
@@ -168,6 +171,8 @@ export default class LobbyManager {
 
   public async getInvitations(intra_id: number) {
     const lobbies = await Array.from(this.lobbies.values());
+
+    // The .filter() and .map() here could be replaced with a .reduce()
 
     const filteredLobbies = lobbies.filter(
       (lobby) =>

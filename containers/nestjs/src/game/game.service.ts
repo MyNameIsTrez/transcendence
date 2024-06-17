@@ -33,6 +33,10 @@ export class GameService {
     await this.lobbyManager.leaveQueue(client, clients);
   }
 
+  public isInQueue(intra_id: number) {
+    return this.lobbyManager.isInQueue(intra_id);
+  }
+
   public async createPrivateLobby(
     inviter: Socket,
     invitedIntraId: number,

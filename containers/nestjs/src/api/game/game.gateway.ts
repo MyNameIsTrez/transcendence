@@ -69,7 +69,13 @@ export class GameGateway {
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
     await this.gameService.removeClient(client);
-    this.disconnectSocket(client, client.data.intra_id);
+
+    const intra_id = client.data.intra_id;
+    if (this.gameService.isInQueue(intra_id)) {
+      await this.gameService.leaveQueue(client, this.clients);
+    }
+
+    this.disconnectSocket(client, intra_id);
   }
 
   private disconnectSocket(client: Socket, intra_id: number) {
@@ -94,6 +100,7 @@ export class GameGateway {
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
     await this.gameService.leaveQueue(client, this.clients);
+    await this.gameService.removeClient(client);
   }
 
   @SubscribeMessage('createPrivateLobby')
