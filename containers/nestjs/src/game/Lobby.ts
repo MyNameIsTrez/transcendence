@@ -14,7 +14,7 @@ export default class Lobby {
 
   private readonly maxClients = 2;
 
-  public readonly clients = new Map<string, Socket>();
+  public readonly clients = new Map<number, Socket>();
 
   public inviterIntraId: number | null = null;
   public invitedIntraId: number | null = null;
@@ -70,8 +70,8 @@ export default class Lobby {
     client.leave(this.id);
   }
 
-  public hasUser(user: any) {
-    return this.clients.has(user.intra_id);
+  public hasUser(intra_id: number) {
+    return this.clients.has(intra_id);
   }
 
   public isFull() {

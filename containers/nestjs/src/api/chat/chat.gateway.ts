@@ -260,10 +260,12 @@ export class ChatGateway {
 
     const date = new Date();
 
+    const body = dto.body.trim();
+
     await this.chatService.handleMessage(
       client.data.intra_id,
       dto.chatId,
-      dto.body,
+      body,
       date,
     );
 
@@ -275,7 +277,7 @@ export class ChatGateway {
       otherClient.emit('newMessage', {
         sender: client.data.intra_id,
         sender_name: senderName,
-        body: dto.body,
+        body,
         date: date,
       });
     });
