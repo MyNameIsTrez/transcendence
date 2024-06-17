@@ -68,7 +68,7 @@ export class GameService {
 
     client.emit('inQueue', { inQueue: true });
 
-    await this.lobbyManager.removeInvite(invitedSockets, invitedIntraId);
+    await this.lobbyManager.updateInvitations(invitedSockets, invitedIntraId);
   }
 
   public movePaddle(
@@ -108,7 +108,7 @@ export class GameService {
     this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
 
     const mySockets = clients.get(client.data.intra_id);
-    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
+    await this.lobbyManager.updateInvitations(mySockets, client.data.intra_id);
   }
 
   public async declineInvitation(
@@ -134,6 +134,6 @@ export class GameService {
     });
 
     const mySockets = clients.get(client.data.intra_id);
-    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
+    await this.lobbyManager.updateInvitations(mySockets, client.data.intra_id);
   }
 }

@@ -46,11 +46,14 @@ export default class LobbyManager {
         throw new WsException('Invited user is not online');
       }
 
-      await this.removeInvite(invitedSockets, lobby.invitedIntraId);
+      await this.updateInvitations(invitedSockets, lobby.invitedIntraId);
     }
   }
 
-  public async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+  public async updateInvitations(
+    invitedSockets: Socket[],
+    invitedIntraId: number,
+  ) {
     const invitations = await this.getInvitations(invitedIntraId);
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
