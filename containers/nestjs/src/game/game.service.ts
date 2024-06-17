@@ -34,17 +34,19 @@ export class GameService {
   }
 
   public async createPrivateLobby(
-    client: Socket,
+    inviter: Socket,
     invitedIntraId: number,
     gamemode: Gamemode,
     clients: Map<number, Socket[]>,
   ) {
-    if (client.data.intra_id === invitedIntraId) {
+    const inviterIntraId = inviter.data.intra_id;
+
+    if (inviterIntraId === invitedIntraId) {
       throw new WsException("You can't invite yourself to a game");
     }
 
     if (!(await this.userService.hasUser(invitedIntraId))) {
-      throw new WsException('Could not find user');
+      throw new WsException('Could not find invited user');
     }
 
     const invitedSockets = clients.get(invitedIntraId);
@@ -52,7 +54,6 @@ export class GameService {
       throw new WsException('Invited user is not online');
     }
 
-    const inviterIntraId = client.data.intra_id;
     if (this.lobbyManager.isUserAlreadyInLobby(inviterIntraId)) {
       throw new WsException('You are already in a lobby');
     }
@@ -60,13 +61,13 @@ export class GameService {
     // TODO: User can't invite person if person isn't online
     // TODO: Don't allow user to invite people while user is in queue
     await this.lobbyManager.createPrivateLobby(
-      client,
+      inviter,
       inviterIntraId,
       invitedIntraId,
       gamemode,
     );
 
-    client.emit('inQueue', { inQueue: true });
+    inviter.emit('inQueue', { inQueue: true });
 
     await this.lobbyManager.updateInvitations(invitedSockets, invitedIntraId);
   }
@@ -127,7 +128,7 @@ export class GameService {
       throw new WsException('Declined user is not online');
     }
 
-    this.lobbyManager.removeClient(declinedSockets[0]);
+    this.removeClient(declinedSockets[0]);
 
     clients.get(declinedIntraId).forEach((socket) => {
       socket.emit('inQueue', { inQueue: false });

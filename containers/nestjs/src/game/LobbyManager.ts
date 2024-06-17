@@ -32,7 +32,6 @@ export default class LobbyManager {
 
   public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
-
     if (!lobby) {
       throw new WsException("Can't leave queue when not in a lobby");
     }
