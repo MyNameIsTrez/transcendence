@@ -40,7 +40,7 @@ const emit = defineEmits(['update'])
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function removeFriend() {
-  post('api/user/removeFriend', { friend_id: props.intraId }).then(() => {
+  await post('api/user/removeFriend', { friend_id: props.intraId }).then(() => {
     emit('update')
   })
 }

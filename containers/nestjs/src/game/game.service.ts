@@ -52,14 +52,23 @@ export class GameService {
       throw new WsException('Invited user is not online');
     }
 
+    const inviterIntraId = client.data.intra_id;
+    if (this.lobbyManager.isUserAlreadyInLobby(inviterIntraId)) {
+      throw new WsException('You are already in a lobby');
+    }
+
     // TODO: User can't invite person if person isn't online
     // TODO: Don't allow user to invite people while user is in queue
     await this.lobbyManager.createPrivateLobby(
       client,
+      inviterIntraId,
       invitedIntraId,
       gamemode,
-      invitedSockets,
     );
+
+    client.emit('inQueue', { inQueue: true });
+
+    await this.lobbyManager.removeInvite(invitedSockets, invitedIntraId);
   }
 
   public movePaddle(

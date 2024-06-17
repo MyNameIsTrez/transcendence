@@ -1,4 +1,6 @@
 <template>
+  <AlertPopup ref="alertPopup" />
+
   <div class="flex flex-col overflow-hidden w-full lg:flex-row">
     <div class="flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box">
       <Sidebar />
@@ -18,12 +20,15 @@ import Chat from './Chat.vue'
 import GameHeader from './GameHeader.vue'
 import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
-
 import { useRouter } from 'vue-router'
-import { onUnmounted, provide } from 'vue'
+import { onUnmounted, provide, ref } from 'vue'
 import { io } from 'socket.io-client'
+import AlertPopup from './AlertPopup.vue'
 
 const router = useRouter()
+
+const alertPopup = ref()
+provide('alertPopup', alertPopup)
 
 const retrieveJwt = () => {
   const jwt = localStorage.getItem('jwt')

@@ -18,7 +18,7 @@ export default class LobbyManager {
   ) {}
 
   public async queue(client: Socket, gamemode: Gamemode) {
-    if (this.isUserAlreadyInLobby(client.data)) {
+    if (this.isUserAlreadyInLobby(client.data.intra_id)) {
       console.error(`User ${client.data.intra_id} is already in a lobby`);
       throw new WsException('Already in a lobby');
     }
@@ -58,16 +58,11 @@ export default class LobbyManager {
   }
 
   public async createPrivateLobby(
-    client: Socket,
+    inviter: Socket,
+    inviterIntraId: number,
     invitedIntraId: number,
     gamemode: Gamemode,
-    invitedSockets: Socket[],
   ) {
-    if (this.isUserAlreadyInLobby(client.data)) {
-      console.error(`User ${client.data.intra_id} is already in a lobby`);
-      throw new WsException('Already in a lobby');
-    }
-
     const lobby = new Lobby(
       gamemode,
       true,
@@ -76,21 +71,17 @@ export default class LobbyManager {
       this.matchService,
     );
 
-    lobby.inviterIntraId = client.data.intra_id;
+    lobby.inviterIntraId = inviterIntraId;
     lobby.invitedIntraId = invitedIntraId;
 
-    client.emit('inQueue', { inQueue: true });
-
     this.lobbies.set(lobby.id, lobby);
-    await lobby.addClient(client);
-    this.intraIdToLobby.set(client.data.intra_id, lobby);
-
-    await this.removeInvite(invitedSockets, invitedIntraId);
+    await lobby.addClient(inviter);
+    this.intraIdToLobby.set(inviterIntraId, lobby);
   }
 
-  private isUserAlreadyInLobby(user: any): boolean {
+  public isUserAlreadyInLobby(intra_id: number): boolean {
     return Array.from(this.lobbies.values()).some((lobby) =>
-      lobby.hasUser(user),
+      lobby.hasUser(intra_id),
     );
   }
 
@@ -100,7 +91,7 @@ export default class LobbyManager {
         lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
     );
     if (notFullLobby) {
-      console.log("Found a lobby that wasn't full");
+      // console.log("Found a lobby that wasn't full");
       return notFullLobby;
     }
 
@@ -112,7 +103,7 @@ export default class LobbyManager {
       this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
-    console.log('Created a new lobby');
+    // console.log('Created a new lobby');
     return newLobby;
   }
 

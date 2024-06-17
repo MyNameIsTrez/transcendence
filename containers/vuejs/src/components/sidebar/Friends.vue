@@ -33,9 +33,6 @@
                   <button class="btn" @click="sendFriendRequest">Add</button>
                 </span>
               </div>
-              <AlertPopup ref="alertPopup" :alertType="alertType" :visible="alertVisible">{{
-                alertMessage
-              }}</AlertPopup>
             </span>
             <form method="dialog" class="modal-backdrop">
               <button>close</button>
@@ -91,11 +88,11 @@ import Friend from './friends/Friend.vue'
 import Incoming from './friends/Incoming.vue'
 import GameInvite from './friends/GameInvite.vue'
 import { get, post } from '../../httpRequests'
-import { inject, ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import { Socket } from 'socket.io-client'
 import AlertPopup from '../AlertPopup.vue'
-import { AlertType } from '../../types'
 
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
 
 const friends = ref(await get('api/user/friends'))
@@ -103,11 +100,6 @@ const incomingFriendRequests = ref(await get('api/user/incomingFriendRequests'))
 
 const friendSearch = ref('')
 
-const alertVisible = ref(false)
-
-const alertType = ref(AlertType.ALERT_SUCCESS)
-
-const alertPopup = ref()
 const alertMessage = ref('Friend request sent')
 
 class Invitation {
@@ -134,15 +126,11 @@ async function reloadFriends() {
 async function sendFriendRequest() {
   await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
     .then(() => {
-      alertType.value = AlertType.ALERT_SUCCESS
-      alertMessage.value = 'Friend request sent'
-      alertPopup.value.show()
+      alertMessage.value = alertPopup.value.showSuccess('Friend request sent')
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
-      alertType.value = AlertType.ALERT_WARNING
-      alertMessage.value = err.response.data.message
-      alertPopup.value.show()
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
 </script>

@@ -16,9 +16,12 @@ import { Socket } from 'socket.io';
 import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
 import {
+  IsEnum,
   IsNotEmpty,
   IsUUID,
+  MaxLength,
   Validate,
+  ValidateIf,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -28,6 +31,7 @@ import TransJwtService from '../../auth/trans-jwt-service';
 import { UserService } from '../../user/user.service';
 import { Visibility } from '../../chat/chat.entity';
 import { BaseEntity } from 'typeorm';
+import { Transform, TransformFnParams } from 'class-transformer';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -57,6 +61,18 @@ export class PasswordConstraint implements ValidatorConstraintInterface {
   }
 }
 
+class CreateDto {
+  @IsNotEmpty()
+  name: string;
+
+  @IsEnum(Visibility)
+  visibility: Visibility;
+
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @IsNotEmpty()
+  password: string;
+}
+
 // TODO: Try to get rid of "extends BaseEntity"
 class JoinChatDto extends BaseEntity {
   @IsUUID()
@@ -75,6 +91,10 @@ class HandleMessageDto {
   @IsUUID()
   chatId: string;
 
+  @MaxLength(2000, {
+    message: 'Message is too long',
+  })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   @IsNotEmpty()
   body: string;
 }
@@ -89,6 +109,7 @@ export class ChatGateway {
   @WebSocketServer()
   server!: Server;
 
+  private connectedClients = new Set<Socket>();
   private chatToSockets = new Map<string, Set<Socket>>();
 
   constructor(
@@ -122,23 +143,59 @@ export class ChatGateway {
         redirectToLoginPage: true,
       });
     }
+
+    this.connectedClients.add(client);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     this.chatToSockets.forEach((sockets, chatId) => {
-      if (sockets.has(client)) {
-        sockets.delete(client);
-      }
-
-      if (sockets.size <= 0) {
-        this.chatToSockets.delete(chatId);
-      }
+      this.removeChatSocket(sockets, client, chatId);
     });
 
-    // console.log(
-    //   'In handleDisconnect(), this.chatToSockets is',
-    //   this.chatToSockets,
-    // );
+    this.connectedClients.delete(client);
+  }
+
+  private async removeChatSocket(
+    sockets: Set<Socket>,
+    socket: Socket,
+    chatId: string,
+  ) {
+    if (sockets.has(socket)) {
+      sockets.delete(socket);
+    }
+
+    if (sockets.size <= 0) {
+      this.chatToSockets.delete(chatId);
+    }
+  }
+
+  @SubscribeMessage('create')
+  async create(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: CreateDto,
+  ) {
+    const chat = await this.chatService.create(
+      client.data.intra_id,
+      dto.name,
+      dto.visibility,
+      dto.password,
+    );
+
+    const sentChat = {
+      chat_id: chat.chat_id,
+      name: chat.name,
+      visibility: chat.visibility,
+    };
+
+    client.emit('addMyChat', sentChat);
+
+    if (chat.visibility !== Visibility.PRIVATE) {
+      for (const socket of this.connectedClients.values()) {
+        socket.emit('addChat', sentChat);
+      }
+    }
+
+    return {};
   }
 
   @SubscribeMessage('joinChat')
@@ -170,19 +227,15 @@ export class ChatGateway {
     return {};
   }
 
-  @SubscribeMessage('leaveChat')
-  async leaveChat(
+  @SubscribeMessage('closeChat')
+  async closeChat(
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
     const sockets = this.chatToSockets.get(dto.chatId);
 
     if (sockets) {
-      sockets.delete(client);
-
-      if (sockets.size <= 0) {
-        this.chatToSockets.delete(dto.chatId);
-      }
+      this.removeChatSocket(sockets, client, dto.chatId);
     }
 
     return {};
@@ -205,10 +258,15 @@ export class ChatGateway {
       throw new WsException("You're not a user of this chat");
     }
 
+    const date = new Date();
+
+    const body = dto.body.trim();
+
     await this.chatService.handleMessage(
       client.data.intra_id,
       dto.chatId,
-      dto.body,
+      body,
+      date,
     );
 
     const sockets = this.chatToSockets.get(dto.chatId) ?? [];
@@ -219,7 +277,8 @@ export class ChatGateway {
       otherClient.emit('newMessage', {
         sender: client.data.intra_id,
         sender_name: senderName,
-        body: dto.body,
+        body,
+        date: date,
       });
     });
 

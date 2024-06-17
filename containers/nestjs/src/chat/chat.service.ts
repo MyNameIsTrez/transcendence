@@ -246,13 +246,19 @@ export class ChatService {
     });
   }
 
-  public async handleMessage(sender: number, chat_id: string, body: string) {
+  public async handleMessage(
+    sender: number,
+    chat_id: string,
+    body: string,
+    date: Date,
+  ) {
     return this.getChat({ chat_id }, { history: true }).then(async (chat) => {
       this.userService.findOne(sender).then(async (user) => {
         const message = new Message();
         message.sender_name = user.username;
         message.sender = sender;
         message.body = body;
+        message.date = date;
         await this.messageRepository.save(message);
         chat.history.push(message);
         await this.chatRepository.save(chat);

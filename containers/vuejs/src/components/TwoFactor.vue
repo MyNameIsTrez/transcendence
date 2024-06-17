@@ -12,20 +12,16 @@
       />
       <button class="btn" @click="sendAuthCode">Send</button>
     </span>
-    <AlertPopup ref="alertPopup" :alertType="AlertType.ALERT_WARNING" :visible="alertVisible">
-      Code is invalid
-    </AlertPopup>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import { get, post } from '../httpRequests'
 import { useRouter } from 'vue-router'
 import AlertPopup from './AlertPopup.vue'
-import { AlertType } from '../types'
 
-const alertPopup = ref()
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const router = useRouter()
 
@@ -62,13 +58,13 @@ async function turn2faOff() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      alertPopup.value.show()
+      alertPopup.value.showWarning('Failed to turn 2fa off; you probably entered an expired code')
     })
 }
 
 async function turn2faOn() {
   await post('2fa/turn-on', { twoFactorAuthenticationCode: authCode.value }).catch(() => {
-    alertPopup.value.show()
+    alertPopup.value.showWarning('Failed to turn 2fa on; you probably entered an expired code')
   })
 }
 
@@ -79,7 +75,7 @@ async function authenticateWith2fa() {
       router.replace({ path: '/' })
     })
     .catch(() => {
-      alertPopup.value.show()
+      alertPopup.value.showWarning('Failed to authenticate; you probably entered an expired code')
     })
 }
 </script>
