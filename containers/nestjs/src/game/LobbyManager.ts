@@ -100,7 +100,7 @@ export default class LobbyManager {
         lobby.pong.gamemode === gamemode && !lobby.isFull() && !lobby.isPrivate,
     );
     if (notFullLobby) {
-      console.log("Found a lobby that wasn't full");
+      // console.log("Found a lobby that wasn't full");
       return notFullLobby;
     }
 
@@ -112,7 +112,7 @@ export default class LobbyManager {
       this.matchService,
     );
     this.lobbies.set(newLobby.id, newLobby);
-    console.log('Created a new lobby');
+    // console.log('Created a new lobby');
     return newLobby;
   }
 
