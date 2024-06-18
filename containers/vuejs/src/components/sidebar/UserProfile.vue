@@ -6,11 +6,11 @@
           {{ username }}
         </div>
 
-        <button
-          :class="`btn btn-square btn-primary justify-self-end ${addButtonVisible ? 'visible' : 'invisible'}`"
-          @click="sendFriendRequest"
-        >
-          <span class="material-symbols-outlined">person_add</span>
+        <button v-if="isFriendRef" :class="`btn btn-square btn-error justify-self-end`">
+          <span @click="removeFriend" class="material-symbols-outlined">person_remove</span>
+        </button>
+        <button v-else :class="`btn btn-square btn-primary justify-self-end`">
+          <span @click="sendFriendRequest" class="material-symbols-outlined">person_add</span>
         </button>
       </span>
       <br />
@@ -104,13 +104,7 @@ class Friend {
 }
 
 const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
-const isFriend = ref(friends.value.findIndex((item) => item.intraId === user.intra_id))
-
-const addButtonVisible = ref(false)
-
-if (isFriend.value == -1) {
-  addButtonVisible.value = true
-}
+const isFriendRef = ref(friends.value.findIndex((item) => item.intraId === user.intra_id) !== -1)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
@@ -137,6 +131,17 @@ async function sendFriendRequest() {
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
+      alertPopup.value.showWarning(err.response.data.message)
+    })
+}
+
+async function removeFriend() {
+  await post('api/user/removeFriend', { friend_id: intra_id })
+    .then(() => {
+      isFriendRef.value = false
+    })
+    .catch((err) => {
+      console.error('removeFriend error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
 }

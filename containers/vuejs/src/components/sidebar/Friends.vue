@@ -56,7 +56,6 @@
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="friend.isOnline"
-        @update="reloadFriends"
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
@@ -66,7 +65,6 @@
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="!friend.isOnline"
-        @update="reloadFriends"
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
@@ -75,7 +73,6 @@
     <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming
       v-for="request in incomingFriendRequests"
-      @update="reloadFriends"
       :key="request.intraId"
       :name="request.name"
       :intraId="request.intraId"
