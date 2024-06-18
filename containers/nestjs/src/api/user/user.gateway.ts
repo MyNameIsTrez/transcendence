@@ -61,7 +61,7 @@ export class UserGateway {
   }
 
   @SubscribeMessage('heartbeat')
-  heartbeat(client: Socket) {
-    this.userService.updateLastOnline(client.data.intra_id);
+  async heartbeat(client: Socket) {
+    await this.userService.updateLastOnline(client.data.intra_id);
   }
 }

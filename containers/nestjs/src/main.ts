@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { CreationService } from './creation/creation.service';
 import { useContainer } from 'class-validator';
+import { UserService } from './user/user.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,7 +24,12 @@ async function bootstrap() {
   const creationService = app.get<CreationService>(CreationService);
   await creationService.create();
 
+  const userService = app.get<UserService>(UserService);
+  if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
+    await userService.createFooUser();
+  }
+
   const configService = app.get<ConfigService>(ConfigService);
   await app.listen(configService.get('BACKEND_PORT'));
 }
-bootstrap();
+void bootstrap();

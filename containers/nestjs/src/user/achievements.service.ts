@@ -21,19 +21,19 @@ export class AchievementsService {
     );
   }
 
-  wonOnce(achievement_id: number) {
-    this.updateAchievement(achievement_id, { wonOnce: true });
+  async wonOnce(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { wonOnce: true });
   }
 
-  wonOneHundredTimes(achievement_id: number) {
-    this.updateAchievement(achievement_id, { wonOneHundredTimes: true });
+  async wonOneHundredTimes(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { wonOneHundredTimes: true });
   }
 
-  lostOnce(achievement_id: number) {
-    this.updateAchievement(achievement_id, { lostOnce: true });
+  async lostOnce(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { lostOnce: true });
   }
 
-  lostOneHundredTimes(achievement_id: number) {
-    this.updateAchievement(achievement_id, { lostOneHundredTimes: true });
+  async lostOneHundredTimes(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { lostOneHundredTimes: true });
   }
 }

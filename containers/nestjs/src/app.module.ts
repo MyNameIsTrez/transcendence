@@ -59,7 +59,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         password: configService.get<string>('POSTGRES_PASSWORD'),
         database: configService.get<string>('POSTGRES_DB'),
         autoLoadEntities: true,
-        synchronize: false,
+        synchronize: true, // TODO: This is apparently unsafe, so set it back to false
         logging: false,
         retryAttempts: 420, // The default of 10 was too low with our Docker containers
         dropSchema: false, // TODO: Set this back to false for production!!!s

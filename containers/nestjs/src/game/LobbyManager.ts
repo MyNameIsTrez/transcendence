@@ -130,42 +130,44 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch(await this.userService.findOne(client.data.intra_id));
-        this.userService.addLoss(client.data.intra_id);
+        await lobby.saveMatch(
+          await this.userService.findOne(client.data.intra_id),
+        );
+        await this.userService.addLoss(client.data.intra_id);
       }
 
-      lobby.removeClient(client);
+      await lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
       if (client_count >= 2) {
-        lobby.clients.forEach((otherClient) => {
-          this.userService.addWin(otherClient.data.intra_id);
+        lobby.clients.forEach(async (otherClient) => {
+          await this.userService.addWin(otherClient.data.intra_id);
         });
       }
 
-      this.removeLobby(lobby);
+      await this.removeLobby(lobby);
     }
   }
 
-  public startUpdateLoop() {
-    setInterval(() => {
-      this.lobbies.forEach((lobby) => {
-        lobby.update();
+  public async startUpdateLoop() {
+    setInterval(async () => {
+      await this.lobbies.forEach(async (lobby) => {
+        await lobby.update();
         if (lobby.didSomeoneWin()) {
-          this.removeLobby(lobby);
+          await this.removeLobby(lobby);
         }
       });
     }, this.updateIntervalMs);
   }
 
-  private removeLobby(lobby: Lobby) {
+  private async removeLobby(lobby: Lobby) {
     lobby.clients.forEach((client) => {
       this.intraIdToLobby.delete(client.data.intra_id);
     });
 
-    lobby.disconnectClients();
+    await lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
   }
 

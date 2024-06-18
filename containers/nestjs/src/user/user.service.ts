@@ -19,11 +19,7 @@ export class UserService {
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
     private readonly userSockets: UserSockets,
-  ) {
-    if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
-      this.createFooUser();
-    }
-  }
+  ) {}
 
   // Adds a dummy user that is used to play against oneself during development
   async createFooUser() {
@@ -270,9 +266,9 @@ export class UserService {
       const achievements = await this.getAchievements(intra_id);
 
       if (wins === 1) {
-        this.achievementsService.wonOnce(achievements.id);
+        await this.achievementsService.wonOnce(achievements.id);
       } else {
-        this.achievementsService.wonOneHundredTimes(achievements.id);
+        await this.achievementsService.wonOneHundredTimes(achievements.id);
       }
     }
   }
@@ -286,9 +282,9 @@ export class UserService {
       const achievements = await this.getAchievements(intra_id);
 
       if (losses === 1) {
-        this.achievementsService.lostOnce(achievements.id);
+        await this.achievementsService.lostOnce(achievements.id);
       } else {
-        this.achievementsService.lostOneHundredTimes(achievements.id);
+        await this.achievementsService.lostOneHundredTimes(achievements.id);
       }
     }
   }
@@ -354,7 +350,7 @@ export class UserService {
       );
     }
 
-    this.unblock(sender_id, receiver.intra_id);
+    await this.unblock(sender_id, receiver.intra_id);
 
     // If we were already invited by this person, immediately make us friends
     if (

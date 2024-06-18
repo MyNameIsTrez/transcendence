@@ -65,9 +65,9 @@ export default class Lobby {
     }
   }
 
-  public removeClient(client: Socket) {
+  public async removeClient(client: Socket) {
     this.clients.delete(client.data.intra_id);
-    client.leave(this.id);
+    await client.leave(this.id);
   }
 
   public hasUser(intra_id: number) {
@@ -78,7 +78,7 @@ export default class Lobby {
     return this.clients.size >= this.maxClients;
   }
 
-  public update() {
+  public async update() {
     if (!this.gameHasStarted) {
       return;
     }
@@ -88,15 +88,15 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      this.saveMatch(null);
+      await this.saveMatch(null);
 
       const winnerIndex = this.pong.getWinnerIndex();
 
       this.clients.forEach(async (client) => {
         if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-          this.userService.addWin(client.data.intra_id);
+          await this.userService.addWin(client.data.intra_id);
         } else {
-          this.userService.addLoss(client.data.intra_id);
+          await this.userService.addLoss(client.data.intra_id);
         }
 
         client.emit('gameOver', client.data.playerIndex === winnerIndex);
@@ -108,9 +108,9 @@ export default class Lobby {
     return this.pong.didSomeoneWin();
   }
 
-  public disconnectClients() {
-    this.clients.forEach((client) => {
-      this.removeClient(client);
+  public async disconnectClients() {
+    await this.clients.forEach(async (client) => {
+      await this.removeClient(client);
     });
   }
 

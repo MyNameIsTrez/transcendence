@@ -15,13 +15,13 @@ export class GameService {
     private readonly matchService: MatchService,
   ) {}
 
-  init(server: Server) {
+  async init(server: Server) {
     this.lobbyManager = new LobbyManager(
       server,
       this.userService,
       this.matchService,
     );
-    this.lobbyManager.startUpdateLoop();
+    await this.lobbyManager.startUpdateLoop();
   }
 
   public async queue(client: Socket, gamemode: Gamemode) {
@@ -132,7 +132,7 @@ export class GameService {
       throw new WsException('Declined user is not online');
     }
 
-    this.removeClient(declinedSockets[0]);
+    await this.removeClient(declinedSockets[0]);
 
     clients.get(declinedIntraId).forEach((socket) => {
       socket.emit('inQueue', { inQueue: false });

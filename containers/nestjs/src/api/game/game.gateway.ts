@@ -28,8 +28,8 @@ export class GameGateway {
 
   clients = new Map<number, Socket[]>();
 
-  afterInit() {
-    this.gameService.init(this.server);
+  async afterInit() {
+    await this.gameService.init(this.server);
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
