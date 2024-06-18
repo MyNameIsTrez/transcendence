@@ -15,7 +15,10 @@ export class AchievementsService {
   }
 
   async updateAchievement(achievement_id: number, achievement: any) {
-    this.achievementsRepository.update({ id: achievement_id }, achievement);
+    await this.achievementsRepository.update(
+      { id: achievement_id },
+      achievement,
+    );
   }
 
   wonOnce(achievement_id: number) {
