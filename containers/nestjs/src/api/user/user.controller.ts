@@ -18,6 +18,12 @@ import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 import { Transform, TransformFnParams } from 'class-transformer';
 
+class RemoveFriendDto {
+  @IsInt()
+  @IsPositive()
+  friend_id: number;
+}
+
 class SetUsernameDto {
   @IsNotEmpty({
     message: 'Username should not be empty',
@@ -133,7 +139,6 @@ export class UserController {
 
   @Post('sendFriendRequest')
   async sendFriendRequest(@Request() req, @Body() body) {
-    console.log('in sendFriendRequest');
     await this.userService.sendFriendRequest(
       req.user.intra_id,
       body.intra_name,
@@ -157,7 +162,7 @@ export class UserController {
   }
 
   @Post('removeFriend')
-  async removeFriend(@Request() req, @Body() body) {
+  async removeFriend(@Request() req, @Body() body: RemoveFriendDto) {
     await this.userService.removeFriend(req.user.intra_id, body.friend_id);
   }
 

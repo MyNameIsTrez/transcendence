@@ -447,7 +447,7 @@ export class UserService {
   }
 
   async declineFriendRequest(receiver_id: number, sender_id: number) {
-    console.log('Entered declineFriendRequest', receiver_id, sender_id);
+    // console.log('Entered declineFriendRequest', receiver_id, sender_id);
     const receiver = await this.findOne(receiver_id, {
       incoming_friend_requests: true,
     });
