@@ -25,7 +25,7 @@
                 <span class="flex justify-center">
                   <input
                     type="text"
-                    v-model="friendSearch"
+                    v-model="sendFriendRequestRef"
                     placeholder="Type here"
                     class="input input-bordered w-full max-w-xs"
                     @keyup.enter="sendFriendRequest"
@@ -99,7 +99,7 @@ const userSocket: Socket = inject('userSocket')!
 const friends = ref(await get('api/user/friends'))
 const incomingFriendRequests = ref(await get('api/user/incomingFriendRequests'))
 
-const friendSearch = ref('')
+const sendFriendRequestRef = ref('')
 
 const alertMessage = ref('Friend request sent')
 
@@ -125,7 +125,7 @@ async function reloadFriends() {
 }
 
 async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
+  await post('api/user/sendFriendRequest', { intra_name: sendFriendRequestRef.value })
     .then(() => {
       alertMessage.value = alertPopup.value.showSuccess('Friend request sent')
     })
