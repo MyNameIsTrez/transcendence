@@ -10,6 +10,7 @@ import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from './user.sockets';
 
 @Injectable()
 export class UserService {
@@ -17,18 +18,14 @@ export class UserService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
-  ) {
-    if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
-      this.createFooUser();
-    }
-  }
+    private readonly userSockets: UserSockets,
+  ) {}
 
   // Adds a dummy user that is used to play against oneself during development
   async createFooUser() {
     const foo_intra_id = 42;
-
     if (!(await this.hasUser(foo_intra_id))) {
-      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+      await this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
     }
   }
 
@@ -38,7 +35,7 @@ export class UserService {
     intra_name: string,
     email: string,
   ): Promise<User> {
-    return this.usersRepository.save({
+    return await this.usersRepository.save({
       intra_id,
       username,
       intra_name,
@@ -98,8 +95,8 @@ export class UserService {
     return user;
   }
 
-  hasUser(intra_id: number) {
-    return this.usersRepository.existsBy({ intra_id });
+  async hasUser(intra_id: number) {
+    return await this.usersRepository.existsBy({ intra_id });
   }
 
   async getUsername(intra_id: number): Promise<string> {
@@ -118,19 +115,19 @@ export class UserService {
     }
   }
 
-  set2faSecret(intra_id: number, secret: string) {
-    this.usersRepository.update(
+  async set2faSecret(intra_id: number, secret: string) {
+    await this.usersRepository.update(
       { intra_id },
       { twoFactorAuthenticationSecret: secret },
     );
   }
 
-  set2faState(intra_id: number, state: boolean, secret?: string) {
+  async set2faState(intra_id: number, state: boolean, secret?: string) {
     // State doens't HAVE to be checked but it is nice to have this just in case someone locks themselfs out of their account some way
     if (state === true && !secret) {
       throw new BadRequestException("Can't enable 2fa without a secret");
     }
-    this.usersRepository.update(
+    await this.usersRepository.update(
       { intra_id },
       {
         isTwoFactorAuthenticationEnabled: state,
@@ -164,21 +161,25 @@ export class UserService {
   async turnOnTwoFactorAuthentication(intra_id: number) {
     const user = await this.findOne(intra_id);
     if (user) {
-      this.set2faState(intra_id, true, user.twoFactorAuthenticationSecret);
+      await this.set2faState(
+        intra_id,
+        true,
+        user.twoFactorAuthenticationSecret,
+      );
     }
   }
 
   async turnOffTwoFactorAuthentication(intra_id: number) {
     const user = await this.findOne(intra_id);
     if (user) {
-      this.set2faState(intra_id, false);
+      await this.set2faState(intra_id, false);
     }
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, intra_id: number) {
     const user = await this.findOne(intra_id);
     if (user) {
-      this.set2faSecret(intra_id, secret);
+      await this.set2faSecret(intra_id, secret);
     }
   }
 
@@ -210,7 +211,7 @@ export class UserService {
 
     me.blocked.push(other);
 
-    return this.usersRepository.save(me);
+    return await this.usersRepository.save(me);
   }
 
   async unblock(my_intra_id: number, other_intra_id: number) {
@@ -220,7 +221,7 @@ export class UserService {
 
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
 
-    return this.usersRepository.save(me);
+    return await this.usersRepository.save(me);
   }
 
   async hasBlocked(my_intra_id: number, other_intra_id: number) {
@@ -265,9 +266,9 @@ export class UserService {
       const achievements = await this.getAchievements(intra_id);
 
       if (wins === 1) {
-        this.achievementsService.wonOnce(achievements.id);
+        await this.achievementsService.wonOnce(achievements.id);
       } else {
-        this.achievementsService.wonOneHundredTimes(achievements.id);
+        await this.achievementsService.wonOneHundredTimes(achievements.id);
       }
     }
   }
@@ -281,9 +282,9 @@ export class UserService {
       const achievements = await this.getAchievements(intra_id);
 
       if (losses === 1) {
-        this.achievementsService.lostOnce(achievements.id);
+        await this.achievementsService.lostOnce(achievements.id);
       } else {
-        this.achievementsService.lostOneHundredTimes(achievements.id);
+        await this.achievementsService.lostOneHundredTimes(achievements.id);
       }
     }
   }
@@ -349,7 +350,7 @@ export class UserService {
       );
     }
 
-    this.unblock(sender_id, receiver.intra_id);
+    await this.unblock(sender_id, receiver.intra_id);
 
     // If we were already invited by this person, immediately make us friends
     if (
@@ -367,10 +368,25 @@ export class UserService {
         1,
       );
 
-      this.usersRepository.save([sender, receiver]);
+      await this.usersRepository.save([sender, receiver]);
     } else {
       receiver.incoming_friend_requests.push(sender);
-      this.usersRepository.save(receiver);
+      await this.usersRepository.save(receiver);
+
+      const receiverSockets = this.userSockets.get(receiver.intra_id);
+
+      if (!receiverSockets) {
+        throw new BadRequestException(
+          'Failed to get the sockets of the receiver',
+        );
+      }
+
+      receiverSockets.forEach((receiverSocket) =>
+        receiverSocket.emit('newIncomingFriendRequest', {
+          intraId: sender_id,
+          name: sender.username,
+        }),
+      );
     }
   }
 
@@ -404,8 +420,8 @@ export class UserService {
     if (user) {
       return user.incoming_friend_requests.map((incoming) => {
         return {
-          name: incoming.username,
           intraId: incoming.intra_id,
+          name: incoming.username,
         };
       });
     }
@@ -427,10 +443,11 @@ export class UserService {
       ),
       1,
     );
-    this.usersRepository.save([sender, receiver]);
+    await this.usersRepository.save([sender, receiver]);
   }
 
   async declineFriendRequest(receiver_id: number, sender_id: number) {
+    // console.log('Entered declineFriendRequest', receiver_id, sender_id);
     const receiver = await this.findOne(receiver_id, {
       incoming_friend_requests: true,
     });
@@ -440,7 +457,7 @@ export class UserService {
       ),
       1,
     );
-    this.usersRepository.save(receiver);
+    await this.usersRepository.save(receiver);
   }
 
   async removeFriend(user_id: number, friend_id: number) {
@@ -468,8 +485,9 @@ export class UserService {
     user.friends.splice(myFriendIndex, 1);
     friend.friends.splice(otherFriendIndex, 1);
 
-    this.usersRepository.save(user);
-    this.usersRepository.save(friend);
+    await this.usersRepository.save(user);
+
+    await this.usersRepository.save(friend);
   }
 
   public async updateLastOnline(intra_id: number) {

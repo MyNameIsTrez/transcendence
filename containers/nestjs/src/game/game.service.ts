@@ -8,20 +8,20 @@ import { Gamemode } from '../user/match.entity';
 
 @Injectable()
 export class GameService {
-  lobbyManager: LobbyManager;
+  private lobbyManager: LobbyManager;
 
   constructor(
     private readonly userService: UserService,
     private readonly matchService: MatchService,
   ) {}
 
-  init(server: Server) {
+  async init(server: Server) {
     this.lobbyManager = new LobbyManager(
       server,
       this.userService,
       this.matchService,
     );
-    this.lobbyManager.startUpdateLoop();
+    await this.lobbyManager.startUpdateLoop();
   }
 
   public async queue(client: Socket, gamemode: Gamemode) {
@@ -33,18 +33,24 @@ export class GameService {
     await this.lobbyManager.leaveQueue(client, clients);
   }
 
+  public isInQueue(intra_id: number) {
+    return this.lobbyManager.isInQueue(intra_id);
+  }
+
   public async createPrivateLobby(
-    client: Socket,
+    inviter: Socket,
     invitedIntraId: number,
     gamemode: Gamemode,
     clients: Map<number, Socket[]>,
   ) {
-    if (client.data.intra_id === invitedIntraId) {
+    const inviterIntraId = inviter.data.intra_id;
+
+    if (inviterIntraId === invitedIntraId) {
       throw new WsException("You can't invite yourself to a game");
     }
 
     if (!(await this.userService.hasUser(invitedIntraId))) {
-      throw new WsException('Could not find user');
+      throw new WsException('Could not find invited user');
     }
 
     const invitedSockets = clients.get(invitedIntraId);
@@ -52,7 +58,6 @@ export class GameService {
       throw new WsException('Invited user is not online');
     }
 
-    const inviterIntraId = client.data.intra_id;
     if (this.lobbyManager.isUserAlreadyInLobby(inviterIntraId)) {
       throw new WsException('You are already in a lobby');
     }
@@ -60,15 +65,15 @@ export class GameService {
     // TODO: User can't invite person if person isn't online
     // TODO: Don't allow user to invite people while user is in queue
     await this.lobbyManager.createPrivateLobby(
-      client,
+      inviter,
       inviterIntraId,
       invitedIntraId,
       gamemode,
     );
 
-    client.emit('inQueue', { inQueue: true });
+    inviter.emit('inQueue', { inQueue: true });
 
-    await this.lobbyManager.removeInvite(invitedSockets, invitedIntraId);
+    await this.lobbyManager.updateInvitations(invitedSockets, invitedIntraId);
   }
 
   public movePaddle(
@@ -108,7 +113,7 @@ export class GameService {
     this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
 
     const mySockets = clients.get(client.data.intra_id);
-    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
+    await this.lobbyManager.updateInvitations(mySockets, client.data.intra_id);
   }
 
   public async declineInvitation(
@@ -127,13 +132,17 @@ export class GameService {
       throw new WsException('Declined user is not online');
     }
 
-    this.lobbyManager.removeClient(declinedSockets[0]);
+    await this.removeClient(declinedSockets[0]);
 
     clients.get(declinedIntraId).forEach((socket) => {
       socket.emit('inQueue', { inQueue: false });
     });
 
     const mySockets = clients.get(client.data.intra_id);
-    await this.lobbyManager.removeInvite(mySockets, client.data.intra_id);
+    await this.lobbyManager.updateInvitations(mySockets, client.data.intra_id);
+  }
+
+  public async getInvitations(intra_id: number) {
+    return await this.lobbyManager.getInvitations(intra_id);
   }
 }

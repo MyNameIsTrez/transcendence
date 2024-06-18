@@ -148,8 +148,8 @@ export class ChatGateway {
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.chatToSockets.forEach((sockets, chatId) => {
-      this.removeChatSocket(sockets, client, chatId);
+    this.chatToSockets.forEach(async (sockets, chatId) => {
+      await this.removeChatSocket(sockets, client, chatId);
     });
 
     this.connectedClients.delete(client);
@@ -235,7 +235,7 @@ export class ChatGateway {
     const sockets = this.chatToSockets.get(dto.chatId);
 
     if (sockets) {
-      this.removeChatSocket(sockets, client, dto.chatId);
+      await this.removeChatSocket(sockets, client, dto.chatId);
     }
 
     return {};

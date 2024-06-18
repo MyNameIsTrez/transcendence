@@ -50,7 +50,7 @@ export class ChatService {
 
     const current_user = await this.userService.findOne(intra_id);
 
-    return this.chatRepository.save({
+    return await this.chatRepository.save({
       chat_id,
       name,
       users: [current_user],
@@ -252,18 +252,20 @@ export class ChatService {
     body: string,
     date: Date,
   ) {
-    return this.getChat({ chat_id }, { history: true }).then(async (chat) => {
-      this.userService.findOne(sender).then(async (user) => {
-        const message = new Message();
-        message.sender_name = user.username;
-        message.sender = sender;
-        message.body = body;
-        message.date = date;
-        await this.messageRepository.save(message);
-        chat.history.push(message);
-        await this.chatRepository.save(chat);
-      });
-    });
+    return await this.getChat({ chat_id }, { history: true }).then(
+      async (chat) => {
+        await this.userService.findOne(sender).then(async (user) => {
+          const message = new Message();
+          message.sender_name = user.username;
+          message.sender = sender;
+          message.body = body;
+          message.date = date;
+          await this.messageRepository.save(message);
+          chat.history.push(message);
+          await this.chatRepository.save(chat);
+        });
+      },
+    );
   }
 
   private getTimeOfUnmute(days: number) {
@@ -299,7 +301,7 @@ export class ChatService {
     // TODO: Don't allow us to mute ourselves
     // TODO: Don't allow admins to mute other admins
     // TODO: DO allow the owner to mute admins
-    return this.getChat({ chat_id }, { admins: true, muted: true }).then(
+    return await this.getChat({ chat_id }, { admins: true, muted: true }).then(
       async (chat) => {
         const user = await this.userService.findOne(intra_id);
         if (chat.owner == user.intra_id) return;
@@ -360,9 +362,9 @@ export class ChatService {
   public async changePassword(chat_id: string, password: string) {
     // TODO: Throw if we aren't the owner of the chat
 
-    return this.getChat({ chat_id }).then(async (chat) => {
+    return await this.getChat({ chat_id }).then(async (chat) => {
       chat.hashed_password = await this.hashPassword(password);
-      this.chatRepository.save(chat);
+      await this.chatRepository.save(chat);
     });
   }
 
@@ -371,27 +373,30 @@ export class ChatService {
     visibility: Visibility,
     password: string,
   ) {
-    return this.getChat({ chat_id }).then(async (chat) => {
+    return await this.getChat({ chat_id }).then(async (chat) => {
       chat.visibility = visibility;
-      if (chat.visibility === Visibility.PROTECTED)
+      if (chat.visibility === Visibility.PROTECTED) {
         chat.hashed_password = await this.hashPassword(password);
-      this.chatRepository.save(chat);
+      }
+      await this.chatRepository.save(chat);
     });
   }
 
   public async removeChat(chat: Chat) {
     chat.users = [];
-    chat.history.forEach((message) => this.messageRepository.remove(message));
+    chat.history.forEach(
+      async (message) => await this.messageRepository.remove(message),
+    );
     chat.history = [];
     chat.admins = [];
     chat.banned = [];
     chat.muted = [];
     await this.chatRepository.save(chat);
-    this.chatRepository.remove(chat);
+    await this.chatRepository.remove(chat);
   }
 
   public async leave(chat_id: string, intra_id: number) {
-    return this.getChat(
+    return await this.getChat(
       { chat_id },
       {
         users: true,
@@ -403,7 +408,7 @@ export class ChatService {
     ).then(async (chat) => {
       if (chat.owner == intra_id) {
         // console.log('removeChat called');
-        this.removeChat(chat);
+        await this.removeChat(chat);
         return;
       }
 
@@ -412,7 +417,7 @@ export class ChatService {
 
       chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
 
-      this.chatRepository.save(chat);
+      await this.chatRepository.save(chat);
     });
   }
 }

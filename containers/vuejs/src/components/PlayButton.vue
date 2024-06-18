@@ -4,8 +4,6 @@
   </button>
 </template>
 <script setup lang="ts">
-import { defineProps } from 'vue'
-
 // Allows anyone using PlayButton to use `@clicked="fooFn"`
 const emit = defineEmits(['clicked'])
 

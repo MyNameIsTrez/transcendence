@@ -10,27 +10,30 @@ export class AchievementsService {
     private readonly achievementsRepository: Repository<Achievements>,
   ) {}
 
-  create() {
-    return this.achievementsRepository.save({});
+  async create() {
+    return await this.achievementsRepository.save({});
   }
 
   async updateAchievement(achievement_id: number, achievement: any) {
-    this.achievementsRepository.update({ id: achievement_id }, achievement);
+    await this.achievementsRepository.update(
+      { id: achievement_id },
+      achievement,
+    );
   }
 
-  wonOnce(achievement_id: number) {
-    this.updateAchievement(achievement_id, { wonOnce: true });
+  async wonOnce(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { wonOnce: true });
   }
 
-  wonOneHundredTimes(achievement_id: number) {
-    this.updateAchievement(achievement_id, { wonOneHundredTimes: true });
+  async wonOneHundredTimes(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { wonOneHundredTimes: true });
   }
 
-  lostOnce(achievement_id: number) {
-    this.updateAchievement(achievement_id, { lostOnce: true });
+  async lostOnce(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { lostOnce: true });
   }
 
-  lostOneHundredTimes(achievement_id: number) {
-    this.updateAchievement(achievement_id, { lostOneHundredTimes: true });
+  async lostOneHundredTimes(achievement_id: number) {
+    await this.updateAchievement(achievement_id, { lostOneHundredTimes: true });
   }
 }
