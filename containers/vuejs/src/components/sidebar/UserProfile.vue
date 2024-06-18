@@ -6,11 +6,19 @@
           {{ username }}
         </div>
 
-        <button v-if="isFriendRef" :class="`btn btn-square btn-error justify-self-end`">
-          <span @click="removeFriend" class="material-symbols-outlined">person_remove</span>
+        <button
+          v-if="isFriendRef"
+          :class="`btn btn-square btn-error justify-self-end`"
+          @click="removeFriend"
+        >
+          <span class="material-symbols-outlined">person_remove</span>
         </button>
-        <button v-else :class="`btn btn-square btn-primary justify-self-end`">
-          <span @click="sendFriendRequest" class="material-symbols-outlined">person_add</span>
+        <button
+          v-else
+          :class="`btn btn-square btn-primary justify-self-end`"
+          @click="sendFriendRequest"
+        >
+          <span class="material-symbols-outlined">person_add</span>
         </button>
       </span>
       <br />
