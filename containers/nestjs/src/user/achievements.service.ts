@@ -10,8 +10,8 @@ export class AchievementsService {
     private readonly achievementsRepository: Repository<Achievements>,
   ) {}
 
-  create() {
-    return this.achievementsRepository.save({});
+  async create() {
+    return await this.achievementsRepository.save({});
   }
 
   async updateAchievement(achievement_id: number, achievement: any) {

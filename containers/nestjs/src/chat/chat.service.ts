@@ -50,7 +50,7 @@ export class ChatService {
 
     const current_user = await this.userService.findOne(intra_id);
 
-    return this.chatRepository.save({
+    return await this.chatRepository.save({
       chat_id,
       name,
       users: [current_user],
@@ -299,7 +299,7 @@ export class ChatService {
     // TODO: Don't allow us to mute ourselves
     // TODO: Don't allow admins to mute other admins
     // TODO: DO allow the owner to mute admins
-    return this.getChat({ chat_id }, { admins: true, muted: true }).then(
+    return await this.getChat({ chat_id }, { admins: true, muted: true }).then(
       async (chat) => {
         const user = await this.userService.findOne(intra_id);
         if (chat.owner == user.intra_id) return;
@@ -360,9 +360,9 @@ export class ChatService {
   public async changePassword(chat_id: string, password: string) {
     // TODO: Throw if we aren't the owner of the chat
 
-    return this.getChat({ chat_id }).then(async (chat) => {
+    return await this.getChat({ chat_id }).then(async (chat) => {
       chat.hashed_password = await this.hashPassword(password);
-      this.chatRepository.save(chat);
+      await this.chatRepository.save(chat);
     });
   }
 
@@ -371,11 +371,12 @@ export class ChatService {
     visibility: Visibility,
     password: string,
   ) {
-    return this.getChat({ chat_id }).then(async (chat) => {
+    return await this.getChat({ chat_id }).then(async (chat) => {
       chat.visibility = visibility;
-      if (chat.visibility === Visibility.PROTECTED)
+      if (chat.visibility === Visibility.PROTECTED) {
         chat.hashed_password = await this.hashPassword(password);
-      this.chatRepository.save(chat);
+      }
+      await this.chatRepository.save(chat);
     });
   }
 
@@ -391,7 +392,7 @@ export class ChatService {
   }
 
   public async leave(chat_id: string, intra_id: number) {
-    return this.getChat(
+    return await this.getChat(
       { chat_id },
       {
         users: true,
@@ -412,7 +413,7 @@ export class ChatService {
 
       chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
 
-      this.chatRepository.save(chat);
+      await this.chatRepository.save(chat);
     });
   }
 }

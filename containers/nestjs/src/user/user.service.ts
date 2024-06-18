@@ -28,9 +28,8 @@ export class UserService {
   // Adds a dummy user that is used to play against oneself during development
   async createFooUser() {
     const foo_intra_id = 42;
-
     if (!(await this.hasUser(foo_intra_id))) {
-      this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
+      await this.create(foo_intra_id, 'foo', 'foo', 'foo@foo.foo');
     }
   }
 
@@ -40,7 +39,7 @@ export class UserService {
     intra_name: string,
     email: string,
   ): Promise<User> {
-    return this.usersRepository.save({
+    return await this.usersRepository.save({
       intra_id,
       username,
       intra_name,
@@ -212,7 +211,7 @@ export class UserService {
 
     me.blocked.push(other);
 
-    return this.usersRepository.save(me);
+    return await this.usersRepository.save(me);
   }
 
   async unblock(my_intra_id: number, other_intra_id: number) {
@@ -222,7 +221,7 @@ export class UserService {
 
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
 
-    return this.usersRepository.save(me);
+    return await this.usersRepository.save(me);
   }
 
   async hasBlocked(my_intra_id: number, other_intra_id: number) {
@@ -369,10 +368,10 @@ export class UserService {
         1,
       );
 
-      this.usersRepository.save([sender, receiver]);
+      await this.usersRepository.save([sender, receiver]);
     } else {
       receiver.incoming_friend_requests.push(sender);
-      this.usersRepository.save(receiver);
+      await this.usersRepository.save(receiver);
 
       const receiverSockets = this.userSockets.get(receiver.intra_id);
 
@@ -444,10 +443,11 @@ export class UserService {
       ),
       1,
     );
-    this.usersRepository.save([sender, receiver]);
+    await this.usersRepository.save([sender, receiver]);
   }
 
   async declineFriendRequest(receiver_id: number, sender_id: number) {
+    console.log('Entered declineFriendRequest', receiver_id, sender_id);
     const receiver = await this.findOne(receiver_id, {
       incoming_friend_requests: true,
     });
@@ -457,7 +457,7 @@ export class UserService {
       ),
       1,
     );
-    this.usersRepository.save(receiver);
+    await this.usersRepository.save(receiver);
   }
 
   async removeFriend(user_id: number, friend_id: number) {
@@ -485,8 +485,9 @@ export class UserService {
     user.friends.splice(myFriendIndex, 1);
     friend.friends.splice(otherFriendIndex, 1);
 
-    this.usersRepository.save(user);
-    this.usersRepository.save(friend);
+    await this.usersRepository.save(user);
+
+    await this.usersRepository.save(friend);
   }
 
   public async updateLastOnline(intra_id: number) {
