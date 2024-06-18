@@ -24,12 +24,13 @@ async function bootstrap() {
   const creationService = app.get<CreationService>(CreationService);
   await creationService.create();
 
+  const configService = app.get<ConfigService>(ConfigService);
+
   const userService = app.get<UserService>(UserService);
-  if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
+  if (configService.get('VITE_ALLOW_DEBUG_USER')) {
     await userService.createFooUser();
   }
 
-  const configService = app.get<ConfigService>(ConfigService);
   await app.listen(configService.get('BACKEND_PORT'));
 }
 void bootstrap();
