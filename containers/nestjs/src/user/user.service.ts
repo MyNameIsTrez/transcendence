@@ -10,6 +10,7 @@ import { Chat } from 'src/chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from './user.sockets';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,7 @@ export class UserService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {
     if (this.configService.get('VITE_ALLOW_DEBUG_USER')) {
       this.createFooUser();
@@ -371,6 +373,21 @@ export class UserService {
     } else {
       receiver.incoming_friend_requests.push(sender);
       this.usersRepository.save(receiver);
+
+      const receiverSockets = this.userSockets.get(receiver.intra_id);
+
+      if (!receiverSockets) {
+        throw new BadRequestException(
+          'Failed to get the sockets of the receiver',
+        );
+      }
+
+      receiverSockets.forEach((receiverSocket) =>
+        receiverSocket.emit('newIncomingFriendRequest', {
+          intraId: sender_id,
+          name: sender.username,
+        }),
+      );
     }
   }
 
@@ -404,8 +421,8 @@ export class UserService {
     if (user) {
       return user.incoming_friend_requests.map((incoming) => {
         return {
-          name: incoming.username,
           intraId: incoming.intra_id,
+          name: incoming.username,
         };
       });
     }

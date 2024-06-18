@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { UserService } from '../../user/user.service';
 import { BadRequestTransformFilter } from '../../bad-request-transform.filter';
 import TransJwtService from '../../auth/trans-jwt-service';
+import UserSockets from '../../user/user.sockets';
 
 // The cors setting prevents this error:
 // "Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource"
@@ -19,6 +20,7 @@ export class UserGateway {
   constructor(
     private readonly transJwtService: TransJwtService,
     private readonly userService: UserService,
+    private readonly userSockets: UserSockets,
   ) {}
 
   @WebSocketServer()
@@ -50,6 +52,12 @@ export class UserGateway {
         redirectToLoginPage: true,
       });
     }
+
+    this.userSockets.add(client);
+  }
+
+  async handleDisconnect(@ConnectedSocket() client: Socket) {
+    this.userSockets.remove(client);
   }
 
   @SubscribeMessage('heartbeat')

@@ -94,6 +94,7 @@ import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
+const userSocket: Socket = inject('userSocket')!
 
 const friends = ref(await get('api/user/friends'))
 const incomingFriendRequests = ref(await get('api/user/incomingFriendRequests'))
@@ -133,4 +134,17 @@ async function sendFriendRequest() {
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
+
+class IncomingFriendRequest {
+  intraId: number
+  name: string
+
+  constructor(intraId: number, name: string) {
+    this.intraId = intraId
+    this.name = name
+  }
+}
+userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
+  incomingFriendRequests.value.push(incomingFriendRequest)
+})
 </script>
