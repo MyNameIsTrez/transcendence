@@ -99,8 +99,8 @@ export class UserService {
     return user;
   }
 
-  hasUser(intra_id: number) {
-    return this.usersRepository.existsBy({ intra_id });
+  async hasUser(intra_id: number) {
+    return await this.usersRepository.existsBy({ intra_id });
   }
 
   async getUsername(intra_id: number): Promise<string> {
