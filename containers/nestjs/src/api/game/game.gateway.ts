@@ -49,15 +49,7 @@ export class GameGateway {
 
     try {
       const decoded = this.transJwtService.verify(jwt);
-      const intra_id = decoded.sub;
-      client.data.intra_id = intra_id;
-
-      let sockets = this.clients.get(intra_id);
-      if (!sockets) {
-        sockets = [];
-        this.clients.set(intra_id, sockets);
-      }
-      sockets.push(client);
+      client.data.intra_id = decoded.sub;
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {
@@ -65,6 +57,14 @@ export class GameGateway {
         redirectToLoginPage: true,
       });
     }
+
+    const intra_id = client.data.intra_id;
+    let sockets = this.clients.get(intra_id);
+    if (!sockets) {
+      sockets = [];
+      this.clients.set(intra_id, sockets);
+    }
+    sockets.push(client);
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
@@ -84,6 +84,7 @@ export class GameGateway {
     if (index > -1) {
       clientSockets.splice(index, 1);
     }
+
     if (clientSockets.length === 0) {
       this.clients.delete(intra_id);
     }
