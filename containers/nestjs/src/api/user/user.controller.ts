@@ -66,11 +66,6 @@ export class UserController {
     return await this.userService.getUser(intra_id);
   }
 
-  @Get('usernameOnIntraId/:intraId')
-  async usernameOnIntraId(@Param('intraId') intraId: number) {
-    return await this.userService.getUsername(intraId);
-  }
-
   @Post('setUsername')
   @HttpCode(204)
   async setUsername(@Request() req, @Body() dto: SetUsernameDto) {

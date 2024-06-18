@@ -73,6 +73,7 @@
     <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming
       v-for="request in incomingFriendRequests"
+      @update="reloadFriends"
       :key="request.intraId"
       :name="request.name"
       :intraId="request.intraId"
@@ -117,8 +118,11 @@ gameSocket.on('updateInvitations', (invites: Invitation[]) => {
 })
 
 async function reloadFriends() {
+  console.log('x')
   friends.value = await get('api/user/friends')
   incomingFriendRequests.value = await get('api/user/incomingFriendRequests')
+  console.log('friends', friends.value)
+  console.log('incomingFriendRequests', incomingFriendRequests.value)
 }
 
 async function sendFriendRequest() {
