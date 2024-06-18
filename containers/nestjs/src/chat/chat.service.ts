@@ -14,14 +14,11 @@ import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
 
-class Info {
-  isAdmin: boolean;
-  isBanned: boolean;
-  isMute: boolean;
-  isOwner: boolean;
-  isProtected: boolean;
-  isUser: boolean;
-  isDirect: boolean;
+class MyInfo {
+  owner: boolean;
+  admin: boolean;
+  banned: boolean;
+  muted: boolean;
 }
 
 @Injectable()
@@ -110,6 +107,15 @@ export class ChatService {
         visibility: true,
       },
     );
+  }
+
+  public async myInfo(chat_id: string, intra_id: number): Promise<MyInfo> {
+    return {
+      owner: await this.isOwner(chat_id, intra_id),
+      admin: await this.isAdmin(chat_id, intra_id),
+      banned: await this.isBanned(chat_id, intra_id),
+      muted: await this.isMuted(chat_id, intra_id),
+    };
   }
 
   async addUser(chat_id: string, intra_id: number) {
@@ -279,7 +285,7 @@ export class ChatService {
     return date < current_date;
   }
 
-  public async isMute(chat_id: string, intra_id: number) {
+  public async isMuted(chat_id: string, intra_id: number) {
     return this.getChat({ chat_id }, { muted: true }).then(async (chat) => {
       let is_mute = false;
       chat.muted.forEach((mute) => {
@@ -320,18 +326,6 @@ export class ChatService {
       if (chat.users.length === 2) return true;
       return false;
     });
-  }
-
-  public async getInfo(chat_id: string, intra_id: number) {
-    const info = new Info();
-    info.isAdmin = await this.isAdmin(chat_id, intra_id);
-    info.isBanned = await this.isBanned(chat_id, intra_id);
-    info.isMute = await this.isMute(chat_id, intra_id);
-    info.isOwner = await this.isOwner(chat_id, intra_id);
-    info.isProtected = await this.isProtected(chat_id);
-    info.isUser = await this.isUser(chat_id, intra_id);
-    info.isDirect = await this.isDirect(chat_id);
-    return info;
   }
 
   public async isLocked(chat_id: string, intra_id: number) {

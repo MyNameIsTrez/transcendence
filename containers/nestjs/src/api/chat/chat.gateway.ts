@@ -247,7 +247,7 @@ export class ChatGateway {
     @MessageBody() dto: HandleMessageDto,
   ) {
     // TODO: Move some of these checks to joinChat()?
-    if (await this.chatService.isMute(dto.chatId, client.data.intra_id)) {
+    if (await this.chatService.isMuted(dto.chatId, client.data.intra_id)) {
       // TODO: Ideally this string would tell the user how long they're still muted for
       throw new WsException("You're currently muted in this chat");
     }

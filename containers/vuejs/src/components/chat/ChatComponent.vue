@@ -93,6 +93,7 @@
     <ChatSettingsModal
       ref="chatSettingsModal"
       @onCloseSettingsModal="chatSettingsModal.hide()"
+      @onCloseChat="emit('onCloseChat')"
       :currentChat="currentChat"
     />
   </div>

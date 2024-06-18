@@ -9,30 +9,33 @@
 
         <h3 class="font-bold text-lg">Settings</h3>
 
-        <div class="flex pt-4 flex-col space-y-5">
-          <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
-            {{ visibility }}
+        <div class="flex flex-col space-y-5">
+          <div v-if="myInfo.admin" class="flex pt-4 flex-col space-y-5">
+            <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
+              {{ visibility }}
 
-            <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
-          </button>
+              <span class="material-symbols-outlined"> {{ getVisibilityIcon(visibility) }} </span>
+            </button>
 
-          <input
-            class="p-2"
-            v-model="chatName"
-            placeholder="Chat name..."
-            @keyup.enter="saveChatSettings"
-          />
+            <input
+              class="p-2"
+              v-model="chatName"
+              placeholder="Chat name..."
+              @keyup.enter="saveChatSettings"
+            />
 
-          <input
-            v-if="visibility === Visibility.PROTECTED"
-            class="p-2"
-            v-model="password"
-            type="password"
-            placeholder="Password..."
-            @keyup.enter="saveChatSettings"
-          />
+            <input
+              v-if="visibility === Visibility.PROTECTED"
+              class="p-2"
+              v-model="password"
+              type="password"
+              placeholder="Password..."
+              @keyup.enter="saveChatSettings"
+            />
 
-          <button class="btn btn-info" @click="saveChatSettings">Save</button>
+            <button class="btn btn-info" @click="saveChatSettings">Save</button>
+          </div>
+          <button class="btn btn-error" @click="leaveChat">Leave chat</button>
         </div>
       </div>
     </span>
@@ -48,8 +51,9 @@
 import type { Socket } from 'socket.io-client'
 import Visibility from './VisibilityEnum'
 import { inject, ref, type PropType } from 'vue'
-import { post } from '@/httpRequests'
+import { get, post } from '@/httpRequests'
 import Chat from './ChatClass'
+import MyInfo from './MyInfoClass'
 
 const chatSocket: Socket = inject('chatSocket')!
 
@@ -57,13 +61,16 @@ const props = defineProps({
   currentChat: Object as PropType<Chat>
 })
 
+const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+console.log(myInfo)
+
 const modal = ref()
 const visibility = ref(props.currentChat?.visibility)
 const chatName = ref(props.currentChat?.name)
 // const chatName = ref('')
 const password = ref('')
 
-const emit = defineEmits(['onCloseSettingsModal'])
+const emit = defineEmits(['onCloseSettingsModal', 'onCloseChat'])
 
 function getBtnColor(visibility: Visibility) {
   return visibility === Visibility.PUBLIC
@@ -89,6 +96,13 @@ function getVisibilityIcon(visibility: Visibility) {
     : visibility === Visibility.PROTECTED
       ? 'lock'
       : 'disabled_visible'
+}
+
+function leaveChat() {
+  post(`api/chats/${props.currentChat?.chat_id}/leave`, {}).then((res) => {
+    emit('onCloseChat')
+  })
+  // TODO: Add a catch if gone wrong
 }
 
 async function saveChatSettings() {
