@@ -91,7 +91,19 @@ const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
 const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))
 
-const friends = ref(await get('api/user/friends'))
+class Friend {
+  name: string
+  isOnline: boolean
+  intraId: number
+
+  constructor(name: string, isOnline: boolean, intraId: number) {
+    this.name = name
+    this.isOnline = isOnline
+    this.intraId = intraId
+  }
+}
+
+const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
 const isFriend = ref(friends.value.findIndex((item) => item.intraId === user.intra_id))
 
 const addButtonVisible = ref(false)
