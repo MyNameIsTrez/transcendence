@@ -2,10 +2,16 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  FindOptionsRelations,
+  FindOptionsWhere,
+  Repository,
+  UnorderedBulkOperation,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { Chat, Visibility } from './chat.entity';
@@ -20,6 +26,12 @@ class MyInfo {
   banned: boolean;
   muted: boolean;
 }
+
+type EditFields = {
+  name?: string;
+  password?: string;
+  visibility?: Visibility;
+};
 
 @Injectable()
 export class ChatService {
@@ -387,6 +399,64 @@ export class ChatService {
     chat.muted = [];
     await this.chatRepository.save(chat);
     await this.chatRepository.remove(chat);
+  }
+
+  public async edit(
+    chat_id: string,
+    intra_id: number,
+    edit_fields: EditFields,
+  ): Promise<EditFields> {
+    return await this.getChat({ chat_id }).then(async (chat) => {
+      if (intra_id !== chat.owner) {
+        throw new UnauthorizedException(
+          'You are unauthorized to use this action',
+        );
+      }
+      if (edit_fields.name !== undefined) {
+        if (edit_fields.name === '') {
+          throw new BadRequestException('Name cannot be empty');
+        }
+        chat.name = edit_fields.name;
+      }
+
+      if (edit_fields.visibility !== undefined) {
+        if (
+          chat.visibility !== Visibility.PROTECTED &&
+          edit_fields.visibility === Visibility.PROTECTED &&
+          edit_fields.password === undefined
+        ) {
+          throw new BadRequestException('Password cannot be empty');
+        }
+        if (
+          edit_fields.visibility !== Visibility.PROTECTED &&
+          edit_fields.password !== undefined
+        ) {
+          throw new BadRequestException(
+            'Can only set a password for protected chats',
+          );
+        }
+        chat.visibility = edit_fields.visibility;
+        chat.hashed_password = '';
+        if (edit_fields.password !== undefined) {
+          if (edit_fields.password === '') {
+            throw new BadRequestException('Password cannot be empty');
+          }
+          chat.hashed_password = await this.hashPassword(edit_fields.password);
+        }
+      } else if (edit_fields.password !== undefined) {
+        if (chat.visibility !== Visibility.PROTECTED) {
+          throw new BadRequestException(
+            'Can only set a password for protected chats',
+          );
+        }
+        if (edit_fields.password === '') {
+          throw new BadRequestException('Password cannot be empty');
+        }
+        chat.hashed_password = await this.hashPassword(edit_fields.password);
+      }
+      await this.chatRepository.save(chat);
+      return { name: edit_fields.name, visibility: edit_fields.visibility };
+    });
   }
 
   public async leave(chat_id: string, intra_id: number) {

@@ -106,10 +106,10 @@ function leaveChat() {
 }
 
 async function saveChatSettings() {
-  post(`api/chats/edit/${props.currentChat?.chat_id}`, {
-    name: chatName,
-    password: password,
-    visibility: visibility
+  post(`api/chats/${props.currentChat?.chat_id}/edit`, {
+    name: chatName.value,
+    password: visibility.value === Visibility.PROTECTED ? password.value : undefined,
+    visibility: visibility.value
   }).then(() => {
     emit('onCloseSettingsModal')
   })

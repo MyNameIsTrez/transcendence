@@ -17,6 +17,7 @@ import {
   PasswordDto,
   ChangeVisibilityDto,
 } from './chat.dto';
+import { Visibility } from 'src/chat/chat.entity';
 
 //	/api/chats GET => alle chats
 //	/api/chats/:chat_id GET
@@ -110,29 +111,21 @@ export class ChatController {
     return await this.chatService.isMuted(dto.chat_id, dto.intra_id);
   }
 
-  // TODO: Change to `:chat_id/patch`? or `:chat_id/edit`
-  @Post('changePassword')
-  public async changePassword(@Body() dto: PasswordDto) {
-    return await this.chatService.changePassword(dto.chat_id, dto.password);
+  @Post(':chat_id/edit')
+  public async edit(
+    @Request() req,
+    @Param() dto: NameDto,
+    @Body('name') name: string,
+    @Body('password') password: string,
+    @Body('visibility') visibility: Visibility,
+  ) {
+    return await this.chatService.edit(dto.chat_id, req.user.intra_id, {
+      name,
+      password,
+      visibility,
+    });
   }
 
-  // TODO: Change to `:chat_id/patch`? or `:chat_id/edit`
-  @Post('changeVisibility')
-  public async changeVisibility(@Body() dto: ChangeVisibilityDto) {
-    return await this.chatService.changeVisibility(
-      dto.chat_id,
-      dto.visibility,
-      dto.password,
-    );
-  }
-
-  // TODO: Change to `:chat_id/patch`? or `:chat_id/edit`
-  // TODO: Implement functionality
-  // TODO: Only allow owner to call this
-  @Post('edit/:chat_id')
-  public async edit(@Request() requestAnimationFrame) {}
-
-  // TODO: Change to `:chat_id/leave`
   @Post(':chat_id/leave')
   public async leave(@Request() req, @Param() dto: NameDto) {
     return await this.chatService.leave(dto.chat_id, req.user.intra_id);
