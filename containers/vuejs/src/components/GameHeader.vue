@@ -1,18 +1,44 @@
+<style>
+#game-header h1 {
+  font-size: 3em !important;
+}
+
+#game-header select {
+  font-size: 1em !important;
+  padding: 0.625em;
+  border-radius: 0.5em;
+}
+
+/* mimic tailwind's `spacing`, but with ems */
+#game-header > :not([hidden]) ~ :not([hidden]) {
+  --spacing: 1.5em;
+
+  /* Don't worry about it */
+  /* Here be dragons */
+  --tw-space-y-reverse: 0;
+  margin-top: calc(var(--spacing) * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(var(--spacing) * var(--tw-space-y-reverse));
+}
+</style>
+
 <template>
-  <div class="game-header" v-if="!startOfGame">
-    <h1 class="game-title">{{ gameTitle }}</h1>
+  <div
+    class="text-white w-full h-full flex flex-col justify-center items-center pointer-events-auto"
+    id="game-header"
+    v-if="!startOfGame"
+  >
+    <h1 class="select-none text-center">{{ gameTitle }}</h1>
     <PlayButton v-if="!endOfGame && !queueing" @clicked="joinGame" :buttonText="'PLAY'" />
 
     <p v-if="!endOfGame && queueing">Seeking {{ gamemode }} game...</p>
 
     <PlayButton v-if="!endOfGame && queueing" @clicked="leaveQueue" :buttonText="'Leave queue'" />
 
-    <!-- TODO: Make the button prettier -->
     <form v-if="!endOfGame && !queueing" class="max-w-sm mx-auto">
       <select
         v-model="gamemode"
         @change="updateGamemode"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        class="bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block w-full dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
       >
         <option selected value="normal">Normal game</option>
         <option value="special">Special game</option>
@@ -79,26 +105,3 @@ gameSocket.on('exception', (error: any) => {
   alertPopup.value.showWarning(error.message)
 })
 </script>
-
-<style>
-.game-header {
-  color: white;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-
-  display: flex;
-  flex-direction: column;
-  align-content: center;
-  align-items: center;
-  justify-content: center;
-}
-
-.game-title {
-  font-size: 4vw;
-  margin: 1vw;
-  padding: 1vw;
-  user-select: none; /* Disables cursor selection */
-}
-</style>
