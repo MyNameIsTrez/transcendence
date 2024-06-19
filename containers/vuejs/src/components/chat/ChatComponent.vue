@@ -51,7 +51,10 @@
 
     <!-- <div v-if="isDirect">(DM)</div> -->
 
-    <div ref="chatRef" class="scrollable-container flex flex-col gap-y-2">
+    <div
+      ref="chatRef"
+      class="scrollable-container flex flex-col gap-y-2 bg-base-100 border-base-300 rounded-box"
+    >
       <div v-for="(message, index) in chatHistory" :key="index">
         <div class="flex flex-row gap-x-2">
           <div>

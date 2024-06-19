@@ -25,7 +25,7 @@
                 <span class="flex justify-center">
                   <input
                     type="text"
-                    v-model="friendSearch"
+                    v-model="sendFriendRequestRef"
                     placeholder="Type here"
                     class="input input-bordered w-full max-w-xs"
                     @keyup.enter="sendFriendRequest"
@@ -56,7 +56,6 @@
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="friend.isOnline"
-        @update="reloadFriends"
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
@@ -66,7 +65,6 @@
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="!friend.isOnline"
-        @update="reloadFriends"
         :name="friend.name"
         :isOnline="friend.isOnline"
         :intraId="friend.intraId"
@@ -94,11 +92,12 @@ import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
+const userSocket: Socket = inject('userSocket')!
 
 const friends = ref(await get('api/user/friends'))
 const incomingFriendRequests = ref(await get('api/user/incomingFriendRequests'))
 
-const friendSearch = ref('')
+const sendFriendRequestRef = ref('')
 
 const alertMessage = ref('Friend request sent')
 
@@ -113,7 +112,7 @@ class Invitation {
     this.gamemode = gamemode
   }
 }
-const invitations = ref<Invitation[]>([])
+const invitations = ref<Invitation[]>(await get('api/game/invitations'))
 gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
@@ -124,7 +123,7 @@ async function reloadFriends() {
 }
 
 async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: friendSearch.value })
+  await post('api/user/sendFriendRequest', { intra_name: sendFriendRequestRef.value })
     .then(() => {
       alertMessage.value = alertPopup.value.showSuccess('Friend request sent')
     })
@@ -133,4 +132,17 @@ async function sendFriendRequest() {
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
+
+class IncomingFriendRequest {
+  intraId: number
+  name: string
+
+  constructor(intraId: number, name: string) {
+    this.intraId = intraId
+    this.name = name
+  }
+}
+userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
+  incomingFriendRequests.value.push(incomingFriendRequest)
+})
 </script>

@@ -25,7 +25,7 @@
         </button>
       </div>
 
-      <div class="flex flex-col gap-y-2">
+      <div class="flex flex-col gap-y-2 bg-base-100">
         <ChatList
           v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
           :chatsFn="() => myChats"
@@ -43,15 +43,15 @@
           :chatsFn="getProtectedChats"
           :onClickFn="clickedProtectedChat"
         />
-
-        <button
-          v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
-          :class="'btn btn-info'"
-          @click="chatCreationModal.show()"
-        >
-          Create chat
-        </button>
       </div>
+
+      <button
+        v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
+        :class="'btn btn-info'"
+        @click="chatCreationModal.show()"
+      >
+        Create chat
+      </button>
 
       <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
     </div>
@@ -320,36 +320,3 @@ function getProtectedChats() {
 
 getChats()
 </script>
-
-<style scoped>
-.scrollable-container {
-  width: 100%;
-  height: 700px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  overflow-y: auto;
-  word-break: break-all;
-}
-
-.scrollable-container-half {
-  width: 100%;
-  height: 350px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  overflow-y: auto;
-  word-break: break-all;
-}
-
-.line {
-  width: 100%;
-  padding: 5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.line:hover {
-  background-color: hsl(0, 0%, 30%);
-}
-</style>

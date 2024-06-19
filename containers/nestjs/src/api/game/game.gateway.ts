@@ -28,8 +28,8 @@ export class GameGateway {
 
   clients = new Map<number, Socket[]>();
 
-  afterInit() {
-    this.gameService.init(this.server);
+  async afterInit() {
+    await this.gameService.init(this.server);
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
@@ -49,15 +49,7 @@ export class GameGateway {
 
     try {
       const decoded = this.transJwtService.verify(jwt);
-      const intra_id = decoded.sub;
-      client.data.intra_id = intra_id;
-
-      let sockets = this.clients.get(intra_id);
-      if (!sockets) {
-        sockets = [];
-        this.clients.set(intra_id, sockets);
-      }
-      sockets.push(client);
+      client.data.intra_id = decoded.sub;
     } catch (e) {
       console.error('Disconnecting client, because verifying their jwt failed');
       client.emit('exception', {
@@ -65,11 +57,25 @@ export class GameGateway {
         redirectToLoginPage: true,
       });
     }
+
+    const intra_id = client.data.intra_id;
+    let sockets = this.clients.get(intra_id);
+    if (!sockets) {
+      sockets = [];
+      this.clients.set(intra_id, sockets);
+    }
+    sockets.push(client);
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
     await this.gameService.removeClient(client);
-    this.disconnectSocket(client, client.data.intra_id);
+
+    const intra_id = client.data.intra_id;
+    if (this.gameService.isInQueue(intra_id)) {
+      await this.gameService.leaveQueue(client, this.clients);
+    }
+
+    this.disconnectSocket(client, intra_id);
   }
 
   private disconnectSocket(client: Socket, intra_id: number) {
@@ -78,6 +84,7 @@ export class GameGateway {
     if (index > -1) {
       clientSockets.splice(index, 1);
     }
+
     if (clientSockets.length === 0) {
       this.clients.delete(intra_id);
     }
@@ -94,6 +101,7 @@ export class GameGateway {
   @SubscribeMessage('leaveQueue')
   async leaveQueue(@ConnectedSocket() client: Socket) {
     await this.gameService.leaveQueue(client, this.clients);
+    await this.gameService.removeClient(client);
   }
 
   @SubscribeMessage('createPrivateLobby')

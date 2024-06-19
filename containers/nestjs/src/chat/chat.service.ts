@@ -258,18 +258,20 @@ export class ChatService {
     body: string,
     date: Date,
   ) {
-    return this.getChat({ chat_id }, { history: true }).then(async (chat) => {
-      this.userService.findOne(sender).then(async (user) => {
-        const message = new Message();
-        message.sender_name = user.username;
-        message.sender = sender;
-        message.body = body;
-        message.date = date;
-        await this.messageRepository.save(message);
-        chat.history.push(message);
-        await this.chatRepository.save(chat);
-      });
-    });
+    return await this.getChat({ chat_id }, { history: true }).then(
+      async (chat) => {
+        await this.userService.findOne(sender).then(async (user) => {
+          const message = new Message();
+          message.sender_name = user.username;
+          message.sender = sender;
+          message.body = body;
+          message.date = date;
+          await this.messageRepository.save(message);
+          chat.history.push(message);
+          await this.chatRepository.save(chat);
+        });
+      },
+    );
   }
 
   private getTimeOfUnmute(days: number) {
@@ -376,13 +378,15 @@ export class ChatService {
 
   public async removeChat(chat: Chat) {
     chat.users = [];
-    chat.history.forEach((message) => this.messageRepository.remove(message));
+    chat.history.forEach(
+      async (message) => await this.messageRepository.remove(message),
+    );
     chat.history = [];
     chat.admins = [];
     chat.banned = [];
     chat.muted = [];
     await this.chatRepository.save(chat);
-    this.chatRepository.remove(chat);
+    await this.chatRepository.remove(chat);
   }
 
   public async leave(chat_id: string, intra_id: number) {
@@ -398,7 +402,7 @@ export class ChatService {
     ).then(async (chat) => {
       if (chat.owner == intra_id) {
         // console.log('removeChat called');
-        this.removeChat(chat);
+        await this.removeChat(chat);
         return;
       }
 

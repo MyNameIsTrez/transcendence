@@ -30,14 +30,16 @@ export default class LobbyManager {
     this.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
+  public isInQueue(intra_id: number) {
+    return this.intraIdToLobby.has(intra_id);
+  }
+
   public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
-
     if (!lobby) {
       throw new WsException("Can't leave queue when not in a lobby");
     }
 
-    this.removeClient(client);
     client.emit('inQueue', { inQueue: false });
 
     if (lobby.isPrivate) {
@@ -46,11 +48,14 @@ export default class LobbyManager {
         throw new WsException('Invited user is not online');
       }
 
-      await this.removeInvite(invitedSockets, lobby.invitedIntraId);
+      await this.updateInvitations(invitedSockets, lobby.invitedIntraId);
     }
   }
 
-  public async removeInvite(invitedSockets: Socket[], invitedIntraId: number) {
+  public async updateInvitations(
+    invitedSockets: Socket[],
+    invitedIntraId: number,
+  ) {
     const invitations = await this.getInvitations(invitedIntraId);
     invitedSockets.forEach((socket) => {
       socket.emit('updateInvitations', invitations);
@@ -125,47 +130,51 @@ export default class LobbyManager {
       const client_count = lobby.clients.size;
 
       if (client_count >= 2) {
-        lobby.saveMatch(await this.userService.findOne(client.data.intra_id));
-        this.userService.addLoss(client.data.intra_id);
+        await lobby.saveMatch(
+          await this.userService.findOne(client.data.intra_id),
+        );
+        await this.userService.addLoss(client.data.intra_id);
       }
 
-      lobby.removeClient(client);
+      await lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
       lobby.emit('gameOver', true);
 
       if (client_count >= 2) {
-        lobby.clients.forEach((otherClient) => {
-          this.userService.addWin(otherClient.data.intra_id);
+        lobby.clients.forEach(async (otherClient) => {
+          await this.userService.addWin(otherClient.data.intra_id);
         });
       }
 
-      this.removeLobby(lobby);
+      await this.removeLobby(lobby);
     }
   }
 
-  public startUpdateLoop() {
-    setInterval(() => {
-      this.lobbies.forEach((lobby) => {
-        lobby.update();
+  public async startUpdateLoop() {
+    setInterval(async () => {
+      await this.lobbies.forEach(async (lobby) => {
+        await lobby.update();
         if (lobby.didSomeoneWin()) {
-          this.removeLobby(lobby);
+          await this.removeLobby(lobby);
         }
       });
     }, this.updateIntervalMs);
   }
 
-  private removeLobby(lobby: Lobby) {
+  private async removeLobby(lobby: Lobby) {
     lobby.clients.forEach((client) => {
       this.intraIdToLobby.delete(client.data.intra_id);
     });
 
-    lobby.disconnectClients();
+    await lobby.disconnectClients();
     this.lobbies.delete(lobby.id);
   }
 
   public async getInvitations(intra_id: number) {
     const lobbies = await Array.from(this.lobbies.values());
+
+    // The .filter() and .map() here could be replaced with a .reduce()
 
     const filteredLobbies = lobbies.filter(
       (lobby) =>
