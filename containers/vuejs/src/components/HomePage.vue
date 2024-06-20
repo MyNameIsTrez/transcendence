@@ -1,23 +1,21 @@
 <template>
   <AlertPopup ref="alertPopup" />
 
-  <div class="flex flex-col overflow-hidden w-full lg:flex-row">
-    <div class="flex-grow w-96 h-screen overflow-auto no-scrollbar bg-base-300 rounded-box">
+  <div class="flex w-full">
+    <div class="min-w-96 w-1/4 bg-base-300">
       <Sidebar />
     </div>
-    <div class="grid h-screen card bg-base-300 rounded-box place-items-center">
+    <div class="w-full bg-base-300">
       <PongCanvas />
     </div>
-    <div class="flex-grow w-96 h-screen card bg-base-300 rounded-box place-items-stretch">
+    <div class="w-1/4 bg-base-300">
       <Chat />
     </div>
   </div>
-  <GameHeader />
 </template>
 
 <script setup lang="ts">
 import Chat from './Chat.vue'
-import GameHeader from './GameHeader.vue'
 import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
 import { useRouter } from 'vue-router'

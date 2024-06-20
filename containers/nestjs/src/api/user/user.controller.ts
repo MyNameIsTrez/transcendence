@@ -18,6 +18,12 @@ import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 import { Transform, TransformFnParams } from 'class-transformer';
 
+class RevokeFriendDto {
+  @IsInt()
+  @IsPositive()
+  friend_id: number;
+}
+
 class RemoveFriendDto {
   @IsInt()
   @IsPositive()
@@ -132,6 +138,11 @@ export class UserController {
     return await this.userService.getIncomingFriendRequests(req.user.intra_id);
   }
 
+  @Get('outgoingFriendRequests')
+  async getOutgoingFriendRequests(@Request() req) {
+    return await this.userService.getOutgoingFriendRequests(req.user.intra_id);
+  }
+
   @Post('sendFriendRequest')
   async sendFriendRequest(@Request() req, @Body() body) {
     await this.userService.sendFriendRequest(
@@ -153,6 +164,14 @@ export class UserController {
     await this.userService.declineFriendRequest(
       req.user.intra_id,
       body.sender_id,
+    );
+  }
+
+  @Post('revokeFriendRequest')
+  async revokeFriendRequest(@Request() req, @Body() body: RevokeFriendDto) {
+    await this.userService.revokeFriendRequest(
+      req.user.intra_id,
+      body.friend_id,
     );
   }
 

@@ -1,5 +1,8 @@
 <template>
-  <button class="play-button" @click="emit('clicked')">
+  <button
+    class="play-button text-center bg-slate-50 hover:bg-slate-700 text-black"
+    @click="emit('clicked')"
+  >
     {{ buttonText }}
   </button>
 </template>
@@ -13,14 +16,7 @@ defineProps({
 </script>
 <style>
 .play-button {
-  background-color: white;
-  color: black;
-  text-align: center;
-  font-size: 1vw;
-  padding: 1.5vw 3vw;
-  margin: 6vw;
-}
-.play-button:hover {
-  background-color: #333; /* Darker shade on hover */
+  padding: 1.5em 3em;
+  margin: 3em;
 }
 </style>
