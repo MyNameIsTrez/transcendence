@@ -6,11 +6,26 @@
           {{ username }}
         </div>
 
-        <button v-if="isFriendRef" :class="`btn btn-square btn-error justify-self-end`">
-          <span @click="removeFriend" class="material-symbols-outlined">person_remove</span>
+        <button
+          v-if="isFriendRequestedRef"
+          :class="`btn btn-square btn-warning justify-self-end`"
+          @click="revokeFriendRequest"
+        >
+          <span class="material-symbols-outlined">person_cancel</span>
         </button>
-        <button v-else :class="`btn btn-square btn-primary justify-self-end`">
-          <span @click="sendFriendRequest" class="material-symbols-outlined">person_add</span>
+        <button
+          v-if="isFriendRef"
+          :class="`btn btn-square btn-error justify-self-end`"
+          @click="removeFriend"
+        >
+          <span class="material-symbols-outlined">person_remove</span>
+        </button>
+        <button
+          v-if="!isFriendRef && !isFriendRequestedRef"
+          :class="`btn btn-square btn-primary justify-self-end`"
+          @click="sendFriendRequest"
+        >
+          <span class="material-symbols-outlined">person_add</span>
         </button>
       </span>
       <br />
@@ -49,7 +64,7 @@
                 match.players[1].intra_id === match.disconnectedPlayer.intra_id
               "
               :leftPlayerIntraId="match.players[0].intra_id"
-              :myIntraId="user.intra_id"
+              :myIntraId="otherUser.intra_id"
               :leftPlayerScore="match.leftScore"
               :rightPlayerScore="match.rightScore"
               :gamemode="match.gamemode"
@@ -82,10 +97,10 @@ const gameSocket: Socket = inject('gameSocket')!
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
 
-const user = await get(`api/user/other/${intra_id}`)
-const username = user.username
-const wins = user.wins
-const losses = user.losses
+const otherUser = await get(`api/user/other/${intra_id}`)
+const username = otherUser.username
+const wins = otherUser.wins
+const losses = otherUser.losses
 const profilePicture = await getImage(`api/user/profilePicture/${intra_id}`)
 const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
@@ -104,7 +119,27 @@ class Friend {
 }
 
 const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
-const isFriendRef = ref(friends.value.findIndex((item) => item.intraId === user.intra_id) !== -1)
+
+const isFriendRef = ref(
+  friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+)
+
+class OutgoingFriendRequest {
+  intraId: number
+  name: string
+
+  constructor(intraId: number, name: string) {
+    this.intraId = intraId
+    this.name = name
+  }
+}
+const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
+  await get('api/user/outgoingFriendRequests')
+)
+
+const isFriendRequestedRef = ref(
+  outgoingFriendRequests.value.findIndex((request) => request.intraId === otherUser.intra_id) !== -1
+)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
@@ -124,13 +159,13 @@ async function handleBlock() {
     })
 }
 
-async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: user.intra_name })
+async function revokeFriendRequest() {
+  await post('api/user/revokeFriendRequest', { friend_id: intra_id })
     .then(() => {
-      alertPopup.value.showSuccess('Friend request sent')
+      isFriendRequestedRef.value = false
     })
     .catch((err) => {
-      console.error('sendFriendRequest error', err)
+      console.error('revokeFriendRequest error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
@@ -142,6 +177,18 @@ async function removeFriend() {
     })
     .catch((err) => {
       console.error('removeFriend error', err)
+      alertPopup.value.showWarning(err.response.data.message)
+    })
+}
+
+async function sendFriendRequest() {
+  await post('api/user/sendFriendRequest', { intra_name: otherUser.intra_name })
+    .then(() => {
+      alertPopup.value.showSuccess('Friend request sent')
+      isFriendRequestedRef.value = true
+    })
+    .catch((err) => {
+      console.error('sendFriendRequest error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
 }

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="startGame" class="score-board">
+  <div v-if="startGame" class="score-board select-none text-center text-white">
     {{ leftPlayerScore }}
     <span> - </span>
     {{ rightPlayerScore }}
@@ -31,12 +31,7 @@ gameSocket.on('pong', (data: any) => {
 
 <style>
 .score-board {
-  position: absolute;
-  top: 4vw;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2vw;
-  color: white;
-  pointer-events: none; /* Makes the cursor select the canvas behind it */
+  margin: 1em;
+  font-size: 1.5em;
 }
 </style>
