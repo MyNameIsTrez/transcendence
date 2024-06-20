@@ -4,7 +4,7 @@
       <button :class="'btn btn-accent'" @click="emit('onCloseChat')">
         <span class="material-symbols-outlined"> arrow_back </span>
       </button>
-      <button :class="'btn btn-primary ml-auto'" @click="emit('onCloseChat')">
+      <button :class="'btn btn-primary ml-auto'" @click="chatUserListModal.$.exposed.show()">
         <span class="material-symbols-outlined"> group </span>
       </button>
       <button :class="'btn btn-warning'" @click="chatSettingsModal.$.exposed.show()">
@@ -93,6 +93,11 @@
         class="w-full rounded-lg p-2 text-gray-800 bg-gray-200"
       />
     </div>
+    <ChatUserListModal
+      ref="chatUserListModal"
+      @onCloseUserListModal="chatUserListModal.$.exposed.hide()"
+      :currentChat="currentChat"
+    />
     <ChatSettingsModal
       ref="chatSettingsModal"
       @onCloseSettingsModal="chatSettingsModal.$.exposed.hide()"
@@ -109,6 +114,7 @@ import type { Socket } from 'socket.io-client'
 import type Message from './MessageClass'
 import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
+import ChatUserListModal from './ChatUserListModal.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
 import getErrorMessage from '../getErrorMessage'
 
@@ -124,6 +130,7 @@ const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
 const chatRef = ref()
 const profilePictures = ref(new Map<Message['sender'], string>())
+const chatUserListModal = ref()
 const chatSettingsModal = ref()
 
 const emit = defineEmits(['onCloseChat'])
