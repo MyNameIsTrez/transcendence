@@ -10,24 +10,27 @@
 
         <div
           ref="chatRef"
-          class="flex flex-col gap-y-2 bg-base-100 border rounded-md border-solid p-4 mt-4 overflow-y-auto h-[400px]"
+          class="flex flex-col bg-base-100 border rounded-md border-solid p-4 mt-4 overflow-y-auto h-[400px]"
         >
           <div v-for="(user, index) in users" :key="index">
-            <router-link :to="`/user/${user.intra_id}`">
+            <!-- <router-link :to="`/user/${user.intra_id}`"> -->
+            <button
+              :class="`${user.intra_id === selectedIntraId ? 'bg-base-200' : ''} w-full p-2`"
+              @click="selectedIntraId = user.intra_id"
+            >
               <div class="flex flex-row gap-x-2">
-                <div>
-                  <div :class="`w-16 h-16 avatar`">
-                    <img
-                      class="rounded"
-                      :src="profilePictures.get(user.intra_id)"
-                      alt="Profile picture"
-                    />
-                  </div>
+                <div :class="`w-16 h-16 avatar`">
+                  <img
+                    class="rounded"
+                    :src="profilePictures.get(user.intra_id)"
+                    alt="Profile picture"
+                  />
                 </div>
 
                 <div class="mt-2">{{ user.username }}</div>
               </div>
-            </router-link>
+            </button>
+            <!-- </router-link> -->
           </div>
         </div>
       </div>
@@ -66,6 +69,12 @@ const props = defineProps({
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 console.log('users', users.value)
+
+// TODO: Remove this
+for (let i = 0; i < 100; i++) {
+  users.value.push(users.value[0])
+}
+
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
   async (user) =>
@@ -74,6 +83,8 @@ users.value.forEach(
       await getImage(`api/user/profilePicture/${user.intra_id}`)
     )
 )
+
+const selectedIntraId = ref()
 
 const modal = ref()
 
