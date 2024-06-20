@@ -1,9 +1,17 @@
 <template>
-  <div class="flex flex-col gap-y-2 mt-2">
-    <button @click="emit('onCloseChat')" class="flex gap-x-4">
-      <span class="material-symbols-outlined"> arrow_back </span>
-      {{ currentChat?.name }}
-    </button>
+  <div class="flex flex-col gap-y-2">
+    <div class="flex">
+      <button :class="'btn btn-accent'" @click="emit('onCloseChat')">
+        <span class="material-symbols-outlined"> arrow_back </span>
+      </button>
+      <button :class="'btn btn-primary ml-auto'" @click="chatUserListModal.$.exposed.show()">
+        <span class="material-symbols-outlined"> group </span>
+      </button>
+      <button :class="'btn btn-warning'" @click="chatSettingsModal.$.exposed.show()">
+        <span class="material-symbols-outlined"> settings </span>
+      </button>
+    </div>
+    {{ currentChat?.name }}
 
     <!-- <div v-if="iAmUser">
       <button class="btn btn-secondary" @click="leave">Leave chat</button>
@@ -45,7 +53,7 @@
 
     <div
       ref="chatRef"
-      class="scrollable-container flex flex-col gap-y-2 bg-base-100 border-base-300 rounded-box"
+      class="h-[700px] flex flex-col gap-y-2 bg-base-100 border border-md border-solid rounded-box p-2 overflow-y-auto break-all"
     >
       <div v-for="(message, index) in chatHistory" :key="index">
         <div class="flex flex-row gap-x-2">
@@ -85,6 +93,17 @@
         class="w-full rounded-lg p-2 text-gray-800 bg-gray-200"
       />
     </div>
+    <ChatUserListModal
+      ref="chatUserListModal"
+      @onCloseUserListModal="chatUserListModal.$.exposed.hide()"
+      :currentChat="currentChat"
+    />
+    <ChatSettingsModal
+      ref="chatSettingsModal"
+      @onCloseSettingsModal="chatSettingsModal.$.exposed.hide()"
+      @onCloseChat="emit('onCloseChat')"
+      :currentChat="currentChat"
+    />
   </div>
 </template>
 
@@ -95,6 +114,9 @@ import type { Socket } from 'socket.io-client'
 import type Message from './MessageClass'
 import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
+import ChatUserListModal from './ChatUserListModal.vue'
+import ChatSettingsModal from './ChatSettingsModal.vue'
+import getErrorMessage from '../getErrorMessage'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
@@ -108,6 +130,8 @@ const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
 const chatRef = ref()
 const profilePictures = ref(new Map<Message['sender'], string>())
+const chatUserListModal = ref()
+const chatSettingsModal = ref()
 
 const emit = defineEmits(['onCloseChat'])
 
@@ -197,24 +221,5 @@ async function getChat() {
   }
 }
 
-function getErrorMessage(msg: string | string[]) {
-  if (typeof msg === 'string') {
-    return msg
-  }
-  return msg.join('\n')
-}
-
 getChat()
 </script>
-
-<style scoped>
-.scrollable-container {
-  width: 100%;
-  height: 700px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  overflow-y: auto;
-  word-break: break-all;
-}
-</style>

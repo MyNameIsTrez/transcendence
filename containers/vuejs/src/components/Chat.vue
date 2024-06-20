@@ -48,12 +48,15 @@
       <button
         v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
         :class="'btn btn-info'"
-        @click="chatCreationModal.show()"
+        @click="chatCreationModal.$.exposed.show()"
       >
         Create chat
       </button>
 
-      <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
+      <ChatCreationModal
+        ref="chatCreationModal"
+        @onCloseCreateChat="chatCreationModal.$.exposed.hide()"
+      />
     </div>
 
     <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
@@ -73,6 +76,7 @@ import ChatList from './chat/ChatList.vue'
 import AlertPopup from './AlertPopup.vue'
 import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
+import getErrorMessage from './getErrorMessage'
 
 enum ViewedBrowser {
   MY_CHATS,
@@ -249,7 +253,7 @@ function clickedPublicChat(chat: Chat) {
 function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
-  passwordModal.value.show()
+  passwordModal.value.$.exposed.show()
 }
 
 function enterProtectedChat(password_: string) {
@@ -259,7 +263,7 @@ function enterProtectedChat(password_: string) {
   }
 
   chatSocket.emit('joinChat', { chatId: selectedChat.value.chat_id, password: password_ }, () => {
-    passwordModal.value.hide()
+    passwordModal.value.$.exposed.hide()
 
     openChat(selectedChat.value!)
 
@@ -286,13 +290,6 @@ chatSocket.on('addChat', async (chat: Chat) => {
   }
 })
 chatSocket.on('removeChat', async (chat: Chat) => {})
-
-function getErrorMessage(msg: string | string[]) {
-  if (typeof msg === 'string') {
-    return msg
-  }
-  return msg.join('\n')
-}
 
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(getErrorMessage(data.message))

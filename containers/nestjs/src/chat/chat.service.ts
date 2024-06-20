@@ -2,10 +2,16 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  FindOptionsRelations,
+  FindOptionsWhere,
+  Repository,
+  UnorderedBulkOperation,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { Chat, Visibility } from './chat.entity';
@@ -14,15 +20,25 @@ import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
 
-class Info {
-  isAdmin: boolean;
-  isBanned: boolean;
-  isMute: boolean;
-  isOwner: boolean;
-  isProtected: boolean;
-  isUser: boolean;
-  isDirect: boolean;
+class MyInfo {
+  owner: boolean;
+  admin: boolean;
+  banned: boolean;
+  muted: boolean;
 }
+
+type EditFields = {
+  name?: string;
+  password?: string;
+  visibility?: Visibility;
+};
+
+type UserInfo = {
+  intra_id: number;
+  username: string;
+  owner: boolean;
+  admin: boolean;
+};
 
 @Injectable()
 export class ChatService {
@@ -110,6 +126,39 @@ export class ChatService {
         visibility: true,
       },
     );
+  }
+
+  public async myInfo(chat_id: string, intra_id: number): Promise<MyInfo> {
+    return {
+      owner: await this.isOwner(chat_id, intra_id),
+      admin: await this.isAdmin(chat_id, intra_id),
+      banned: await this.isBanned(chat_id, intra_id),
+      muted: await this.isMuted(chat_id, intra_id),
+    };
+  }
+
+  public async getUsers(
+    chat_id: string,
+    intra_id: number,
+  ): Promise<UserInfo[]> {
+    const chat = await this.getChat(
+      { chat_id },
+      { users: true, admins: true, muted: true },
+    );
+
+    if (!chat.users.some((other) => other.intra_id === intra_id)) {
+      throw new WsException('You are not a user of this chat');
+    }
+
+    return chat.users.map((user) => {
+      return {
+        intra_id: user.intra_id,
+        username: user.username,
+        owner: user.intra_id === chat.owner,
+        admin: chat.admins.some((other) => other.intra_id === user.intra_id),
+        mute: chat.muted.some((other) => other.intra_id === user.intra_id),
+      };
+    });
   }
 
   async addUser(chat_id: string, intra_id: number) {
@@ -281,7 +330,7 @@ export class ChatService {
     return date < current_date;
   }
 
-  public async isMute(chat_id: string, intra_id: number) {
+  public async isMuted(chat_id: string, intra_id: number) {
     return this.getChat({ chat_id }, { muted: true }).then(async (chat) => {
       let is_mute = false;
       chat.muted.forEach((mute) => {
@@ -322,18 +371,6 @@ export class ChatService {
       if (chat.users.length === 2) return true;
       return false;
     });
-  }
-
-  public async getInfo(chat_id: string, intra_id: number) {
-    const info = new Info();
-    info.isAdmin = await this.isAdmin(chat_id, intra_id);
-    info.isBanned = await this.isBanned(chat_id, intra_id);
-    info.isMute = await this.isMute(chat_id, intra_id);
-    info.isOwner = await this.isOwner(chat_id, intra_id);
-    info.isProtected = await this.isProtected(chat_id);
-    info.isUser = await this.isUser(chat_id, intra_id);
-    info.isDirect = await this.isDirect(chat_id);
-    return info;
   }
 
   public async isLocked(chat_id: string, intra_id: number) {
@@ -393,6 +430,64 @@ export class ChatService {
     chat.muted = [];
     await this.chatRepository.save(chat);
     await this.chatRepository.remove(chat);
+  }
+
+  public async edit(
+    chat_id: string,
+    intra_id: number,
+    edit_fields: EditFields,
+  ): Promise<EditFields> {
+    return await this.getChat({ chat_id }).then(async (chat) => {
+      if (intra_id !== chat.owner) {
+        throw new UnauthorizedException(
+          'You are unauthorized to use this action',
+        );
+      }
+      if (edit_fields.name !== undefined) {
+        if (edit_fields.name === '') {
+          throw new BadRequestException('Name cannot be empty');
+        }
+        chat.name = edit_fields.name;
+      }
+
+      if (edit_fields.visibility !== undefined) {
+        if (
+          chat.visibility !== Visibility.PROTECTED &&
+          edit_fields.visibility === Visibility.PROTECTED &&
+          edit_fields.password === undefined
+        ) {
+          throw new BadRequestException('Password cannot be empty');
+        }
+        if (
+          edit_fields.visibility !== Visibility.PROTECTED &&
+          edit_fields.password !== undefined
+        ) {
+          throw new BadRequestException(
+            'Can only set a password for protected chats',
+          );
+        }
+        chat.visibility = edit_fields.visibility;
+        chat.hashed_password = '';
+        if (edit_fields.password !== undefined) {
+          if (edit_fields.password === '') {
+            throw new BadRequestException('Password cannot be empty');
+          }
+          chat.hashed_password = await this.hashPassword(edit_fields.password);
+        }
+      } else if (edit_fields.password !== undefined) {
+        if (chat.visibility !== Visibility.PROTECTED) {
+          throw new BadRequestException(
+            'Can only set a password for protected chats',
+          );
+        }
+        if (edit_fields.password === '') {
+          throw new BadRequestException('Password cannot be empty');
+        }
+        chat.hashed_password = await this.hashPassword(edit_fields.password);
+      }
+      await this.chatRepository.save(chat);
+      return { name: edit_fields.name, visibility: edit_fields.visibility };
+    });
   }
 
   public async leave(chat_id: string, intra_id: number) {
