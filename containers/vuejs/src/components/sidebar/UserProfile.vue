@@ -112,9 +112,26 @@ class Friend {
 }
 
 const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
-const isInvitedOrFriendRef = ref(
-  friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+
+const isFriend = friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+
+class OutgoingFriendRequest {
+  intraId: number
+  name: string
+
+  constructor(intraId: number, name: string) {
+    this.intraId = intraId
+    this.name = name
+  }
+}
+const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
+  await get('api/user/outgoingFriendRequests')
 )
+
+const isFriendRequested =
+  outgoingFriendRequests.value.findIndex((request) => request.intraId === otherUser.intra_id) !== -1
+
+const isInvitedOrFriendRef = ref(isFriend || isFriendRequested)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {

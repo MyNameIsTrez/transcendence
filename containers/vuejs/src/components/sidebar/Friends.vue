@@ -95,7 +95,6 @@ const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
 const friends = ref(await get('api/user/friends'))
-const incomingFriendRequests = ref(await get('api/user/incomingFriendRequests'))
 
 const sendFriendRequestRef = ref('')
 
@@ -142,6 +141,9 @@ class IncomingFriendRequest {
     this.name = name
   }
 }
+const incomingFriendRequests = ref<IncomingFriendRequest[]>(
+  await get('api/user/incomingFriendRequests')
+)
 userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
   incomingFriendRequests.value.push(incomingFriendRequest)
 })

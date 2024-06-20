@@ -427,6 +427,20 @@ export class UserService {
     }
   }
 
+  async getOutgoingFriendRequests(intra_id: number) {
+    const user = await this.findOne(intra_id, {
+      outgoing_friend_requests: true,
+    });
+    if (user) {
+      return user.outgoing_friend_requests.map((outgoing) => {
+        return {
+          intraId: outgoing.intra_id,
+          name: outgoing.username,
+        };
+      });
+    }
+  }
+
   async acceptFriendRequest(receiver_id: number, sender_id: number) {
     const receiver = await this.findOne(receiver_id, {
       incoming_friend_requests: true,

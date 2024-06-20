@@ -132,6 +132,11 @@ export class UserController {
     return await this.userService.getIncomingFriendRequests(req.user.intra_id);
   }
 
+  @Get('outgoingFriendRequests')
+  async getOutgoingFriendRequests(@Request() req) {
+    return await this.userService.getOutgoingFriendRequests(req.user.intra_id);
+  }
+
   @Post('sendFriendRequest')
   async sendFriendRequest(@Request() req, @Body() body) {
     await this.userService.sendFriendRequest(
