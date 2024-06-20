@@ -34,7 +34,7 @@
 
     <PlayButton v-if="!endOfGame && queueing" @clicked="leaveQueue" :buttonText="'Leave queue'" />
 
-    <form v-if="!endOfGame && !queueing" class="max-w-sm mx-auto">
+    <form v-if="!endOfGame && !queueing" class="mx-auto">
       <select
         v-model="gamemode"
         @change="updateGamemode"
