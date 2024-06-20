@@ -10,7 +10,7 @@
 
         <div
           ref="chatRef"
-          class="flex flex-col gap-y-2 bg-base-100 border rounded-md border-solid border-1 p-4 mt-4"
+          class="flex flex-col gap-y-2 bg-base-100 border rounded-md border-solid p-4 mt-4 overflow-y-auto h-[400px]"
         >
           <div v-for="(user, index) in users" :key="index">
             <router-link :to="`/user/${user.intra_id}`">

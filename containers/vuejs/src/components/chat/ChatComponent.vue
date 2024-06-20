@@ -53,7 +53,7 @@
 
     <div
       ref="chatRef"
-      class="scrollable-container flex flex-col gap-y-2 bg-base-100 border-base-300 rounded-box"
+      class="h-[700px] flex flex-col gap-y-2 bg-base-100 border border-md border-solid rounded-box p-2 overflow-y-auto break-all"
     >
       <div v-for="(message, index) in chatHistory" :key="index">
         <div class="flex flex-row gap-x-2">
@@ -223,15 +223,3 @@ async function getChat() {
 
 getChat()
 </script>
-
-<style scoped>
-.scrollable-container {
-  width: 100%;
-  height: 700px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  overflow-y: auto;
-  word-break: break-all;
-}
-</style>
