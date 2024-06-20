@@ -7,14 +7,21 @@
         </div>
 
         <button
-          v-if="isInvitedOrFriendRef"
+          v-if="isFriendRequestedRef"
+          :class="`btn btn-square btn-warning justify-self-end`"
+          @click="revokeFriendRequest"
+        >
+          <span class="material-symbols-outlined">person_cancel</span>
+        </button>
+        <button
+          v-if="isFriendRef"
           :class="`btn btn-square btn-error justify-self-end`"
           @click="removeFriend"
         >
           <span class="material-symbols-outlined">person_remove</span>
         </button>
         <button
-          v-else
+          v-if="!isFriendRef && !isFriendRequestedRef"
           :class="`btn btn-square btn-primary justify-self-end`"
           @click="sendFriendRequest"
         >
@@ -113,7 +120,9 @@ class Friend {
 
 const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
 
-const isFriend = friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+const isFriendRef = ref(
+  friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+)
 
 class OutgoingFriendRequest {
   intraId: number
@@ -128,10 +137,9 @@ const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
   await get('api/user/outgoingFriendRequests')
 )
 
-const isFriendRequested =
+const isFriendRequestedRef = ref(
   outgoingFriendRequests.value.findIndex((request) => request.intraId === otherUser.intra_id) !== -1
-
-const isInvitedOrFriendRef = ref(isFriend || isFriendRequested)
+)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
@@ -151,14 +159,13 @@ async function handleBlock() {
     })
 }
 
-async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: otherUser.intra_name })
+async function revokeFriendRequest() {
+  await post('api/user/revokeFriendRequest', { friend_id: intra_id })
     .then(() => {
-      alertPopup.value.showSuccess('Friend request sent')
-      isInvitedOrFriendRef.value = true
+      isFriendRequestedRef.value = false
     })
     .catch((err) => {
-      console.error('sendFriendRequest error', err)
+      console.error('revokeFriendRequest error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
@@ -166,10 +173,22 @@ async function sendFriendRequest() {
 async function removeFriend() {
   await post('api/user/removeFriend', { friend_id: intra_id })
     .then(() => {
-      isInvitedOrFriendRef.value = false
+      isFriendRef.value = false
     })
     .catch((err) => {
       console.error('removeFriend error', err)
+      alertPopup.value.showWarning(err.response.data.message)
+    })
+}
+
+async function sendFriendRequest() {
+  await post('api/user/sendFriendRequest', { intra_name: otherUser.intra_name })
+    .then(() => {
+      alertPopup.value.showSuccess('Friend request sent')
+      isFriendRequestedRef.value = true
+    })
+    .catch((err) => {
+      console.error('sendFriendRequest error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
 }

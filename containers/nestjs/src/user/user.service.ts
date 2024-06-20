@@ -205,8 +205,9 @@ export class UserService {
       blocked: true,
     });
     const other = await this.findOne(other_intra_id);
-    if (me.intra_id == other_intra_id) return;
-
+    if (me.intra_id == other_intra_id) {
+      throw new BadRequestException("You can't block yourself");
+    }
     await this.removeFriend(my_intra_id, other_intra_id);
 
     me.blocked.push(other);
@@ -460,7 +461,7 @@ export class UserService {
     await this.usersRepository.save([sender, receiver]);
   }
 
-  async declineFriendRequest(receiver_id: number, sender_id: number) {
+  public async declineFriendRequest(receiver_id: number, sender_id: number) {
     // console.log('Entered declineFriendRequest', receiver_id, sender_id);
     const receiver = await this.findOne(receiver_id, {
       incoming_friend_requests: true,
@@ -474,7 +475,33 @@ export class UserService {
     await this.usersRepository.save(receiver);
   }
 
-  async removeFriend(user_id: number, friend_id: number) {
+  public async revokeFriendRequest(user_id: number, other_id: number) {
+    const user = await this.findOne(user_id, {
+      friends: true,
+      outgoing_friend_requests: true,
+    });
+
+    const myFriendIndex = user.friends.findIndex(
+      (user) => user.intra_id === other_id,
+    );
+    if (myFriendIndex !== -1) {
+      throw new BadRequestException(
+        "You can't revoke a friend request once you're friends with the user",
+      );
+    }
+
+    if (
+      !user.outgoing_friend_requests.some((user) => user.intra_id === other_id)
+    ) {
+      throw new BadRequestException(
+        "You don't have this user in your outgoing friend requests",
+      );
+    }
+
+    return await this.declineFriendRequest(other_id, user_id);
+  }
+
+  public async removeFriend(user_id: number, friend_id: number) {
     const user = await this.findOne(user_id, {
       friends: true,
     });
@@ -486,14 +513,18 @@ export class UserService {
       (user) => user.intra_id === friend_id,
     );
     if (myFriendIndex === -1) {
-      return;
+      throw new BadRequestException(
+        "You don't have this user in your friends list",
+      );
     }
 
     const otherFriendIndex = friend.friends.findIndex(
       (user) => user.intra_id === user_id,
     );
     if (otherFriendIndex === -1) {
-      return;
+      throw new BadRequestException(
+        "The user doesn't have you in their friends list",
+      );
     }
 
     user.friends.splice(myFriendIndex, 1);
