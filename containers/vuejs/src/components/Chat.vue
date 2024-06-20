@@ -76,6 +76,7 @@ import ChatList from './chat/ChatList.vue'
 import AlertPopup from './AlertPopup.vue'
 import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
+import getErrorMessage from './getErrorMessage'
 
 enum ViewedBrowser {
   MY_CHATS,
@@ -289,13 +290,6 @@ chatSocket.on('addChat', async (chat: Chat) => {
   }
 })
 chatSocket.on('removeChat', async (chat: Chat) => {})
-
-function getErrorMessage(msg: string | string[]) {
-  if (typeof msg === 'string') {
-    return msg
-  }
-  return msg.join('\n')
-}
 
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(getErrorMessage(data.message))

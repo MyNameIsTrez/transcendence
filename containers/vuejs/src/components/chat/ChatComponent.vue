@@ -110,6 +110,7 @@ import type Message from './MessageClass'
 import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
+import getErrorMessage from '../getErrorMessage'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
@@ -211,13 +212,6 @@ async function getChat() {
 
     await scrollToBottom()
   }
-}
-
-function getErrorMessage(msg: string | string[]) {
-  if (typeof msg === 'string') {
-    return msg
-  }
-  return msg.join('\n')
 }
 
 getChat()

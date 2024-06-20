@@ -50,12 +50,15 @@
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
 import Visibility from './VisibilityEnum'
-import { inject, ref, type PropType } from 'vue'
+import { inject, ref, type PropType, type Ref } from 'vue'
 import { get, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
+import AlertPopup from '../AlertPopup.vue'
+import getErrorMessage from '../getErrorMessage'
 
 const chatSocket: Socket = inject('chatSocket')!
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({
   currentChat: Object as PropType<Chat>
@@ -99,9 +102,13 @@ function getVisibilityIcon(visibility: Visibility) {
 }
 
 function leaveChat() {
-  post(`api/chats/${props.currentChat?.chat_id}/leave`, {}).then((res) => {
-    emit('onCloseChat')
-  })
+  post(`api/chats/${props.currentChat?.chat_id}/leave`, {})
+    .then((res) => {
+      emit('onCloseChat')
+    })
+    .catch((err) => {
+      alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+    })
   // TODO: Add a catch if gone wrong
 }
 
@@ -110,9 +117,13 @@ async function saveChatSettings() {
     name: chatName.value,
     password: visibility.value === Visibility.PROTECTED ? password.value : undefined,
     visibility: visibility.value
-  }).then(() => {
-    emit('onCloseSettingsModal')
   })
+    .then(() => {
+      emit('onCloseSettingsModal')
+    })
+    .catch((err) => {
+      alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+    })
   // TODO: catch if gone wrong and use new central popup
 }
 
