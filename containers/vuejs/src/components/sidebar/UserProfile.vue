@@ -7,7 +7,7 @@
         </div>
 
         <button
-          v-if="isFriendRef"
+          v-if="isInvitedOrFriendRef"
           :class="`btn btn-square btn-error justify-self-end`"
           @click="removeFriend"
         >
@@ -57,7 +57,7 @@
                 match.players[1].intra_id === match.disconnectedPlayer.intra_id
               "
               :leftPlayerIntraId="match.players[0].intra_id"
-              :myIntraId="user.intra_id"
+              :myIntraId="otherUser.intra_id"
               :leftPlayerScore="match.leftScore"
               :rightPlayerScore="match.rightScore"
               :gamemode="match.gamemode"
@@ -90,10 +90,10 @@ const gameSocket: Socket = inject('gameSocket')!
 const props = defineProps({ intraId: String })
 const intra_id = parseInt(props.intraId!)
 
-const user = await get(`api/user/other/${intra_id}`)
-const username = user.username
-const wins = user.wins
-const losses = user.losses
+const otherUser = await get(`api/user/other/${intra_id}`)
+const username = otherUser.username
+const wins = otherUser.wins
+const losses = otherUser.losses
 const profilePicture = await getImage(`api/user/profilePicture/${intra_id}`)
 const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
 
@@ -112,7 +112,9 @@ class Friend {
 }
 
 const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
-const isFriendRef = ref(friends.value.findIndex((item) => item.intraId === user.intra_id) !== -1)
+const isInvitedOrFriendRef = ref(
+  friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
+)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
@@ -133,9 +135,10 @@ async function handleBlock() {
 }
 
 async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: user.intra_name })
+  await post('api/user/sendFriendRequest', { intra_name: otherUser.intra_name })
     .then(() => {
       alertPopup.value.showSuccess('Friend request sent')
+      isInvitedOrFriendRef.value = true
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)
@@ -146,7 +149,7 @@ async function sendFriendRequest() {
 async function removeFriend() {
   await post('api/user/removeFriend', { friend_id: intra_id })
     .then(() => {
-      isFriendRef.value = false
+      isInvitedOrFriendRef.value = false
     })
     .catch((err) => {
       console.error('removeFriend error', err)
