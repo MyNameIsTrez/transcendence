@@ -48,12 +48,15 @@
       <button
         v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
         :class="'btn btn-info'"
-        @click="chatCreationModal.show()"
+        @click="chatCreationModal.$.exposed.show()"
       >
         Create chat
       </button>
 
-      <ChatCreationModal ref="chatCreationModal" @onCloseCreateChat="chatCreationModal.hide()" />
+      <ChatCreationModal
+        ref="chatCreationModal"
+        @onCloseCreateChat="chatCreationModal.$.exposed.hide()"
+      />
     </div>
 
     <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
@@ -249,7 +252,7 @@ function clickedPublicChat(chat: Chat) {
 function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
-  passwordModal.value.show()
+  passwordModal.value.$.exposed.show()
 }
 
 function enterProtectedChat(password_: string) {
@@ -259,7 +262,7 @@ function enterProtectedChat(password_: string) {
   }
 
   chatSocket.emit('joinChat', { chatId: selectedChat.value.chat_id, password: password_ }, () => {
-    passwordModal.value.hide()
+    passwordModal.value.$.exposed.hide()
 
     openChat(selectedChat.value!)
 

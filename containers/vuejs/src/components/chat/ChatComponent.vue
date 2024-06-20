@@ -7,7 +7,7 @@
       <button :class="'btn btn-primary ml-auto'" @click="emit('onCloseChat')">
         <span class="material-symbols-outlined"> group </span>
       </button>
-      <button :class="'btn btn-warning'" @click="chatSettingsModal.show()">
+      <button :class="'btn btn-warning'" @click="chatSettingsModal.$.exposed.show()">
         <span class="material-symbols-outlined"> settings </span>
       </button>
     </div>
@@ -95,7 +95,7 @@
     </div>
     <ChatSettingsModal
       ref="chatSettingsModal"
-      @onCloseSettingsModal="chatSettingsModal.hide()"
+      @onCloseSettingsModal="chatSettingsModal.$.exposed.hide()"
       @onCloseChat="emit('onCloseChat')"
       :currentChat="currentChat"
     />
