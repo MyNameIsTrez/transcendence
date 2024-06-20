@@ -6,8 +6,30 @@
         <form method="dialog">
           <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
         </form>
-
         <h3 class="font-bold text-lg">User list</h3>
+
+        <div
+          ref="chatRef"
+          class="flex flex-col gap-y-2 bg-base-100 border rounded-md border-solid border-1 p-4 mt-4"
+        >
+          <div v-for="(user, index) in users" :key="index">
+            <router-link :to="`/user/${user.intra_id}`">
+              <div class="flex flex-row gap-x-2">
+                <div>
+                  <div :class="`w-16 h-16 avatar`">
+                    <img
+                      class="rounded"
+                      :src="profilePictures.get(user.intra_id)"
+                      alt="Profile picture"
+                    />
+                  </div>
+                </div>
+
+                <div class="mt-2">{{ user.username }}</div>
+              </div>
+            </router-link>
+          </div>
+        </div>
       </div>
     </span>
 
@@ -21,7 +43,7 @@
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
 import { inject, ref, type PropType, type Ref } from 'vue'
-import { get, post } from '@/httpRequests'
+import { get, getImage, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
@@ -44,6 +66,14 @@ const props = defineProps({
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 console.log('users', users.value)
+const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
+users.value.forEach(
+  async (user) =>
+    await profilePictures.value.set(
+      user.intra_id,
+      await getImage(`api/user/profilePicture/${user.intra_id}`)
+    )
+)
 
 const modal = ref()
 
