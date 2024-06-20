@@ -37,10 +37,17 @@ export class ChatController {
     return await this.chatService.getPublicAndProtectedChats();
   }
 
-  // TODO: Add `:chat_id/me`
   @Get(':chat_id/me')
   public async myInfo(@Request() req, @Param() chatIdDto: ChatIdDto) {
     return await this.chatService.myInfo(chatIdDto.chat_id, req.user.intra_id);
+  }
+
+  @Get(':chat_id/users')
+  public async getUsers(@Request() req, @Param() ChatIdDto: ChatIdDto) {
+    return await this.chatService.getUsers(
+      ChatIdDto.chat_id,
+      req.user.intra_id,
+    );
   }
 
   // TODO: change to `:chat_id/addAdmin

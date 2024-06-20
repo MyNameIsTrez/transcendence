@@ -27,6 +27,13 @@ import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
 import getErrorMessage from '../getErrorMessage'
 
+type UserInfo = {
+  intra_id: number
+  username: string
+  owner: boolean
+  admin: boolean
+}
+
 const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
@@ -35,6 +42,8 @@ const props = defineProps({
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
+console.log('users', users.value)
 
 const modal = ref()
 

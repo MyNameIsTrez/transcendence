@@ -33,6 +33,13 @@ type EditFields = {
   visibility?: Visibility;
 };
 
+type UserInfo = {
+  intra_id: number;
+  username: string;
+  owner: boolean;
+  admin: boolean;
+};
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -128,6 +135,28 @@ export class ChatService {
       banned: await this.isBanned(chat_id, intra_id),
       muted: await this.isMuted(chat_id, intra_id),
     };
+  }
+
+  public async getUsers(
+    chat_id: string,
+    intra_id: number,
+  ): Promise<UserInfo[]> {
+    const chat = await this.getChat({ chat_id }, { users: true, admins: true });
+    const users = chat.users;
+    const admins = chat.admins;
+
+    if (!users.some((other) => other.intra_id === intra_id)) {
+      throw new WsException('You are not a user of this chat');
+    }
+
+    return users.map((user) => {
+      return {
+        intra_id: user.intra_id,
+        username: user.username,
+        owner: user.intra_id === chat.owner,
+        admin: admins.some((other) => other.intra_id === user.intra_id),
+      };
+    });
   }
 
   async addUser(chat_id: string, intra_id: number) {
