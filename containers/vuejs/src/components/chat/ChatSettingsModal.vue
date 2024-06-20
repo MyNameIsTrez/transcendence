@@ -65,12 +65,10 @@ const props = defineProps({
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
-console.log(myInfo)
 
 const modal = ref()
 const visibility = ref(props.currentChat?.visibility)
 const chatName = ref(props.currentChat?.name)
-// const chatName = ref('')
 const password = ref('')
 
 const emit = defineEmits(['onCloseSettingsModal', 'onCloseChat'])
@@ -109,7 +107,6 @@ function leaveChat() {
     .catch((err) => {
       alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
     })
-  // TODO: Add a catch if gone wrong
 }
 
 async function saveChatSettings() {
@@ -124,24 +121,7 @@ async function saveChatSettings() {
     .catch((err) => {
       alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
     })
-  // TODO: catch if gone wrong and use new central popup
 }
-
-// async function createChat() {
-//   chatSocket.emit(
-//     'create',
-//     {
-//       name: chatName.value,
-//       visibility: visibility.value,
-//       password: password.value
-//     },
-//     () => {
-//       emit('onCloseCreateChat')
-//       password.value = ''
-//       chatName.value = ''
-//     }
-//   )
-// }
 
 defineExpose({
   show() {
