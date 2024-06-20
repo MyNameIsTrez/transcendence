@@ -141,20 +141,22 @@ export class ChatService {
     chat_id: string,
     intra_id: number,
   ): Promise<UserInfo[]> {
-    const chat = await this.getChat({ chat_id }, { users: true, admins: true });
-    const users = chat.users;
-    const admins = chat.admins;
+    const chat = await this.getChat(
+      { chat_id },
+      { users: true, admins: true, muted: true },
+    );
 
-    if (!users.some((other) => other.intra_id === intra_id)) {
+    if (!chat.users.some((other) => other.intra_id === intra_id)) {
       throw new WsException('You are not a user of this chat');
     }
 
-    return users.map((user) => {
+    return chat.users.map((user) => {
       return {
         intra_id: user.intra_id,
         username: user.username,
         owner: user.intra_id === chat.owner,
-        admin: admins.some((other) => other.intra_id === user.intra_id),
+        admin: chat.admins.some((other) => other.intra_id === user.intra_id),
+        mute: chat.muted.some((other) => other.intra_id === user.intra_id),
       };
     });
   }
