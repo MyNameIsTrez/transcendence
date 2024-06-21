@@ -66,7 +66,7 @@ import { get, getImage, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
-import getErrorMessage from '../getErrorMessage'
+import getErrorMessage from '../../getErrorMessage'
 
 type UserInfo = {
   intra_id: number

@@ -55,7 +55,7 @@ import { get, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
-import getErrorMessage from '../getErrorMessage'
+import getErrorMessage from '../../getErrorMessage'
 
 const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!

@@ -76,7 +76,7 @@ import ChatList from './chat/ChatList.vue'
 import AlertPopup from './AlertPopup.vue'
 import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
-import getErrorMessage from './getErrorMessage'
+import getErrorMessage from '../getErrorMessage'
 
 enum ViewedBrowser {
   MY_CHATS,

@@ -116,7 +116,7 @@ import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 import ChatUserListModal from './ChatUserListModal.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
-import getErrorMessage from '../getErrorMessage'
+import getErrorMessage from '../../getErrorMessage'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
