@@ -36,8 +36,9 @@ type EditFields = {
 type UserInfo = {
   intra_id: number;
   username: string;
-  owner: boolean;
-  admin: boolean;
+  is_owner: boolean;
+  is_admin: boolean;
+  is_mute: boolean;
 };
 
 @Injectable()
@@ -150,15 +151,21 @@ export class ChatService {
       throw new WsException('You are not a user of this chat');
     }
 
-    return chat.users.map((user) => {
+    const users = chat.users.map((user) => {
       return {
         intra_id: user.intra_id,
         username: user.username,
-        owner: user.intra_id === chat.owner,
-        admin: chat.admins.some((other) => other.intra_id === user.intra_id),
-        mute: chat.muted.some((other) => other.intra_id === user.intra_id),
+        is_owner: user.intra_id === chat.owner,
+        is_admin: chat.admins.some((other) => other.intra_id === user.intra_id),
+        is_mute: chat.muted.some((other) => other.intra_id === user.intra_id),
       };
     });
+
+    users.sort((user1, user2) =>
+      user1.is_owner ? -1 : +user2.is_admin - +user1.is_admin,
+    );
+
+    return users;
   }
 
   async addUser(chat_id: string, intra_id: number) {
