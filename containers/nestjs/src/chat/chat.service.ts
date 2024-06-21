@@ -191,7 +191,7 @@ export class ChatService {
 
     return this.getChat({ chat_id }, { users: true }).then(async (chat) => {
       if (!chat.users.some((other) => other.intra_id === user.intra_id)) {
-        throw new WsException("You can't enter a chat you haven't joined yet");
+        throw new WsException("You can't open a chat you haven't joined yet");
       }
     });
   }

@@ -53,10 +53,7 @@
         Create chat
       </button>
 
-      <ChatCreationModal
-        ref="chatCreationModal"
-        @onCloseCreateChat="chatCreationModal.$.exposed.hide()"
-      />
+      <ChatCreationModal ref="chatCreationModal" @onCreatedChat="createdChat" />
     </div>
 
     <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
@@ -254,6 +251,11 @@ function clickedProtectedChat(chat: Chat) {
   selectedChat.value = chat
 
   passwordModal.value.$.exposed.show()
+}
+
+function createdChat(chat: Chat) {
+  chatCreationModal.value.$.exposed.hide()
+  openChat(chat)
 }
 
 function enterProtectedChat(password_: string) {

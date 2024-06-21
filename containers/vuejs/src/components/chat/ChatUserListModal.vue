@@ -85,7 +85,6 @@ const props = defineProps({
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
-console.log('users', users.value)
 
 // TODO: Remove this
 // for (let i = 0; i < 100; i++) {

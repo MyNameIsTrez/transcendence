@@ -48,6 +48,7 @@
 import type { Socket } from 'socket.io-client'
 import Visibility from './VisibilityEnum'
 import { inject, ref } from 'vue'
+import Chat from './ChatClass'
 
 const chatSocket: Socket = inject('chatSocket')!
 
@@ -56,7 +57,7 @@ const visibility = ref(Visibility.PUBLIC)
 const chatName = ref('')
 const password = ref('')
 
-const emit = defineEmits(['onCloseCreateChat'])
+const emit = defineEmits(['onCreatedChat'])
 
 function getBtnColor(visibility: Visibility) {
   return visibility === Visibility.PUBLIC
@@ -92,8 +93,9 @@ async function createChat() {
       visibility: visibility.value,
       password: password.value
     },
-    () => {
-      emit('onCloseCreateChat')
+    (chat: Chat) => {
+      emit('onCreatedChat', chat)
+
       password.value = ''
       chatName.value = ''
     }
