@@ -73,7 +73,7 @@ export class ChatService {
       users: [current_user],
       visibility: visibility,
       hashed_password,
-      owner: intra_id,
+      owner: current_user,
       admins: [current_user],
     });
   }
@@ -144,7 +144,7 @@ export class ChatService {
   ): Promise<UserInfo[]> {
     const chat = await this.getChat(
       { chat_id },
-      { users: true, admins: true, muted: true },
+      { users: true, owner: true, admins: true, muted: true },
     );
 
     if (!chat.users.some((other) => other.intra_id === intra_id)) {
@@ -155,7 +155,7 @@ export class ChatService {
       return {
         intra_id: user.intra_id,
         username: user.username,
-        is_owner: user.intra_id === chat.owner,
+        is_owner: user.intra_id === chat.owner.intra_id,
         is_admin: chat.admins.some((other) => other.intra_id === user.intra_id),
         is_mute: chat.muted.some((other) => other.intra_id === user.intra_id),
       };
@@ -248,18 +248,19 @@ export class ChatService {
     // TODO: Don't allow us to kick ourselves
     // TODO: Don't allow admins to kick other admins
     // TODO: DO allow the owner to kick admins
-    return this.getChat({ chat_id }, { users: true, admins: true }).then(
-      async (chat) => {
-        const user = await this.userService.findOne(intra_id);
-        if (chat.owner == user.intra_id) return false;
+    return this.getChat(
+      { chat_id },
+      { users: true, owner: true, admins: true },
+    ).then(async (chat) => {
+      const user = await this.userService.findOne(intra_id);
+      if (chat.owner.intra_id == user.intra_id) return false;
 
-        chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
-        chat.admins = chat.admins.filter((u) => u.intra_id !== user.intra_id);
-        const result = await this.chatRepository.save(chat);
+      chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
+      chat.admins = chat.admins.filter((u) => u.intra_id !== user.intra_id);
+      const result = await this.chatRepository.save(chat);
 
-        return !!result;
-      },
-    );
+      return !!result;
+    });
   }
 
   public async getName(chat_id: string) {
@@ -285,8 +286,8 @@ export class ChatService {
   }
 
   public async isOwner(chat_id: string, intra_id: number) {
-    return this.getChat({ chat_id }).then(async (chat) => {
-      return chat.owner === intra_id;
+    return this.getChat({ chat_id }, { owner: true }).then(async (chat) => {
+      return chat.owner.intra_id === intra_id;
     });
   }
 
@@ -357,20 +358,21 @@ export class ChatService {
     // TODO: Don't allow us to mute ourselves
     // TODO: Don't allow admins to mute other admins
     // TODO: DO allow the owner to mute admins
-    return await this.getChat({ chat_id }, { admins: true, muted: true }).then(
-      async (chat) => {
-        const user = await this.userService.findOne(intra_id);
-        if (chat.owner == user.intra_id) return;
-        if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
+    return await this.getChat(
+      { chat_id },
+      { owner: true, admins: true, muted: true },
+    ).then(async (chat) => {
+      const user = await this.userService.findOne(intra_id);
+      if (chat.owner.intra_id == user.intra_id) return;
+      if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
 
-        const mute = new Mute();
-        mute.intra_id = user.intra_id;
-        mute.time_of_unmute = this.getTimeOfUnmute(days);
-        await this.muteRepository.save(mute);
-        chat.muted.push(mute);
-        return await this.chatRepository.save(chat);
-      },
-    );
+      const mute = new Mute();
+      mute.intra_id = user.intra_id;
+      mute.time_of_unmute = this.getTimeOfUnmute(days);
+      await this.muteRepository.save(mute);
+      chat.muted.push(mute);
+      return await this.chatRepository.save(chat);
+    });
   }
 
   private async isDirect(chat_id: string) {
@@ -444,57 +446,61 @@ export class ChatService {
     intra_id: number,
     edit_fields: EditFields,
   ): Promise<EditFields> {
-    return await this.getChat({ chat_id }).then(async (chat) => {
-      if (intra_id !== chat.owner) {
-        throw new UnauthorizedException(
-          'You are unauthorized to use this action',
-        );
-      }
-      if (edit_fields.name !== undefined) {
-        if (edit_fields.name === '') {
-          throw new BadRequestException('Name cannot be empty');
-        }
-        chat.name = edit_fields.name;
-      }
-
-      if (edit_fields.visibility !== undefined) {
-        if (
-          chat.visibility !== Visibility.PROTECTED &&
-          edit_fields.visibility === Visibility.PROTECTED &&
-          edit_fields.password === undefined
-        ) {
-          throw new BadRequestException('Password cannot be empty');
-        }
-        if (
-          edit_fields.visibility !== Visibility.PROTECTED &&
-          edit_fields.password !== undefined
-        ) {
-          throw new BadRequestException(
-            'Can only set a password for protected chats',
+    return await this.getChat({ chat_id }, { owner: true }).then(
+      async (chat) => {
+        if (intra_id !== chat.owner.intra_id) {
+          throw new UnauthorizedException(
+            'You are unauthorized to use this action',
           );
         }
-        chat.visibility = edit_fields.visibility;
-        chat.hashed_password = '';
-        if (edit_fields.password !== undefined) {
+        if (edit_fields.name !== undefined) {
+          if (edit_fields.name === '') {
+            throw new BadRequestException('Name cannot be empty');
+          }
+          chat.name = edit_fields.name;
+        }
+
+        if (edit_fields.visibility !== undefined) {
+          if (
+            chat.visibility !== Visibility.PROTECTED &&
+            edit_fields.visibility === Visibility.PROTECTED &&
+            edit_fields.password === undefined
+          ) {
+            throw new BadRequestException('Password cannot be empty');
+          }
+          if (
+            edit_fields.visibility !== Visibility.PROTECTED &&
+            edit_fields.password !== undefined
+          ) {
+            throw new BadRequestException(
+              'Can only set a password for protected chats',
+            );
+          }
+          chat.visibility = edit_fields.visibility;
+          chat.hashed_password = '';
+          if (edit_fields.password !== undefined) {
+            if (edit_fields.password === '') {
+              throw new BadRequestException('Password cannot be empty');
+            }
+            chat.hashed_password = await this.hashPassword(
+              edit_fields.password,
+            );
+          }
+        } else if (edit_fields.password !== undefined) {
+          if (chat.visibility !== Visibility.PROTECTED) {
+            throw new BadRequestException(
+              'Can only set a password for protected chats',
+            );
+          }
           if (edit_fields.password === '') {
             throw new BadRequestException('Password cannot be empty');
           }
           chat.hashed_password = await this.hashPassword(edit_fields.password);
         }
-      } else if (edit_fields.password !== undefined) {
-        if (chat.visibility !== Visibility.PROTECTED) {
-          throw new BadRequestException(
-            'Can only set a password for protected chats',
-          );
-        }
-        if (edit_fields.password === '') {
-          throw new BadRequestException('Password cannot be empty');
-        }
-        chat.hashed_password = await this.hashPassword(edit_fields.password);
-      }
-      await this.chatRepository.save(chat);
-      return { name: edit_fields.name, visibility: edit_fields.visibility };
-    });
+        await this.chatRepository.save(chat);
+        return { name: edit_fields.name, visibility: edit_fields.visibility };
+      },
+    );
   }
 
   public async leave(chat_id: string, intra_id: number) {
@@ -503,12 +509,13 @@ export class ChatService {
       {
         users: true,
         history: true,
+        owner: true,
         admins: true,
         banned: true,
         muted: true,
       },
     ).then(async (chat) => {
-      if (chat.owner == intra_id) {
+      if (chat.owner.intra_id == intra_id) {
         // console.log('removeChat called');
         await this.removeChat(chat);
         return;
