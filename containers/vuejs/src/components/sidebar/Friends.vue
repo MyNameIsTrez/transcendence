@@ -1,13 +1,6 @@
 <template>
   <div class="p-6">
     <div class="grid grid-cols-2 justify-items-stretch">
-      <div class="justify-self-start">
-        <div class="tooltip tooltip-right" data-tip="Reload friends">
-          <button class="btn btn-primary btn-square self-auto" @click="reloadFriends">
-            <span class="material-symbols-outlined">autorenew</span>
-          </button>
-        </div>
-      </div>
       <div class="justify-self-end">
         <div class="tooltip tooltip-left" data-tip="Add friend">
           <button class="btn btn-primary btn-square self-auto" onclick="addFriend.showModal()">
@@ -73,7 +66,6 @@
     <h1 class="text-center pt-2">---- Incoming ----</h1>
     <Incoming
       v-for="request in incomingFriendRequests"
-      @update="reloadFriends"
       :key="request.intraId"
       :name="request.name"
       :intraId="request.intraId"

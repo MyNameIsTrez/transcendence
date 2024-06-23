@@ -22,25 +22,28 @@
 
 <script setup lang="ts">
 import { post, getImage } from '../../../httpRequests'
+import { inject, type Ref } from 'vue'
+import AlertPopup from '../../AlertPopup.vue'
+import getErrorMessage from '../../../getErrorMessage'
+
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({
   name: String,
   intraId: Number
 })
 
-const emit = defineEmits(['update'])
-
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 
 async function acceptFriendRequest() {
-  await post('api/user/acceptFriendRequest', { sender_id: props.intraId }).then(() => {
-    emit('update')
+  await post('api/user/acceptFriendRequest', { sender_id: props.intraId }).catch((err) => {
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 
 async function declineFriendRequest() {
-  await post('api/user/declineFriendRequest', { sender_id: props.intraId }).then(() => {
-    emit('update')
+  await post('api/user/declineFriendRequest', { sender_id: props.intraId }).catch((err) => {
+    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
   })
 }
 </script>
