@@ -49,6 +49,7 @@ If you want to allow someone else to play with you, you'll need to change the `V
 ## 2fa commands
 
 ### user me
+
 ```
 curl localhost:4242/api/user/me -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjkxNDE4LCJpc1R3b0ZhY3RvckF1dGhlbnRpY2F0aW9uRW5hYmxlZCI6dHJ1ZSwiaXNUd29GYWN0b3JBdXRoZW50aWNhdGVkIjp0cnVlLCJpYXQiOjE3MTYyOTM4ODQsImV4cCI6MTcxODg4NTg4NH0.LUZDhMxi5z1Q6GUA8tMJsSuT9dh1z-MhaR_hjwC38vc'
 ```
