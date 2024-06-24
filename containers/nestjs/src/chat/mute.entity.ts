@@ -9,7 +9,7 @@ export class Mute {
   @Column('int')
   intra_id: number;
 
-  @Column('date')
+  @Column('timestamp')
   time_of_unmute: Date;
 
   @ManyToOne(() => Chat, (chat) => chat.history)

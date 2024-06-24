@@ -16,6 +16,7 @@ import {
   MuteDto,
   PasswordDto,
   ChangeVisibilityDto,
+  IntraIdDto,
 } from './chat.dto';
 import { Visibility } from 'src/chat/chat.entity';
 
@@ -98,24 +99,33 @@ export class ChatController {
     return await this.chatService.isOwner(dto.chat_id, dto.intra_id);
   }
 
-  // TODO: Replace with commented entrypoint below?
-  // TODO: Change to `:chat_id/mute`
-  @Post('mute')
-  public async mute(@Body() dto: MuteDto) {
-    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days);
+  // TODO: Make sure only admin+ people are allowed to call this
+  @Post(':chat_id/mute')
+  public async mute(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: MuteDto,
+  ) {
+    return await this.chatService.mute(
+      req.user.intra_id,
+      paramDto.chat_id,
+      bodyDto.intra_id,
+      bodyDto.endDate,
+    );
   }
 
-  // TODO: Change to `:chat_id/mute
   // TODO: Make sure only admin+ people are allowed to call this
-  //   @Post('mute/:chat_id/:intra_id')
-  //   public async mute(@Request() req, @Param() // TODO: Finish function definition)
-
-  // TODO: Replace with `:chat_id/me`
-  // TODO: Change to `:chat_id/isMute`
-  // TODO: Preferably only allow if user is in the chat but not that important
-  @Get('isMute/:chat_id/:intra_id')
-  public async isMute(@Param() dto: OtherUserDto) {
-    return await this.chatService.isMuted(dto.chat_id, dto.intra_id);
+  @Post(':chat_id/unmute')
+  public async unmute(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() intraIdDto: IntraIdDto,
+  ) {
+    return await this.chatService.unmute(
+      req.user.intra_id,
+      paramDto.chat_id,
+      intraIdDto.intra_id,
+    );
   }
 
   @Post(':chat_id/edit')

@@ -1,11 +1,14 @@
 import {
-  IsInt,
   IsEnum,
   IsNotEmpty,
   IsUUID,
-  IsPositive,
   ValidateIf,
+  IsPositive,
+  IsInt,
+  IsDate,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
 import { Visibility } from 'src/chat/chat.entity';
 
 //////////
@@ -15,7 +18,25 @@ export class ChatIdDto {
   chat_id: string;
 }
 
+export class MuteDto {
+  @IsInt()
+  @IsPositive()
+  intra_id: number;
+
+  @IsDate()
+  @Type(() => Date)
+  endDate: Date;
+}
+
+export class IntraIdDto {
+  @IsInt()
+  @IsPositive()
+  intra_id: number;
+}
+
 //////////
+
+// TODO: Get rid of all of these
 
 export class NameDto {
   @IsUUID()
@@ -31,20 +52,9 @@ export class OtherUserDto {
   @IsNotEmpty()
   chat_id: string;
 
-  @IsNotEmpty()
-  intra_id: number;
-}
-
-export class MuteDto {
-  @IsUUID()
-  chat_id: string;
-
-  @IsNotEmpty()
-  intra_id: number;
-
   @IsInt()
   @IsPositive()
-  days: number;
+  intra_id: number;
 }
 
 export class PasswordDto {
@@ -54,7 +64,8 @@ export class PasswordDto {
   @IsNotEmpty()
   password: string;
 
-  @IsNotEmpty()
+  @IsInt()
+  @IsPositive()
   intra_id: number;
 }
 
