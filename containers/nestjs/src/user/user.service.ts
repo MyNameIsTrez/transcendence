@@ -556,6 +556,16 @@ export class UserService {
     });
   }
 
+  public async getIntraId(intra_name: string) {
+    const user = await this.usersRepository.findOne({
+      where: { intra_name },
+    });
+    if (!user) {
+      throw new BadRequestException('No user with this intra name exists');
+    }
+    return user.intra_id;
+  }
+
   async getChatsOfUser(intra_id: number) {
     const user = await this.findOne(intra_id, {
       chats: true,

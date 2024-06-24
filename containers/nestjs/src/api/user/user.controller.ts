@@ -18,6 +18,11 @@ import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 import { Transform, TransformFnParams } from 'class-transformer';
 
+class GetIntraIdDto {
+  @IsNotEmpty()
+  intra_name;
+}
+
 class RevokeFriendDto {
   @IsInt()
   @IsPositive()
@@ -183,5 +188,12 @@ export class UserController {
   @Get('matchHistory/:intra_id')
   async getMatchHistory(@Param('intra_id') intra_id) {
     return (await this.userService.getMatchHistory(intra_id)).reverse();
+  }
+
+  @Get('getIntraId/:intra_name')
+  async getIntraId(@Param() dto: GetIntraIdDto) {
+    return await this.userService.getIntraId(
+      decodeURIComponent(dto.intra_name),
+    );
   }
 }

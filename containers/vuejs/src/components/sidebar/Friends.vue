@@ -10,31 +10,33 @@
         :gamemode="invite.gamemode"
       />
 
-      <div class="tooltip tooltip-left ml-auto" data-tip="Add friend">
-        <button class="btn btn-primary btn-square self-auto" onclick="addFriend.showModal()">
-          <span class="material-symbols-outlined">person_add</span>
+      <div class="tooltip tooltip-left ml-auto" data-tip="Search user">
+        <button class="btn btn-primary btn-square self-auto" onclick="searchUser.showModal()">
+          <span class="material-symbols-outlined">person_search</span>
         </button>
-        <dialog id="addFriend" class="modal">
+
+        <dialog id="searchUser" class="modal">
           <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-            <div class="modal-box w-auto justify-self-center">
+            <div class="modal-box w-auto justify-self-center pr-10">
               <!-- Adds a little close button in the top-right corner -->
               <form method="dialog">
                 <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
               </form>
 
-              <p class="py-4">Add a friend</p>
               <span class="flex justify-center">
                 <input
                   type="text"
-                  v-model="sendFriendRequestRef"
-                  placeholder="Type here"
+                  v-model="searchUserRef"
+                  placeholder="Intra name"
                   class="input input-bordered w-full max-w-xs"
-                  @keyup.enter="sendFriendRequest"
+                  @keyup.enter="searchUser"
                 />
-                <button class="btn" @click="sendFriendRequest">Add</button>
+
+                <button class="btn" @click="searchUser">Search</button>
               </span>
             </div>
           </span>
+
           <form method="dialog" class="modal-backdrop">
             <button>close</button>
           </form>
@@ -76,10 +78,11 @@
 import Friend from './friends/Friend.vue'
 import Incoming from './friends/Incoming.vue'
 import GameInvite from './friends/GameInvite.vue'
-import { get, post } from '../../httpRequests'
+import { get } from '../../httpRequests'
 import { inject, ref, type Ref } from 'vue'
 import { Socket } from 'socket.io-client'
 import AlertPopup from '../AlertPopup.vue'
+import { useRouter } from 'vue-router'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
@@ -87,9 +90,9 @@ const userSocket: Socket = inject('userSocket')!
 
 const friends = ref(await get('api/user/friends'))
 
-const sendFriendRequestRef = ref('')
+const searchUserRef = ref('')
 
-const alertMessage = ref('Friend request sent')
+const router = useRouter()
 
 class Invitation {
   inviterIntraId: number
@@ -107,20 +110,22 @@ gameSocket.on('updateInvitations', (invites: Invitation[]) => {
   invitations.value = invites
 })
 
-async function reloadFriends() {
-  friends.value = await get('api/user/friends')
-  incomingFriendRequests.value = await get('api/user/incomingFriendRequests')
-}
+async function searchUser() {
+  const intra_name = searchUserRef.value
 
-async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: sendFriendRequestRef.value })
-    .then(() => {
-      alertMessage.value = alertPopup.value.showSuccess('Friend request sent')
-    })
-    .catch((err) => {
-      console.error('sendFriendRequest error', err)
-      alertPopup.value.showWarning(err.response.data.message)
-    })
+  const encoded_intra_name = encodeURIComponent(intra_name)
+
+  if (encoded_intra_name.length === 0) {
+    alertPopup.value.showWarning('You need to enter an intra name')
+    return
+  }
+
+  const intra_id = await get(`api/user/getIntraId/${encoded_intra_name}`).catch((err) => {
+    console.error('searchUser error', err)
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+
+  router.replace({ path: `/user/${intra_id}` })
 }
 
 class IncomingFriendRequest {
