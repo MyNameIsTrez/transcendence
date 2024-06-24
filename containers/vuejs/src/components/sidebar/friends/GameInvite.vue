@@ -6,7 +6,7 @@
       </div>
     </figure>
     <div class="card-body h-28 grid justify-items-stretch pt-3">
-      <h2 class="text justify-self-start font-bold text-sm w-56">{{ inviterName }}</h2>
+      <h2 class="text justify-self-start font-bold text-sm">{{ inviterName }}</h2>
       <div class="grid">
         <div class="text text-xs text-purple-400">{{ gamemode }} game</div>
         <div class="place-self-end pt-1.5">
@@ -20,7 +20,6 @@
       </div>
     </div>
   </div>
-  <br />
 </template>
 
 <script setup lang="ts">

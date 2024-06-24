@@ -31,10 +31,10 @@
                   <div class="mt-2">{{ user.username }}</div>
 
                   <div class="flex flex-row">
-                    <span v-if="user.owner" class="material-symbols-outlined"> diamond </span>
-                    <span v-else-if="user.admin" class="material-symbols-outlined"> gavel </span>
+                    <span v-if="user.is_owner" class="material-symbols-outlined"> diamond </span>
+                    <span v-else-if="user.is_admin" class="material-symbols-outlined"> gavel </span>
 
-                    <span v-if="user.mute" class="material-symbols-outlined"> volume_off </span>
+                    <span v-if="user.is_mute" class="material-symbols-outlined"> volume_off </span>
                   </div>
                 </div>
               </div>
@@ -56,7 +56,7 @@
 		2. Ban
 		3. Mute
 		4. Admin
-	-->
+	  -->
 
     <!-- Allows clicking outside of the modal to close it -->
     <form method="dialog" class="modal-backdrop">
@@ -72,14 +72,13 @@ import { get, getImage, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
-import getErrorMessage from '../getErrorMessage'
 
 type UserInfo = {
   intra_id: number
   username: string
-  owner: boolean
-  admin: boolean
-  mute: boolean
+  is_owner: boolean
+  is_admin: boolean
+  is_mute: boolean
 }
 
 const chatSocket: Socket = inject('chatSocket')!
@@ -89,17 +88,22 @@ const props = defineProps({
   currentChat: Object as PropType<Chat>
 })
 
+defineExpose({
+  show() {
+    modal.value.showModal()
+  },
+  hide() {
+    modal.value.close()
+  }
+})
+
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
-console.log('users', users.value)
-
-// users.value[1].mute = true
-// users.value[1].admin = true
 
 // TODO: Remove this
-for (let i = 0; i < 100; i++) {
-  users.value.push(users.value[0])
-}
+// for (let i = 0; i < 100; i++) {
+//   users.value.push(users.value[0])
+// }
 
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
@@ -155,13 +159,4 @@ async function admin() {
 }
 
 const emit = defineEmits(['onCloseUserListModal'])
-
-defineExpose({
-  show() {
-    modal.value.showModal()
-  },
-  hide() {
-    modal.value.close()
-  }
-})
 </script>

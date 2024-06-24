@@ -195,7 +195,7 @@ export class ChatGateway {
       }
     }
 
-    return {};
+    return sentChat;
   }
 
   @SubscribeMessage('joinChat')

@@ -116,7 +116,6 @@ import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 import ChatUserListModal from './ChatUserListModal.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
-import getErrorMessage from '../getErrorMessage'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
@@ -180,7 +179,7 @@ async function retrieveProfilePicture(sender: Message['sender']) {
     await getImage('api/user/profilePicture/' + sender)
       .then((pfp) => profilePictures.value.set(sender, pfp))
       .catch((err) => {
-        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+        alertPopup.value.showWarning(err.response.data.message)
       })
   }
 }
@@ -199,7 +198,7 @@ async function getChat() {
     const blockedUsers = await get('api/user/blocked')
       .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
       .catch((err) => {
-        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+        alertPopup.value.showWarning(err.response.data.message)
       })
     const blocked = new Set<number>(blockedUsers)
 
@@ -212,7 +211,7 @@ async function getChat() {
           })
       )
       .catch((err) => {
-        alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+        alertPopup.value.showWarning(err.response.data.message)
       })
 
     await chatHistory.value.forEach(async (message) => await retrieveProfilePicture(message.sender))
