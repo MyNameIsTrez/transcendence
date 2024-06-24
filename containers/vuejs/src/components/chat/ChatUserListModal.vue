@@ -42,6 +42,12 @@
             <!-- </router-link> -->
           </div>
         </div>
+        <div v-if="myInfo.admin" class="flex flex-row">
+          <button class="flex-1 w-0 btn btn-warning">Mute</button>
+          <button class="flex-1 w-0 btn btn-warning">Kick</button>
+          <button class="flex-1 w-0 btn btn-warning">Ban</button>
+          <button class="flex-1 w-0 btn btn-warning">Admin</button>
+        </div>
       </div>
     </span>
 
@@ -107,6 +113,46 @@ users.value.forEach(
 const selectedIntraId = ref()
 
 const modal = ref()
+
+async function mute() {
+  await post(`api/chats/${props.currentChat?.chat_id}/mute`, { intra_id: selectedIntraId }).then(
+    (res) => {
+      users.value.forEach((user) => {
+        if (user.intra_id === res.intra_id) {
+          user.mute = res.mute
+        }
+      })
+    }
+  ) // TODO: Add a .catch() with error popup
+}
+
+async function kick() {
+  await post(`api/chats/${props.currentChat?.chat_id}/kick`, { intra_id: selectedIntraId }).then(
+    (res) => {
+      users.value.filter((user) => user.intra_id === res.intra_id)
+    }
+  ) // TODO: Add a .catch() with error popup
+}
+
+async function ban() {
+  await post(`api/chats/${props.currentChat?.chat_id}/ban`, { intra_id: selectedIntraId }).then(
+    (res) => {
+      users.value.filter((user) => user.intra_id === res.intra_id)
+    }
+  ) // TODO: Add a .catch() with error popup
+}
+
+async function admin() {
+  await post(`api/chats/${props.currentChat?.chat_id}/admin`, { intra_id: selectedIntraId }).then(
+    (res) => {
+      users.value.forEach((user) => {
+        if (user.intra_id === res.intra_id) {
+          user.admin = res.admin
+        }
+      })
+    }
+  ) // TODO: Add a .catch() with error popup
+}
 
 const emit = defineEmits(['onCloseUserListModal'])
 
