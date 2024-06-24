@@ -2,13 +2,6 @@
   <div class="flex flex-col p-6">
     <div class="grid grid-cols-[1fr_auto_1fr]">
       <h1 class="col-start-2 mt-3">Game invites</h1>
-      <GameInvite
-        v-for="invite in invitations"
-        :key="invite.inviterIntraId"
-        :inviterName="invite.inviterName"
-        :inviterIntraId="invite.inviterIntraId"
-        :gamemode="invite.gamemode"
-      />
 
       <div class="tooltip tooltip-left ml-auto" data-tip="Search user">
         <button class="btn btn-primary btn-square self-auto" onclick="searchUser.showModal()">
@@ -44,33 +37,47 @@
       </div>
     </div>
 
-    <h1 class="text-center pt-2">Friend invites</h1>
-    <Incoming
-      v-for="request in incomingFriendRequests"
-      :key="request.intraId"
-      :name="request.name"
-      :intraId="request.intraId"
+    <GameInvite
+      v-for="invite in invitations"
+      :key="invite.inviterIntraId"
+      :inviterName="invite.inviterName"
+      :inviterIntraId="invite.inviterIntraId"
+      :gamemode="invite.gamemode"
+      class="mt-3"
     />
 
-    <h1 class="text-center pt-5">Friends</h1>
-
-    <template v-for="friend in friends" :key="friend.intraId">
-      <Friend
-        v-if="friend.isOnline"
-        :name="friend.name"
-        :isOnline="friend.isOnline"
-        :intraId="friend.intraId"
+    <h1 class="text-center mt-3">Friend invites</h1>
+    <div>
+      <Incoming
+        v-for="request in incomingFriendRequests"
+        :key="request.intraId"
+        :name="request.name"
+        :intraId="request.intraId"
+        class="mt-6"
       />
-    </template>
+    </div>
 
-    <template v-for="friend in friends" :key="friend.intraId">
-      <Friend
-        v-if="!friend.isOnline"
-        :name="friend.name"
-        :isOnline="friend.isOnline"
-        :intraId="friend.intraId"
-      />
-    </template>
+    <h1 class="text-center mt-3 pt-3">Friends</h1>
+    <div>
+      <template v-for="friend in friends" :key="friend.intraId">
+        <Friend
+          v-if="friend.isOnline"
+          :name="friend.name"
+          :isOnline="friend.isOnline"
+          :intraId="friend.intraId"
+          class="mt-6"
+        />
+      </template>
+
+      <template v-for="friend in friends" :key="friend.intraId">
+        <Friend
+          v-if="!friend.isOnline"
+          :name="friend.name"
+          :isOnline="friend.isOnline"
+          :intraId="friend.intraId"
+        />
+      </template>
+    </div>
   </div>
 </template>
 
@@ -140,6 +147,7 @@ class IncomingFriendRequest {
 const incomingFriendRequests = ref<IncomingFriendRequest[]>(
   await get('api/user/incomingFriendRequests')
 )
+
 userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
   incomingFriendRequests.value.push(incomingFriendRequest)
 })

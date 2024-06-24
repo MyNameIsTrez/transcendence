@@ -28,8 +28,7 @@
           <span class="material-symbols-outlined">person_add</span>
         </button>
       </span>
-      <br />
-      <div class="flex justify-between">
+      <div class="flex justify-between mt-6">
         <div class="avatar justify-start">
           <div class="w-24 rounded">
             <img :src="profilePicture" />
@@ -40,8 +39,9 @@
             W/L ratio: <span class="text text-green-500">{{ wins }}</span
             >/<span class="text text-red-600">{{ losses }}</span>
           </div>
-          <br />
-          <button class="btn justify-self-end w-60" @click="inviteToGame">Invite to game</button>
+          <button class="btn justify-self-end w-60 mt-6" @click="inviteToGame">
+            Invite to game
+          </button>
         </div>
       </div>
 
@@ -72,11 +72,9 @@
           </div>
         </div>
       </div>
-      <br />
-      <Achievements :intraId="intra_id" />
+      <Achievements :intraId="intra_id" class="mt-6" />
 
-      <br />
-      <button class="btn text-xl" @click="handleBlock">
+      <button class="btn text-xl mt-6" @click="handleBlock">
         {{ blocked ? 'Unblock' : 'Block' }}
       </button>
     </div>

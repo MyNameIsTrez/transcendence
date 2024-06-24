@@ -5,19 +5,20 @@
         <img class="rounded w-28" :src="`${profilePicture}`" alt="Album" />
       </div>
     </figure>
+
     <div class="card-body h-28 grid justify-items-stretch">
-      <h2 class="text justify-self-start font-bold text-sm w-56">{{ name }}</h2>
+      <h2 class="text justify-self-start font-bold text-sm">{{ name }}</h2>
       <div class="justify-self-end">
         <div class="btn m-1 btn-success w-8 h-8 min-h-0" @click="acceptFriendRequest">
           <span class="material-symbols-outlined" style="font-size: 20px">person_check</span>
         </div>
+
         <div class="btn m-1 btn-error w-8 h-8 min-h-0" @click="declineFriendRequest">
           <span class="material-symbols-outlined" style="font-size: 20px">person_remove</span>
         </div>
       </div>
     </div>
   </div>
-  <br />
 </template>
 
 <script setup lang="ts">

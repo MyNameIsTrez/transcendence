@@ -1,6 +1,5 @@
 <template>
-  <ul class="text-center">
-    <br />
+  <ul class="text-center mt-6 space-y-5">
     <li>
       <a
         :href="
@@ -15,7 +14,7 @@
         >Log in</a
       >
     </li>
-    <br />
+
     <li v-if="allow_debug_user">
       <a :href="address + ':' + backend_port + '/loginFoo'">Log in as the debug user</a>
     </li>
