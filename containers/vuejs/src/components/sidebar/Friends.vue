@@ -1,51 +1,57 @@
 <template>
-  <div class="p-6">
-    <div class="grid grid-cols-2 justify-items-stretch">
-      <div class="justify-self-end">
-        <div class="tooltip tooltip-left" data-tip="Add friend">
-          <button class="btn btn-primary btn-square self-auto" onclick="addFriend.showModal()">
-            <span class="material-symbols-outlined">person_add</span>
-          </button>
-          <dialog id="addFriend" class="modal">
-            <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-              <div class="modal-box w-auto justify-self-center">
-                <!-- Adds a little close button in the top-right corner -->
-                <form method="dialog">
-                  <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
-                </form>
+  <div class="flex flex-col p-6">
+    <div class="grid grid-cols-[1fr_auto_1fr]">
+      <h1 class="col-start-2 mt-3">Game invites</h1>
+      <GameInvite
+        v-for="invite in invitations"
+        :key="invite.inviterIntraId"
+        :inviterName="invite.inviterName"
+        :inviterIntraId="invite.inviterIntraId"
+        :gamemode="invite.gamemode"
+      />
 
-                <p class="py-4">Add a friend</p>
-                <span class="flex justify-center">
-                  <input
-                    type="text"
-                    v-model="sendFriendRequestRef"
-                    placeholder="Type here"
-                    class="input input-bordered w-full max-w-xs"
-                    @keyup.enter="sendFriendRequest"
-                  />
-                  <button class="btn" @click="sendFriendRequest">Add</button>
-                </span>
-              </div>
-            </span>
-            <form method="dialog" class="modal-backdrop">
-              <button>close</button>
-            </form>
-          </dialog>
-        </div>
+      <div class="tooltip tooltip-left ml-auto" data-tip="Add friend">
+        <button class="btn btn-primary btn-square self-auto" onclick="addFriend.showModal()">
+          <span class="material-symbols-outlined">person_add</span>
+        </button>
+        <dialog id="addFriend" class="modal">
+          <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
+            <div class="modal-box w-auto justify-self-center">
+              <!-- Adds a little close button in the top-right corner -->
+              <form method="dialog">
+                <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
+              </form>
+
+              <p class="py-4">Add a friend</p>
+              <span class="flex justify-center">
+                <input
+                  type="text"
+                  v-model="sendFriendRequestRef"
+                  placeholder="Type here"
+                  class="input input-bordered w-full max-w-xs"
+                  @keyup.enter="sendFriendRequest"
+                />
+                <button class="btn" @click="sendFriendRequest">Add</button>
+              </span>
+            </div>
+          </span>
+          <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+          </form>
+        </dialog>
       </div>
     </div>
-    <h1 class="text-center">-- Game invites --</h1>
 
-    <GameInvite
-      v-for="invite in invitations"
-      :key="invite.inviterIntraId"
-      :inviterName="invite.inviterName"
-      :inviterIntraId="invite.inviterIntraId"
-      :gamemode="invite.gamemode"
+    <h1 class="text-center pt-2">Friend invites</h1>
+    <Incoming
+      v-for="request in incomingFriendRequests"
+      :key="request.intraId"
+      :name="request.name"
+      :intraId="request.intraId"
     />
 
-    <!-- TODO: zelfde zoals hieronder met een v-for door de invites loopen -->
-    <h1 class="text-center pt-2">----- Online -----</h1>
+    <h1 class="text-center pt-5">Friends</h1>
+
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="friend.isOnline"
@@ -54,7 +60,7 @@
         :intraId="friend.intraId"
       />
     </template>
-    <h1 class="text-center pt-2">----- Offline -----</h1>
+
     <template v-for="friend in friends" :key="friend.intraId">
       <Friend
         v-if="!friend.isOnline"
@@ -63,13 +69,6 @@
         :intraId="friend.intraId"
       />
     </template>
-    <h1 class="text-center pt-2">---- Incoming ----</h1>
-    <Incoming
-      v-for="request in incomingFriendRequests"
-      :key="request.intraId"
-      :name="request.name"
-      :intraId="request.intraId"
-    />
   </div>
 </template>
 
