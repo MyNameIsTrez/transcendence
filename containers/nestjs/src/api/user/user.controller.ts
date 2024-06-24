@@ -18,6 +18,12 @@ import { IsInt, IsNotEmpty, IsPositive, MaxLength } from 'class-validator';
 import { writeFileSync } from 'fs';
 import { Transform, TransformFnParams } from 'class-transformer';
 
+class SendFriendRequestDto {
+  @IsInt()
+  @IsPositive()
+  receiver_intra_id;
+}
+
 class GetIntraIdDto {
   @IsNotEmpty()
   intra_name;
@@ -149,10 +155,10 @@ export class UserController {
   }
 
   @Post('sendFriendRequest')
-  async sendFriendRequest(@Request() req, @Body() body) {
+  async sendFriendRequest(@Request() req, @Body() dto: SendFriendRequestDto) {
     await this.userService.sendFriendRequest(
       req.user.intra_id,
-      body.intra_name,
+      dto.receiver_intra_id,
     );
   }
 

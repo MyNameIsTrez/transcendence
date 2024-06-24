@@ -73,7 +73,6 @@ import ChatList from './chat/ChatList.vue'
 import AlertPopup from './AlertPopup.vue'
 import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
-import getErrorMessage from '../getErrorMessage'
 
 enum ViewedBrowser {
   MY_CHATS,
@@ -104,7 +103,7 @@ const chatCreationModal = ref()
 // async function leave() {
 //   if (currentChat.value) {
 //     await get('api/chats/leave/' + currentChat.value.chat_id).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     // getChats()
@@ -119,7 +118,7 @@ const chatCreationModal = ref()
 //       password: password.value,
 //       intra_id: 'foo'
 //     }).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     password.value = ''
@@ -135,7 +134,7 @@ const chatCreationModal = ref()
 //       visibility: visibility.value,
 //       password: password.value
 //     }).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     password.value = ''
@@ -156,7 +155,7 @@ function closeChat() {
 //       chat_id: currentChat.value.chat_id,
 //       intra_id: otherUserId
 //     }).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
@@ -171,7 +170,7 @@ function closeChat() {
 //       intra_id: otherUserId,
 //       days: parseInt(daysToMute.value)
 //     }).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     daysToMute.value = '0'
@@ -182,7 +181,7 @@ function closeChat() {
 //   if (currentChat.value) {
 //     // TODO: Turn this into a POST as "api/chats/:chat_id/kick/", and let otherUser be passed as the body
 //     await get('api/chats/kick/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
@@ -193,7 +192,7 @@ function closeChat() {
 //   if (currentChat.value) {
 //     // TODO: Turn this into a POST as "api/chats/:chat_id/ban/", and let otherUser be passed as the body
 //     await get('api/chats/ban/' + currentChat.value.chat_id + '/' + otherUser.value).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
@@ -211,7 +210,7 @@ function closeChat() {
 //       chat_id: currentChat.value.chat_id,
 //       intra_id: otherUserId
 //     }).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     otherUser.value = ''
@@ -222,7 +221,7 @@ function closeChat() {
 //   if (currentChat.value) {
 //     getChats()
 //     const info = await get('api/chats/info/' + currentChat.value.chat_id).catch((err) => {
-//       alertMessage.value = getErrorMessage(err.response.data.message)
+//       alertMessage.value = err.response.data.message
 //       alertPopup.value.show()
 //     })
 //     console.log('info', info)
@@ -275,11 +274,11 @@ function enterProtectedChat(password_: string) {
 
 async function getChats() {
   myChats.value = await get('api/user/myChats').catch((err) => {
-    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+    alertPopup.value.showWarning(err.response.data.message)
   })
 
   publicAndProtectedChats.value = await get('api/chats').catch((err) => {
-    alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+    alertPopup.value.showWarning(err.response.data.message)
   })
 }
 
@@ -294,7 +293,7 @@ chatSocket.on('addChat', async (chat: Chat) => {
 chatSocket.on('removeChat', async (chat: Chat) => {})
 
 chatSocket.on('exception', (data) => {
-  alertPopup.value.showWarning(getErrorMessage(data.message))
+  alertPopup.value.showWarning(data.message)
 })
 
 function getPublicChats() {

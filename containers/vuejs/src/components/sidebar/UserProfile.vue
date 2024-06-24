@@ -182,7 +182,7 @@ async function removeFriend() {
 }
 
 async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { intra_name: otherUser.intra_name })
+  await post('api/user/sendFriendRequest', { receiver_intra_id: otherUser.intra_id })
     .then(() => {
       alertPopup.value.showSuccess('Friend request sent')
       isFriendRequestedRef.value = true

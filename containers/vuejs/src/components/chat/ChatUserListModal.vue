@@ -66,7 +66,6 @@ import { get, getImage, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
-import getErrorMessage from '../../getErrorMessage'
 
 type UserInfo = {
   intra_id: number
@@ -81,6 +80,15 @@ const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({
   currentChat: Object as PropType<Chat>
+})
+
+defineExpose({
+  show() {
+    modal.value.showModal()
+  },
+  hide() {
+    modal.value.close()
+  }
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
@@ -105,13 +113,4 @@ const selectedIntraId = ref()
 const modal = ref()
 
 const emit = defineEmits(['onCloseUserListModal'])
-
-defineExpose({
-  show() {
-    modal.value.showModal()
-  },
-  hide() {
-    modal.value.close()
-  }
-})
 </script>

@@ -205,9 +205,7 @@ export class UserService {
       blocked: true,
     });
     const other = await this.findOne(other_intra_id);
-    if (me.intra_id == other_intra_id) {
-      throw new BadRequestException("You can't block yourself");
-    }
+
     await this.removeFriend(my_intra_id, other_intra_id);
 
     me.blocked.push(other);
@@ -305,26 +303,25 @@ export class UserService {
     return user.achievements;
   }
 
-  async sendFriendRequest(sender_id: number, receiver_name: string) {
+  async sendFriendRequest(sender_id: number, receiver_id: number) {
     const sender = await this.findOne(sender_id, {
       friends: true,
       incoming_friend_requests: true,
     });
 
-    const receiver = await this.usersRepository.findOne({
-      where: { intra_name: receiver_name },
-      relations: {
-        friends: true,
-        incoming_friend_requests: true,
-        blocked: true,
-      },
+    const receiver = await this.findOne(receiver_id, {
+      friends: true,
+      incoming_friend_requests: true,
+      blocked: true,
     });
     if (!receiver) {
       throw new BadRequestException('No user with this receiver_name exists');
     }
 
-    if (!receiver) {
-      throw new BadRequestException('User does not exist');
+    if (sender_id === receiver.intra_id) {
+      throw new BadRequestException(
+        "You can't send a friend request to yourself",
+      );
     }
 
     if (
@@ -375,12 +372,6 @@ export class UserService {
       await this.usersRepository.save(receiver);
 
       const receiverSockets = this.userSockets.get(receiver.intra_id);
-
-      if (!receiverSockets) {
-        throw new BadRequestException(
-          'Failed to get the sockets of the receiver',
-        );
-      }
 
       receiverSockets.forEach((receiverSocket) =>
         receiverSocket.emit('newIncomingFriendRequest', {
