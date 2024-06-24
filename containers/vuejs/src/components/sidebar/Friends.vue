@@ -120,12 +120,12 @@ async function searchUser() {
     return
   }
 
-  const intra_id = await get(`api/user/getIntraId/${encoded_intra_name}`).catch((err) => {
-    console.error('searchUser error', err)
-    alertPopup.value.showWarning(err.response.data.message)
-  })
-
-  router.replace({ path: `/user/${intra_id}` })
+  await get(`api/user/getIntraId/${encoded_intra_name}`)
+    .then((intra_id) => router.replace({ path: `/user/${intra_id}` }))
+    .catch((err) => {
+      console.error('searchUser error', err)
+      alertPopup.value.showWarning(err.response.data.message)
+    })
 }
 
 class IncomingFriendRequest {
