@@ -42,7 +42,14 @@ function showSuccess(message: string) {
 
 function showWarning(message: string) {
   alertTypeRef.value = AlertType.ALERT_WARNING
-  show(message)
+  show(getErrorMessage(message))
+}
+
+function getErrorMessage(msg: string | string[]) {
+  if (typeof msg === 'string') {
+    return msg
+  }
+  return msg.join('\n')
 }
 
 function show(message: string) {

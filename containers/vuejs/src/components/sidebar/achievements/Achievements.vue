@@ -2,7 +2,7 @@
   <div class="collapse w-auto bg-base-200">
     <input type="checkbox" />
     <div class="collapse-title text-xl text-center font-bold px-0">Achievements</div>
-    <div class="collapse-content">
+    <div class="collapse-content space-y-6">
       <div class="card w-auto bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="text-2xl font-bold text-center">Unlocked</h2>
@@ -12,7 +12,6 @@
           <Achievement v-if="lostHundred" name="How?!" description="Lose 100 times" />
         </div>
       </div>
-      <br />
       <div class="card w-auto bg-base-100 shadow-xl">
         <div class="card-body">
           <h2 class="text-2xl font-bold text-center">Locked</h2>

@@ -20,7 +20,6 @@
       </div>
     </div>
   </div>
-  <br />
 </template>
 
 <script setup lang="ts">

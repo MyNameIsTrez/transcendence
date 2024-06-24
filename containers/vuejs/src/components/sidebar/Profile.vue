@@ -28,8 +28,7 @@
                 <button class="btn" @click="changeUsername">Save</button>
               </span>
 
-              <br />
-              <p class="py-4">Upload new avatar</p>
+              <p class="py-4 mt-6">Upload new avatar</p>
               <input
                 name="file"
                 type="file"
@@ -53,8 +52,7 @@
         </dialog>
       </span>
 
-      <br />
-      <div class="flex justify-between">
+      <div class="flex justify-between mt-6">
         <div class="avatar justify-start">
           <div class="w-24 rounded">
             <img :src="profilePicture" />
@@ -96,11 +94,9 @@
           </div>
         </div>
       </div>
-      <br />
-      <Achievements :intraId="intraId" />
+      <Achievements :intraId="intraId" class="mt-6" />
 
-      <br />
-      <button class="btn w-auto text-xl" @click="logout">Logout</button>
+      <button class="btn w-auto text-xl mt-6" @click="logout">Logout</button>
     </div>
   </div>
 </template>

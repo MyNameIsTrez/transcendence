@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { User } from 'src/user/user.entity';
@@ -32,8 +39,8 @@ export class Chat {
   @Column()
   hashed_password: string;
 
-  @Column()
-  owner: number; // TODO: Replace with User
+  @ManyToOne(() => User, (user) => user.ownerChats)
+  owner: User;
 
   @ManyToMany(() => User, (user) => user.adminChats)
   admins: User[];

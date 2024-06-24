@@ -5,6 +5,7 @@ import {
   JoinTable,
   Entity,
   ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
@@ -34,6 +35,9 @@ export class User {
   @ManyToMany(() => Chat, (chat) => chat.users)
   @JoinTable()
   chats: Chat[];
+
+  @OneToMany(() => Chat, (chat) => chat.owner)
+  ownerChats: Chat[];
 
   @ManyToMany(() => Chat, (chat) => chat.admins)
   @JoinTable()

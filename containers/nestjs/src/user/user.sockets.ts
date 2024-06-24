@@ -29,12 +29,7 @@ export default class UserSockets {
     }
   }
 
-  public get(intra_id: number): Socket[] | null {
-    const clientSockets = this.clients.get(intra_id);
-    if (!clientSockets) {
-      console.error("Couldn't get client with intra_id", intra_id);
-      return null;
-    }
-    return clientSockets;
+  public get(intra_id: number): Socket[] {
+    return this.clients.get(intra_id) ?? [];
   }
 }

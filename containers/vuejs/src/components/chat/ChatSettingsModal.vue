@@ -48,20 +48,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Socket } from 'socket.io-client'
 import Visibility from './VisibilityEnum'
 import { inject, ref, type PropType, type Ref } from 'vue'
 import { get, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
-import getErrorMessage from '../getErrorMessage'
 
-const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({
   currentChat: Object as PropType<Chat>
+})
+
+defineExpose({
+  show() {
+    modal.value.showModal()
+  },
+  hide() {
+    modal.value.close()
+  }
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
@@ -105,7 +111,7 @@ function leaveChat() {
       emit('onCloseChat')
     })
     .catch((err) => {
-      alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
 
@@ -119,16 +125,7 @@ async function saveChatSettings() {
       emit('onCloseSettingsModal')
     })
     .catch((err) => {
-      alertPopup.value.showWarning(getErrorMessage(err.response.data.message))
+      alertPopup.value.showWarning(err.response.data.message)
     })
 }
-
-defineExpose({
-  show() {
-    modal.value.showModal()
-  },
-  hide() {
-    modal.value.close()
-  }
-})
 </script>

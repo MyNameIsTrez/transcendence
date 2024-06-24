@@ -6,6 +6,7 @@
         :name="blockedUser.name"
         :isOnline="blockedUser.isOnline"
         :intraId="blockedUser.intraId"
+        class="mb-6"
       />
     </template>
   </div>
