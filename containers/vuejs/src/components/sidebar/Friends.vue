@@ -43,7 +43,7 @@
       :inviterName="invite.inviterName"
       :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
-      class="mt-3"
+      class="my-3"
     />
 
     <h1 class="text-center mt-3">Friend invites</h1>
