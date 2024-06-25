@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -356,7 +357,7 @@ export class ChatService {
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
       if (!chat.admins.some((admin) => admin.intra_id === muter_id)) {
-        throw new BadRequestException('You are not an admin');
+        throw new ForbiddenException('You are not an admin');
       }
 
       if (!chat.users.some((user) => user.intra_id === muted_id)) {
@@ -364,14 +365,14 @@ export class ChatService {
       }
 
       if (chat.owner.intra_id === muted_id) {
-        throw new BadRequestException("Can't mute the owner");
+        throw new ForbiddenException("Can't mute the owner");
       }
 
       if (
         chat.owner.intra_id !== muter_id &&
         chat.admins.some((admin) => admin.intra_id === muted_id)
       ) {
-        throw new BadRequestException("Can't mute another admin");
+        throw new ForbiddenException("Can't mute another admin");
       }
 
       let mute = chat.muted.find((mute) => mute.intra_id === muted_id);
@@ -399,7 +400,7 @@ export class ChatService {
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
       if (!chat.admins.some((admin) => admin.intra_id === unmuter_id)) {
-        throw new BadRequestException('You are not an admin');
+        throw new ForbiddenException('You are not an admin');
       }
 
       if (!chat.users.some((user) => user.intra_id === unmuted_id)) {
@@ -407,14 +408,14 @@ export class ChatService {
       }
 
       if (chat.owner.intra_id === unmuted_id) {
-        throw new BadRequestException("Can't unmute the owner");
+        throw new ForbiddenException("Can't unmute the owner");
       }
 
       if (
         chat.owner.intra_id !== unmuter_id &&
         chat.admins.some((admin) => admin.intra_id === unmuted_id)
       ) {
-        throw new BadRequestException("Can't unmute another admin");
+        throw new ForbiddenException("Can't unmute another admin");
       }
 
       const mute = chat.muted.find((mute) => mute.intra_id === unmuted_id);
