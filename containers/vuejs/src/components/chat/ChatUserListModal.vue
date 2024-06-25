@@ -42,7 +42,7 @@
             <!-- </router-link> -->
           </div>
         </div>
-        <div v-if="myInfo.admin && selectedUser" class="flex flex-row">
+        <div v-if="myInfo.admin && selectedUser" class="flex flex-row space-x-1 mt-1">
           <button
             v-if="!selectedUser.is_mute"
             class="flex-1 w-0 btn btn-warning"
