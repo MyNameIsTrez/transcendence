@@ -51,9 +51,9 @@
             Mute
           </button>
           <button v-else class="flex-1 w-0 btn btn-warning" @click="unmute">Unmute</button>
-          <button class="flex-1 w-0 btn btn-warning">Kick</button>
-          <button class="flex-1 w-0 btn btn-warning">Ban</button>
-          <button class="flex-1 w-0 btn btn-warning">Admin</button>
+          <button class="flex-1 w-0 btn btn-warning" @click="kick">Kick</button>
+          <button class="flex-1 w-0 btn btn-warning" @click="ban">Ban</button>
+          <button class="flex-1 w-0 btn btn-warning" @click="admin">Admin</button>
         </div>
       </div>
     </span>
@@ -164,7 +164,7 @@ async function kick() {
     intra_id: selectedUser.value?.intra_id
   })
     .then((res) => {
-      users.value.filter((user) => user.intra_id === res.intra_id)
+      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
     })
     .catch((err) => {
       alertPopup.value.showWarning(err.response.data.message)
@@ -176,7 +176,7 @@ async function ban() {
     intra_id: selectedUser.value?.intra_id
   })
     .then((res) => {
-      users.value.filter((user) => user.intra_id === res.intra_id)
+      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
     })
     .catch((err) => {
       alertPopup.value.showWarning(err.response.data.message)

@@ -229,43 +229,87 @@ export class ChatService {
       });
   }
 
-  public async banUser(chat_id: string, intra_id: number) {
-    // TODO: Don't allow us to ban someone, when we aren't an admin/owner
-    // TODO: Don't allow us to ban the owner
-    // TODO: Don't allow us to ban ourselves
-    // TODO: Don't allow admins to ban other admins
-    // TODO: DO allow the owner to ban admins
-    // TODO: Don't call kickUser() from this method
-    if (!(await this.kickUser(chat_id, intra_id))) return false;
+  public async banUser(chat_id: string, banned_id: number, banner_id: number) {
+    return this.getChat(
+      { chat_id },
+      { users: true, banned: true, owner: true, admins: true },
+    ).then(async (chat) => {
+      if (!chat.admins.some((admin) => admin.intra_id === banner_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
 
-    return this.getChat({ chat_id }, { users: true, banned: true }).then(
-      async (chat) => {
-        const user = await this.userService.findOne(intra_id);
-        chat.banned.push(user);
-        const result = await this.chatRepository.save(chat);
-        return !!result;
-      },
-    );
+      if (!chat.users.some((user) => user.intra_id === banned_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.banned.some((ban) => ban.intra_id === banned_id)) {
+        throw new BadRequestException('User already banned');
+      }
+
+      if (chat.owner.intra_id === banned_id) {
+        throw new ForbiddenException("Can't ban the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== banner_id &&
+        chat.admins.some((admin) => admin.intra_id === banned_id)
+      ) {
+        throw new ForbiddenException("Can't ban another admin");
+      }
+
+      const user = await this.userService.findOne(banned_id);
+      if (!user) {
+        throw new BadRequestException("Couldn't fetch user from database");
+      }
+
+      chat.users = chat.users.filter((user) => user.intra_id !== banned_id);
+      chat.admins = chat.admins.filter((user) => user.intra_id !== banned_id);
+      chat.banned.push(user);
+
+      await this.chatRepository.save(chat);
+
+      return { intra_id: banned_id, is_banned: true };
+    });
   }
 
-  public async kickUser(chat_id: string, intra_id: number) {
-    // TODO: Don't allow us to kick someone, when we aren't an admin/owner
-    // TODO: Don't allow us to kick the owner
-    // TODO: Don't allow us to kick ourselves
-    // TODO: Don't allow admins to kick other admins
-    // TODO: DO allow the owner to kick admins
+  public async kickUser(chat_id: string, kicked_id: number, kicker_id: number) {
     return this.getChat(
       { chat_id },
       { users: true, owner: true, admins: true },
     ).then(async (chat) => {
-      const user = await this.userService.findOne(intra_id);
-      if (chat.owner.intra_id == user.intra_id) return false;
+      if (!chat.admins.some((admin) => admin.intra_id === kicker_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
 
-      chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
-      chat.admins = chat.admins.filter((u) => u.intra_id !== user.intra_id);
-      const result = await this.chatRepository.save(chat);
+      if (!chat.users.some((user) => user.intra_id === kicked_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
 
-      return !!result;
+      if (chat.owner.intra_id === kicked_id) {
+        throw new ForbiddenException("Can't kick the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== kicker_id &&
+        chat.admins.some((admin) => admin.intra_id === kicked_id)
+      ) {
+        throw new ForbiddenException("Can't kick another admin");
+      }
+
+      chat.users = chat.users.filter((user) => user.intra_id !== kicked_id);
+      chat.admins = chat.admins.filter((user) => user.intra_id !== kicked_id);
+
+      await this.chatRepository.save(chat);
+
+      return { intra_id: kicked_id, is_kicked: true };
+
+      // if (chat.owner.intra_id == kicker_id) return false;
+
+      // chat.users = chat.users.filter((u) => u.intra_id !== kicker_id);
+      // chat.admins = chat.admins.filter((u) => u.intra_id !== kicker_id);
+      // const result = await this.chatRepository.save(chat);
+
+      // return !!result;
     });
   }
 
