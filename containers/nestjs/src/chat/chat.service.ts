@@ -351,33 +351,35 @@ export class ChatService {
     muted_id: number,
     endDate: Date,
   ) {
-    // TODO: Remove "admins: true"?
-
-    // TODO: Don't allow us to mute someone, when we aren't an admin/owner
-    // TODO: Don't allow us to mute the owner
-    // TODO: Don't allow us to mute ourselves
-    // TODO: Don't allow admins to mute other admins
-    // TODO: DO allow the owner to mute admins
     return await this.getChat(
       { chat_id },
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
-      const user = await this.userService.findOne(muted_id);
+      if (!chat.admins.some((admin) => admin.intra_id === muter_id)) {
+        throw new BadRequestException('You are not an admin');
+      }
 
-      if (!chat.users.some((mute) => mute.intra_id == user.intra_id)) {
+      if (!chat.users.some((user) => user.intra_id === muted_id)) {
         throw new BadRequestException("User isn't in this chat");
       }
 
-      if (chat.owner.intra_id === user.intra_id) {
+      if (chat.owner.intra_id === muted_id) {
         throw new BadRequestException("Can't mute the owner");
       }
 
-      let mute = chat.muted.find((mute) => mute.intra_id === user.intra_id);
+      if (
+        chat.owner.intra_id !== muter_id &&
+        chat.admins.some((admin) => admin.intra_id === muted_id)
+      ) {
+        throw new BadRequestException("Can't mute another admin");
+      }
+
+      let mute = chat.muted.find((mute) => mute.intra_id === muted_id);
       if (mute) {
         mute.time_of_unmute = endDate;
       } else {
         mute = new Mute();
-        mute.intra_id = user.intra_id;
+        mute.intra_id = muted_id;
         mute.time_of_unmute = endDate;
       }
 
@@ -392,30 +394,32 @@ export class ChatService {
   }
 
   public async unmute(unmuter_id: number, chat_id: string, unmuted_id: number) {
-    // TODO: Remove "admins: true"?
-
-    // TODO: Don't allow us to unmute someone, when we aren't an admin/owner
-    // TODO: Don't allow us to unmute the owner
-    // TODO: Don't allow us to unmute ourselves
-    // TODO: Don't allow admins to unmute other admins
-    // TODO: DO allow the owner to unmute admins
     return await this.getChat(
       { chat_id },
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
-      const user = await this.userService.findOne(unmuted_id);
+      if (!chat.admins.some((admin) => admin.intra_id === unmuter_id)) {
+        throw new BadRequestException('You are not an admin');
+      }
 
-      if (!chat.users.some((mute) => mute.intra_id == user.intra_id)) {
+      if (!chat.users.some((user) => user.intra_id === unmuted_id)) {
         throw new BadRequestException("User isn't in this chat");
       }
 
-      let mute = chat.muted.find((mute) => mute.intra_id === user.intra_id);
-      if (!mute) {
-        throw new BadRequestException("This user isn't muted");
+      if (chat.owner.intra_id === unmuted_id) {
+        throw new BadRequestException("Can't unmute the owner");
       }
 
-      if (chat.owner.intra_id === user.intra_id) {
-        throw new BadRequestException("Can't unmute the owner");
+      if (
+        chat.owner.intra_id !== unmuter_id &&
+        chat.admins.some((admin) => admin.intra_id === unmuted_id)
+      ) {
+        throw new BadRequestException("Can't unmute another admin");
+      }
+
+      const mute = chat.muted.find((mute) => mute.intra_id === unmuted_id);
+      if (!mute) {
+        throw new BadRequestException("This user isn't muted");
       }
 
       await this.muteRepository.delete(mute);
