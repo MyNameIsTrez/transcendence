@@ -88,8 +88,11 @@ defineExpose({
 
 const durations = [
   { length: 5 * 1000, description: '5 seconds' },
+  { length: 60 * 1000, description: '1 minute' },
   { length: 5 * 60 * 1000, description: '5 minutes' },
-  { length: 60 * 60 * 1000, description: '1 hour' }
+  { length: 15 * 60 * 1000, description: '15 minutes' },
+  { length: 60 * 60 * 1000, description: '1 hour' },
+  { length: 24 * 60 * 60 * 1000, description: '1 day' }
 ]
 
 const modal = ref()
