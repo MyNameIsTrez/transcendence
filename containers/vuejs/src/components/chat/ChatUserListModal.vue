@@ -53,7 +53,20 @@
           <button v-else class="flex-1 w-0 btn btn-warning" @click="unmute">Unmute</button>
           <button class="flex-1 w-0 btn btn-warning" @click="kick">Kick</button>
           <button class="flex-1 w-0 btn btn-warning" @click="ban">Ban</button>
-          <button class="flex-1 w-0 btn btn-warning" @click="admin">Admin</button>
+          <button
+            v-if="myInfo.owner && !selectedUser.is_admin"
+            class="flex-1 w-0 btn btn-warning"
+            @click="admin"
+          >
+            Admin
+          </button>
+          <button
+            v-if="myInfo.owner && selectedUser.is_admin"
+            class="flex-1 w-0 btn btn-warning"
+            @click="unAdmin"
+          >
+            De-admin
+          </button>
         </div>
       </div>
     </span>
@@ -191,6 +204,22 @@ async function admin() {
       users.value.forEach((user) => {
         if (user.intra_id === res.intra_id) {
           user.is_admin = true
+        }
+      })
+    })
+    .catch((err) => {
+      alertPopup.value.showWarning(err.response.data.message)
+    })
+}
+
+async function unAdmin() {
+  await post(`api/chats/${props.currentChat?.chat_id}/unadmin`, {
+    intra_id: selectedUser.value?.intra_id
+  })
+    .then((res) => {
+      users.value.forEach((user) => {
+        if (user.intra_id === res.intra_id) {
+          user.is_admin = false
         }
       })
     })

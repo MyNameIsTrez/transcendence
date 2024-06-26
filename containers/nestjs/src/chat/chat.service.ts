@@ -202,18 +202,61 @@ export class ChatService {
     });
   }
 
-  async addAdmin(chat_id: string, intra_id: number) {
-    // TODO: Don't allow adminning someone who isn't the owner
-    return this.getChat({ chat_id }, { users: true, admins: true }).then(
-      async (chat) => {
-        chat.users.forEach(async (user) => {
-          if (intra_id === user.intra_id) {
-            chat.admins.push(user);
-            await this.chatRepository.save(chat);
-          }
-        });
-      },
-    );
+  async addAdmin(chat_id: string, adminner: number, adminned: number) {
+    return this.getChat(
+      { chat_id },
+      { owner: true, users: true, admins: true },
+    ).then(async (chat) => {
+      if (chat.owner.intra_id !== adminner) {
+        throw new ForbiddenException('You are not the owner');
+      }
+      const user = chat.users.find((user) => user.intra_id === adminned);
+
+      if (!user) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.admins.some((admin) => admin.intra_id === adminned)) {
+        throw new ForbiddenException('This user is already admin');
+      }
+
+      chat.admins.push(user);
+      await this.chatRepository.save(chat);
+
+      return { intra_id: adminned, is_adminned: true };
+    });
+  }
+
+  async removeAdmin(chat_id: string, unAdminner: number, unAdminned: number) {
+    return this.getChat(
+      { chat_id },
+      { owner: true, users: true, admins: true },
+    ).then(async (chat) => {
+      if (chat.owner.intra_id !== unAdminner) {
+        throw new ForbiddenException('You are not the owner');
+      }
+
+      if (chat.owner.intra_id === unAdminned) {
+        throw new BadRequestException('Owner can not lose admin');
+      }
+
+      if (!chat.users.some((user) => user.intra_id === unAdminned)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      const index = chat.admins.findIndex(
+        (admin) => admin.intra_id === unAdminned,
+      );
+      if (index === -1) {
+        throw new ForbiddenException('This user is not an admin');
+      }
+
+      chat.admins.splice(index, 1);
+
+      await this.chatRepository.save(chat);
+
+      return { intra_id: unAdminned, is_adminned: false };
+    });
   }
 
   private hashPassword(password: string) {

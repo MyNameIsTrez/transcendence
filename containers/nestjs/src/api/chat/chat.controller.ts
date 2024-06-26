@@ -51,10 +51,30 @@ export class ChatController {
     );
   }
 
-  // TODO: change to `:chat_id/addAdmin
-  @Post('addAdminToChat')
-  public async addAdminToChat(@Request() req, @Body() dto: AddUserDto) {
-    return await this.chatService.addAdmin(dto.chat_id, req.user.intra_id);
+  @Post(':chat_id/admin')
+  public async admin(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.addAdmin(
+      paramDto.chat_id,
+      req.user.intra_id,
+      bodyDto.intra_id,
+    );
+  }
+
+  @Post(':chat_id/unadmin')
+  public async unadmin(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.removeAdmin(
+      paramDto.chat_id,
+      req.user.intra_id,
+      bodyDto.intra_id,
+    );
   }
 
   @Post(':chat_id/ban')
