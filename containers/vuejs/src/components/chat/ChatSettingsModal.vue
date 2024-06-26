@@ -10,7 +10,7 @@
         <h3 class="font-bold text-lg">Settings</h3>
 
         <div class="flex flex-col space-y-5">
-          <div v-if="myInfo.admin" class="flex pt-4 flex-col space-y-5">
+          <div v-if="myInfo.owner" class="flex pt-4 flex-col space-y-5">
             <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
               {{ visibility }}
 

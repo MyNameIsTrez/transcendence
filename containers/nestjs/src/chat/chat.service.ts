@@ -656,16 +656,22 @@ export class ChatService {
         muted: true,
       },
     ).then(async (chat) => {
-      if (chat.owner.intra_id == intra_id) {
-        // console.log('removeChat called');
-        await this.removeChat(chat);
-        return;
-      }
-
       if (chat.admins.some((admin) => admin.intra_id == intra_id))
         chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
 
       chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+
+      if (chat.owner.intra_id == intra_id) {
+        if (chat.admins.length > 0) {
+          chat.owner = chat.admins[0];
+        } else if (chat.users.length > 0) {
+          chat.owner = chat.users[0];
+          chat.admins.push(chat.users[0]);
+        } else {
+          await this.removeChat(chat);
+          return;
+        }
+      }
 
       await this.chatRepository.save(chat);
     });
