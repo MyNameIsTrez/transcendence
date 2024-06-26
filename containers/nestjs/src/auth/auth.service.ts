@@ -91,7 +91,7 @@ export class AuthService {
 
           await this.userService.create(
             intra_id,
-            j.displayname,
+            j.login,
             j.login,
             j.email,
           );
