@@ -322,6 +322,11 @@ export class ChatService {
       await this.chatRepository.save(chat);
 
       this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
+      this.chatSockets.emitToClient(banned_id, 'banned', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
     });
   }
 
@@ -355,6 +360,11 @@ export class ChatService {
       await this.chatRepository.save(chat);
 
       this.chatSockets.emitToChat(chat_id, 'removeUser', kicked_id);
+      this.chatSockets.emitToClient(kicked_id, 'kicked', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
     });
   }
 

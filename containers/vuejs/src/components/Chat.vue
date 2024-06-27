@@ -328,6 +328,36 @@ chatSocket.on('leaveChat', (chat: Chat) => {
   }
 })
 
+chatSocket.on('kicked', (chat: Chat) => {
+  currentChat.value = null
+
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
+  }
+})
+
+chatSocket.on('banned', (chat: Chat) => {
+  currentChat.value = null
+
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
+  }
+})
+
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(data.message)
 })
