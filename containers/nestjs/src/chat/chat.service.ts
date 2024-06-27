@@ -194,6 +194,8 @@ export class ChatService {
           throw new WsException('You have been banned from this chat');
         }
 
+        this.chatSockets.emitToChat(chat_id, 'addUser', user);
+
         chat.users.push(user);
         await this.chatRepository.save(chat);
       },

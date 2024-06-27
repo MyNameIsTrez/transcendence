@@ -119,12 +119,8 @@ defineExpose({
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
-const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
-// TODO: Remove this
-// for (let i = 0; i < 100; i++) {
-//   users.value.push(users.value[0])
-// }
+const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
@@ -134,6 +130,16 @@ users.value.forEach(
       await getImage(`api/user/profilePicture/${user.intra_id}`)
     )
 )
+
+chatSocket.on('addUser', async (user: UserInfo) => {
+  if (!users.value.some((other) => other.intra_id === user.intra_id)) {
+    profilePictures.value.set(
+      user.intra_id,
+      await getImage(`api/user/profilePicture/${user.intra_id}`)
+    )
+    users.value.push(user)
+  }
+})
 
 const selectedUser = ref<UserInfo>()
 
