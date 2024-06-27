@@ -205,7 +205,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
-    this.chatSockets.removeFromChat(dto.chatId, client);
+    this.chatSockets.removeSocketFromChat(dto.chatId, client);
 
     return {};
   }

@@ -26,10 +26,24 @@ export default class ChatSockets {
     sockets.add(client);
   }
 
-  public removeFromChat(chatId: string, client: Socket) {
+  public removeSocketFromChat(chatId: string, client: Socket) {
     let sockets = this.chatToSockets.get(chatId);
     if (sockets) {
       sockets.delete(client);
+      if (sockets.size <= 0) {
+        this.chatToSockets.delete(chatId);
+      }
+    }
+  }
+
+  public removeUserFromChat(chatId: string, intra_id: number) {
+    let sockets = this.chatToSockets.get(chatId);
+    if (sockets) {
+      sockets.forEach((socket) => {
+        if (socket.data.intra_id === intra_id) {
+          sockets.delete(socket);
+        }
+      });
       if (sockets.size <= 0) {
         this.chatToSockets.delete(chatId);
       }
@@ -49,7 +63,7 @@ export default class ChatSockets {
     }
 
     this.chatToSockets.forEach((_sockets, chatId) => {
-      this.removeFromChat(chatId, client);
+      this.removeSocketFromChat(chatId, client);
     });
   }
 

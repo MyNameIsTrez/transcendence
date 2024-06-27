@@ -321,6 +321,7 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
+      this.chatSockets.removeUserFromChat(chat_id, banned_id);
       this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
       this.chatSockets.emitToClient(banned_id, 'banned', {
         chat_id: chat_id,
@@ -359,6 +360,7 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
+      this.chatSockets.removeUserFromChat(chat_id, kicked_id);
       this.chatSockets.emitToChat(chat_id, 'removeUser', kicked_id);
       this.chatSockets.emitToClient(kicked_id, 'kicked', {
         chat_id: chat_id,
@@ -697,6 +699,8 @@ export class ChatService {
         }
       }
 
+      // TODO: Find out why this is not needed. I expect a user to still enter the `newMessage` event on the front end without this line but they don't. This line is needed in the kickUser() and banUser() functions.
+      this.chatSockets.removeUserFromChat(chat_id, intra_id);
       this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
       this.chatSockets.emitToChat(chat_id, 'removeUser', intra_id);
 
