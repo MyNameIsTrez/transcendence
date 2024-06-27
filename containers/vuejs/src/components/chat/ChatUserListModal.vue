@@ -108,11 +108,6 @@ defineExpose({
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
-// TODO: Remove this
-// for (let i = 0; i < 100; i++) {
-//   users.value.push(users.value[0])
-// }
-
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
   async (user) =>
