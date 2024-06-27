@@ -7,6 +7,7 @@ import Blocked from '../components/sidebar/Blocked.vue'
 import UserProfile from '../components/sidebar/UserProfile.vue'
 import Leaderboard from '../components/sidebar/Leaderboard.vue'
 import TwoFactor from '../components/TwoFactor.vue'
+import { get } from '@/httpRequests'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,7 +31,13 @@ const router = createRouter({
         {
           path: '/user/:intraId',
           component: UserProfile,
-          props: true
+          props: true,
+          async beforeEnter(to) {
+            let me = await get(`api/user/me`)
+            if (to.params.intraId === me.intra_id.toString()) {
+              return '/'
+            }
+          }
         },
         {
           path: '/leaderboard',

@@ -86,23 +86,67 @@ import MatchReport from './profile/MatchReport.vue'
 import Achievements from './achievements/Achievements.vue'
 import { get, getImage, post } from '../../httpRequests'
 import { Socket } from 'socket.io-client'
-import { inject, ref, type Ref } from 'vue'
+import { computed, inject, ref, watch, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
+import { onBeforeRouteUpdate } from 'vue-router'
+
+onBeforeRouteUpdate(async (to) => {
+  let me = await get(`api/user/me`)
+  if (to.params.intraId === me.intra_id.toString()) {
+    return '/'
+  }
+})
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
 
 const props = defineProps({ intraId: String })
-const intra_id = parseInt(props.intraId!)
+const intra_id = computed(() => parseInt(props.intraId!))
 
-const otherUser = await get(`api/user/other/${intra_id}`)
-const username = otherUser.username
-const wins = otherUser.wins
-const losses = otherUser.losses
-const profilePicture = await getImage(`api/user/profilePicture/${intra_id}`)
-const matchHistory = await get(`api/user/matchHistory/${intra_id}`)
+const otherUser = ref(await get(`api/user/other/${intra_id.value}`))
+const username = ref(otherUser.value.username)
+const wins = ref(otherUser.value.wins)
+const losses = ref(otherUser.value.losses)
+const profilePicture = ref(await getImage(`api/user/profilePicture/${intra_id.value}`))
+const matchHistory = ref(await get(`api/user/matchHistory/${intra_id.value}`))
 
-const blocked = ref(await get(`api/user/hasBlocked/${intra_id}`))
+const blocked = ref(await get(`api/user/hasBlocked/${intra_id.value}`))
+
+const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
+
+const isFriendRef = ref(
+  friends.value.findIndex((item) => item.intraId === otherUser.value.intra_id) !== -1
+)
+const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
+  await get('api/user/outgoingFriendRequests')
+)
+
+const isFriendRequestedRef = ref(
+  outgoingFriendRequests.value.findIndex(
+    (request) => request.intraId === otherUser.value.intra_id
+  ) !== -1
+)
+
+watch(intra_id, async (new_intra_id) => {
+  otherUser.value = await get(`api/user/other/${new_intra_id}`)
+  username.value = otherUser.value.username
+  wins.value = otherUser.value.wins
+  losses.value = otherUser.value.losses
+  profilePicture.value = await getImage(`api/user/profilePicture/${new_intra_id}`)
+  matchHistory.value = await get(`api/user/matchHistory/${new_intra_id}`)
+
+  blocked.value = await get(`api/user/hasBlocked/${new_intra_id}`)
+  friends.value = await get('api/user/friends')
+
+  isFriendRef.value =
+    friends.value.findIndex((item) => item.intraId === otherUser.value.intra_id) !== -1
+  outgoingFriendRequests.value = await get('api/user/outgoingFriendRequests')
+
+  isFriendRequestedRef.value =
+    outgoingFriendRequests.value.findIndex(
+      (request) => request.intraId === otherUser.value.intra_id
+    ) !== -1
+})
 
 class Friend {
   name: string
@@ -116,12 +160,6 @@ class Friend {
   }
 }
 
-const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
-
-const isFriendRef = ref(
-  friends.value.findIndex((item) => item.intraId === otherUser.intra_id) !== -1
-)
-
 class OutgoingFriendRequest {
   intraId: number
   name: string
@@ -131,17 +169,10 @@ class OutgoingFriendRequest {
     this.name = name
   }
 }
-const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
-  await get('api/user/outgoingFriendRequests')
-)
-
-const isFriendRequestedRef = ref(
-  outgoingFriendRequests.value.findIndex((request) => request.intraId === otherUser.intra_id) !== -1
-)
 
 function inviteToGame() {
   gameSocket.emit('createPrivateLobby', {
-    invitedUser: intra_id,
+    invitedUser: intra_id.value,
     gamemode: localStorage.getItem('gamemode')
   })
 }
@@ -149,7 +180,7 @@ function inviteToGame() {
 async function handleBlock() {
   const url = 'api/user/' + (blocked.value ? 'unblock' : 'block')
 
-  await post(url, { intra_id })
+  await post(url, { intra_id: intra_id.value })
     .then(() => (blocked.value = !blocked.value))
     .catch((err) => {
       console.error('handleBlock error', err)
@@ -158,7 +189,7 @@ async function handleBlock() {
 }
 
 async function revokeFriendRequest() {
-  await post('api/user/revokeFriendRequest', { friend_id: intra_id })
+  await post('api/user/revokeFriendRequest', { friend_id: intra_id.value })
     .then(() => {
       isFriendRequestedRef.value = false
     })
@@ -169,7 +200,7 @@ async function revokeFriendRequest() {
 }
 
 async function removeFriend() {
-  await post('api/user/removeFriend', { friend_id: intra_id })
+  await post('api/user/removeFriend', { friend_id: intra_id.value })
     .then(() => {
       isFriendRef.value = false
     })
@@ -180,7 +211,7 @@ async function removeFriend() {
 }
 
 async function sendFriendRequest() {
-  await post('api/user/sendFriendRequest', { receiver_intra_id: otherUser.intra_id })
+  await post('api/user/sendFriendRequest', { receiver_intra_id: otherUser.value.intra_id })
     .then(() => {
       alertPopup.value.showSuccess('Friend request sent')
       isFriendRequestedRef.value = true
