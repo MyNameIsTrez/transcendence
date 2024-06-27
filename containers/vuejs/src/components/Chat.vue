@@ -315,10 +315,16 @@ chatSocket.on('removeChat', (chat_id: string) => {
   }
 })
 
-chatSocket.on('leaveChat', (chat_id: string) => {
-  const index = myChats.value.findIndex((chat) => chat.chat_id === chat_id)
+chatSocket.on('leaveChat', (chat: Chat) => {
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
   if (index !== -1) {
     myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
   }
 })
 

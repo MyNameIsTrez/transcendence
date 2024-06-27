@@ -22,6 +22,12 @@ import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
 import ChatSockets from './chat.sockets';
 
+class ChatClass {
+  chat_id: string;
+  name: string;
+  visibility: Visibility;
+}
+
 class MyInfo {
   owner: boolean;
   admin: boolean;
@@ -667,6 +673,12 @@ export class ChatService {
 
       chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
 
+      const sentChat: ChatClass = {
+        chat_id: chat.chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      };
+
       if (chat.owner.intra_id == intra_id) {
         if (chat.admins.length > 0) {
           chat.owner = chat.admins[0];
@@ -675,13 +687,13 @@ export class ChatService {
           chat.admins.push(chat.users[0]);
         } else {
           await this.removeChat(chat);
-          this.chatSockets.emitToClient(intra_id, 'leaveChat', chat_id);
+          this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
           this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
       }
 
-      this.chatSockets.emitToClient(intra_id, 'leaveChat', chat_id);
+      this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
 
       await this.chatRepository.save(chat);
     });
