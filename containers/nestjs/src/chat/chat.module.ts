@@ -6,6 +6,7 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { ChatService } from './chat.service';
 import { UserModule } from '../user/user.module';
+import ChatSockets from './chat.sockets';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { UserModule } from '../user/user.module';
     UserModule,
     TypeOrmModule.forFeature([Chat, Message, Mute]),
   ],
-  providers: [ChatService],
-  exports: [ChatService],
+  providers: [ChatService, ChatSockets],
+  exports: [ChatService, ChatSockets],
 })
 export class ChatModule {}
