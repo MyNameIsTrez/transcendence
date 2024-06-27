@@ -20,6 +20,7 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
+import ChatSockets from './chat.sockets';
 
 class MyInfo {
   owner: boolean;
@@ -51,6 +52,7 @@ export class ChatService {
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly chatSockets: ChatSockets,
   ) {}
 
   public async create(
@@ -669,6 +671,7 @@ export class ChatService {
           chat.admins.push(chat.users[0]);
         } else {
           await this.removeChat(chat);
+          this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
       }

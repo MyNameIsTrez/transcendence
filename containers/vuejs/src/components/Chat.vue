@@ -282,15 +282,25 @@ async function getChats() {
   })
 }
 
-chatSocket.on('addMyChat', async (chat: Chat) => {
+chatSocket.on('addMyChat', (chat: Chat) => {
   myChats.value.push(chat)
 })
-chatSocket.on('addChat', async (chat: Chat) => {
+chatSocket.on('addChat', (chat: Chat) => {
   if (chat.visibility !== Visibility.PRIVATE) {
     publicAndProtectedChats.value.push(chat)
   }
 })
-chatSocket.on('removeChat', async (chat: Chat) => {})
+chatSocket.on('removeChat', (chat_id: string) => {
+  let index = myChats.value.findIndex((chat) => chat.chat_id === chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  index = publicAndProtectedChats.value.findIndex((chat) => chat.chat_id === chat_id)
+  if (index !== -1) {
+    publicAndProtectedChats.value.splice(index, 1)
+  }
+})
 
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(data.message)
