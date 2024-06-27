@@ -188,25 +188,17 @@ async function unmute() {
 async function kick() {
   await post(`api/chats/${props.currentChat?.chat_id}/kick`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function ban() {
   await post(`api/chats/${props.currentChat?.chat_id}/ban`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function admin() {

@@ -321,7 +321,7 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: banned_id, is_banned: true };
+      this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
     });
   }
 
@@ -354,15 +354,7 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: kicked_id, is_kicked: true };
-
-      // if (chat.owner.intra_id == kicker_id) return false;
-
-      // chat.users = chat.users.filter((u) => u.intra_id !== kicker_id);
-      // chat.admins = chat.admins.filter((u) => u.intra_id !== kicker_id);
-      // const result = await this.chatRepository.save(chat);
-
-      // return !!result;
+      this.chatSockets.emitToChat(chat_id, 'removeUser', kicked_id);
     });
   }
 
