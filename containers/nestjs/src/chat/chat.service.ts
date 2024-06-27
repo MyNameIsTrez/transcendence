@@ -658,6 +658,10 @@ export class ChatService {
         muted: true,
       },
     ).then(async (chat) => {
+      if (!chat.users.some((user) => user.intra_id === intra_id)) {
+        throw new UnauthorizedException('You are not in this chat');
+      }
+
       if (chat.admins.some((admin) => admin.intra_id == intra_id))
         chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
 
