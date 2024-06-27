@@ -141,6 +141,13 @@ chatSocket.on('addUser', async (user: UserInfo) => {
   }
 })
 
+chatSocket.on('removeUser', (intra_id: number) => {
+  const index = users.value.findIndex((user) => user.intra_id === intra_id)
+  if (index !== -1) {
+    users.value.splice(index, 1)
+  }
+})
+
 const selectedUser = ref<UserInfo>()
 
 const modal = ref()

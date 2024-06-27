@@ -696,6 +696,7 @@ export class ChatService {
       }
 
       this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', intra_id);
 
       await this.chatRepository.save(chat);
     });
