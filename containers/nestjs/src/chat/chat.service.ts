@@ -675,10 +675,13 @@ export class ChatService {
           chat.admins.push(chat.users[0]);
         } else {
           await this.removeChat(chat);
+          this.chatSockets.emitToClient(intra_id, 'leaveChat', chat_id);
           this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
       }
+
+      this.chatSockets.emitToClient(intra_id, 'leaveChat', chat_id);
 
       await this.chatRepository.save(chat);
     });
