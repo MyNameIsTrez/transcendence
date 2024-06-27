@@ -243,6 +243,13 @@ function openChat(chat: Chat) {
 function clickedPublicChat(chat: Chat) {
   chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
     openChat(chat)
+
+    const index = publicAndProtectedChats.value.findIndex((other) => other.chat_id === chat.chat_id)
+    if (index !== -1) {
+      publicAndProtectedChats.value.splice(index, 1)
+    }
+
+    myChats.value.push(chat)
   })
 }
 
@@ -267,6 +274,15 @@ function enterProtectedChat(password_: string) {
     passwordModal.value.$.exposed.hide()
 
     openChat(selectedChat.value!)
+
+    const index = publicAndProtectedChats.value.findIndex(
+      (chat) => chat.chat_id === selectedChat.value!.chat_id
+    )
+    if (index !== -1) {
+      publicAndProtectedChats.value.splice(index, 1)
+    }
+
+    myChats.value.push(selectedChat.value!)
 
     selectedChat.value = null
   })
