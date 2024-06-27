@@ -233,7 +233,10 @@ export class ChatService {
       chat.admins.push(user);
       await this.chatRepository.save(chat);
 
-      return { intra_id: adminned, is_adminned: true };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: adminned,
+        is_admin: true,
+      });
     });
   }
 
@@ -265,7 +268,10 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: unAdminned, is_adminned: false };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unAdminned,
+        is_admin: false,
+      });
     });
   }
 
@@ -491,7 +497,10 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: muted_id, is_mute: true };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: muted_id,
+        is_mute: true,
+      });
     });
   }
 
@@ -526,7 +535,10 @@ export class ChatService {
 
       await this.muteRepository.delete(mute);
 
-      return { intra_id: unmuted_id, is_mute: false };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unmuted_id,
+        is_mute: false,
+      });
     });
   }
 
@@ -560,6 +572,7 @@ export class ChatService {
     );
   }
 
+  // TODO: Delete?
   public async changePassword(chat_id: string, password: string) {
     // TODO: Throw if we aren't the owner of the chat
 
@@ -569,6 +582,7 @@ export class ChatService {
     });
   }
 
+  // TODO: Delete?
   public async changeVisibility(
     chat_id: string,
     visibility: Visibility,
@@ -652,6 +666,7 @@ export class ChatService {
           }
           chat.hashed_password = await this.hashPassword(edit_fields.password);
         }
+        // TODO: Sent this update to all sockets
         await this.chatRepository.save(chat);
         return { name: edit_fields.name, visibility: edit_fields.visibility };
       },
@@ -697,6 +712,11 @@ export class ChatService {
           this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
+        this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+          intra_id: chat.owner.intra_id,
+          is_owner: true,
+          is_admin: true,
+        });
       }
 
       // TODO: Find out why this is not needed. I expect a user to still enter the `newMessage` event on the front end without this line but they don't. This line is needed in the kickUser() and banUser() functions.
