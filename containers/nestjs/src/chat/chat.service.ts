@@ -614,7 +614,7 @@ export class ChatService {
     chat_id: string,
     intra_id: number,
     edit_fields: EditFields,
-  ): Promise<EditFields> {
+  ) {
     return await this.getChat({ chat_id }, { owner: true }).then(
       async (chat) => {
         if (intra_id !== chat.owner.intra_id) {
@@ -666,9 +666,12 @@ export class ChatService {
           }
           chat.hashed_password = await this.hashPassword(edit_fields.password);
         }
-        // TODO: Sent this update to all sockets
         await this.chatRepository.save(chat);
-        return { name: edit_fields.name, visibility: edit_fields.visibility };
+        this.chatSockets.emitToAllSockets('editChatInfo', {
+          chat_id: chat.chat_id,
+          name: chat.name,
+          visibility: chat.visibility,
+        });
       },
     );
   }

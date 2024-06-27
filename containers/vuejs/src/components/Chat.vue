@@ -358,6 +358,19 @@ chatSocket.on('banned', (chat: Chat) => {
   }
 })
 
+chatSocket.on('editChatInfo', (chat: Chat) => {
+  let foundChat = myChats.value.find((other) => other.chat_id === chat.chat_id)
+  if (foundChat === undefined) {
+    foundChat = publicAndProtectedChats.value.find((other) => other.chat_id === chat.chat_id)
+    if (foundChat === undefined) {
+      return
+    }
+  }
+
+  foundChat.name = chat.name
+  foundChat.visibility = chat.visibility
+})
+
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(data.message)
 })
