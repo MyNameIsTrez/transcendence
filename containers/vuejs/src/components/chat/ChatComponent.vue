@@ -53,7 +53,7 @@
 
     <div
       ref="chatRef"
-      class="h-[700px] flex flex-col gap-y-2 bg-base-100 border border-md border-solid rounded-box p-2 overflow-y-auto break-all"
+      class="h-[700px] flex flex-col gap-y-2 bg-base-100 rounded-box p-2 overflow-y-auto break-all"
     >
       <div v-for="(message, index) in chatHistory" :key="index">
         <div class="flex flex-row gap-x-2">

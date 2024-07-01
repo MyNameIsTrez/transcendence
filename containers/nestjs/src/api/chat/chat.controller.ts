@@ -16,6 +16,7 @@ import {
   MuteDto,
   PasswordDto,
   ChangeVisibilityDto,
+  IntraIdDto,
 } from './chat.dto';
 import { Visibility } from 'src/chat/chat.entity';
 
@@ -50,24 +51,56 @@ export class ChatController {
     );
   }
 
-  // TODO: change to `:chat_id/addAdmin
-  @Post('addAdminToChat')
-  public async addAdminToChat(@Request() req, @Body() dto: AddUserDto) {
-    return await this.chatService.addAdmin(dto.chat_id, req.user.intra_id);
+  @Post(':chat_id/admin')
+  public async admin(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.addAdmin(
+      paramDto.chat_id,
+      req.user.intra_id,
+      bodyDto.intra_id,
+    );
   }
 
-  // TODO: Change to `:chat_id/ban
-  // TODO: Change this to @Post(), and get rid of :username
-  @Get('ban/:chat_id/:username')
-  public async ban(@Request() req, @Param() dto: AddUserDto) {
-    return await this.chatService.banUser(dto.chat_id, req.user.intra_id);
+  @Post(':chat_id/unadmin')
+  public async unadmin(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.removeAdmin(
+      paramDto.chat_id,
+      req.user.intra_id,
+      bodyDto.intra_id,
+    );
   }
 
-  // TODO: Change to `:chat_id/kick`
-  // TODO: Change this to @Post(), and get rid of :username
-  @Get('kick/:chat_id/:username')
-  public async kick(@Request() req, @Param() dto: AddUserDto) {
-    return await this.chatService.kickUser(dto.chat_id, req.user.intra_id);
+  @Post(':chat_id/ban')
+  public async ban(
+    @Request() req,
+    @Param() chatIdDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.banUser(
+      chatIdDto.chat_id,
+      bodyDto.intra_id,
+      req.user.intra_id,
+    );
+  }
+
+  @Post(':chat_id/kick')
+  public async kick(
+    @Request() req,
+    @Param() chatIdDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.kickUser(
+      chatIdDto.chat_id,
+      bodyDto.intra_id,
+      req.user.intra_id,
+    );
   }
 
   // TODO: Delete probs?
@@ -98,24 +131,31 @@ export class ChatController {
     return await this.chatService.isOwner(dto.chat_id, dto.intra_id);
   }
 
-  // TODO: Replace with commented entrypoint below?
-  // TODO: Change to `:chat_id/mute`
-  @Post('mute')
-  public async mute(@Body() dto: MuteDto) {
-    return await this.chatService.mute(dto.chat_id, dto.intra_id, dto.days);
+  @Post(':chat_id/mute')
+  public async mute(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() bodyDto: MuteDto,
+  ) {
+    return await this.chatService.mute(
+      req.user.intra_id,
+      paramDto.chat_id,
+      bodyDto.intra_id,
+      bodyDto.endDate,
+    );
   }
 
-  // TODO: Change to `:chat_id/mute
-  // TODO: Make sure only admin+ people are allowed to call this
-  //   @Post('mute/:chat_id/:intra_id')
-  //   public async mute(@Request() req, @Param() // TODO: Finish function definition)
-
-  // TODO: Replace with `:chat_id/me`
-  // TODO: Change to `:chat_id/isMute`
-  // TODO: Preferably only allow if user is in the chat but not that important
-  @Get('isMute/:chat_id/:intra_id')
-  public async isMute(@Param() dto: OtherUserDto) {
-    return await this.chatService.isMuted(dto.chat_id, dto.intra_id);
+  @Post(':chat_id/unmute')
+  public async unmute(
+    @Request() req,
+    @Param() paramDto: ChatIdDto,
+    @Body() intraIdDto: IntraIdDto,
+  ) {
+    return await this.chatService.unmute(
+      req.user.intra_id,
+      paramDto.chat_id,
+      intraIdDto.intra_id,
+    );
   }
 
   @Post(':chat_id/edit')

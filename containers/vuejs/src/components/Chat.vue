@@ -243,6 +243,13 @@ function openChat(chat: Chat) {
 function clickedPublicChat(chat: Chat) {
   chatSocket.emit('joinChat', { chatId: chat.chat_id }, () => {
     openChat(chat)
+
+    const index = publicAndProtectedChats.value.findIndex((other) => other.chat_id === chat.chat_id)
+    if (index !== -1) {
+      publicAndProtectedChats.value.splice(index, 1)
+    }
+
+    myChats.value.push(chat)
   })
 }
 
@@ -268,6 +275,15 @@ function enterProtectedChat(password_: string) {
 
     openChat(selectedChat.value!)
 
+    const index = publicAndProtectedChats.value.findIndex(
+      (chat) => chat.chat_id === selectedChat.value!.chat_id
+    )
+    if (index !== -1) {
+      publicAndProtectedChats.value.splice(index, 1)
+    }
+
+    myChats.value.push(selectedChat.value!)
+
     selectedChat.value = null
   })
 }
@@ -282,15 +298,78 @@ async function getChats() {
   })
 }
 
-chatSocket.on('addMyChat', async (chat: Chat) => {
+chatSocket.on('addMyChat', (chat: Chat) => {
   myChats.value.push(chat)
 })
-chatSocket.on('addChat', async (chat: Chat) => {
+
+chatSocket.on('addChat', (chat: Chat) => {
   if (chat.visibility !== Visibility.PRIVATE) {
     publicAndProtectedChats.value.push(chat)
   }
 })
-chatSocket.on('removeChat', async (chat: Chat) => {})
+
+chatSocket.on('removeChat', (chat_id: string) => {
+  const index = publicAndProtectedChats.value.findIndex((chat) => chat.chat_id === chat_id)
+  if (index !== -1) {
+    publicAndProtectedChats.value.splice(index, 1)
+  }
+})
+
+chatSocket.on('leaveChat', (chat: Chat) => {
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
+  }
+})
+
+chatSocket.on('kicked', (chat: Chat) => {
+  currentChat.value = null
+
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
+  }
+})
+
+chatSocket.on('banned', (chat: Chat) => {
+  currentChat.value = null
+
+  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  if (index !== -1) {
+    myChats.value.splice(index, 1)
+  }
+
+  if (chat.visibility === Visibility.PUBLIC || chat.visibility === Visibility.PROTECTED) {
+    if (!publicAndProtectedChats.value.some((other) => other.chat_id === chat.chat_id)) {
+      publicAndProtectedChats.value.push(chat)
+    }
+  }
+})
+
+chatSocket.on('editChatInfo', (chat: Chat) => {
+  let foundChat = myChats.value.find((other) => other.chat_id === chat.chat_id)
+  if (foundChat === undefined) {
+    foundChat = publicAndProtectedChats.value.find((other) => other.chat_id === chat.chat_id)
+    if (foundChat === undefined) {
+      return
+    }
+  }
+
+  foundChat.name = chat.name
+  foundChat.visibility = chat.visibility
+})
 
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(data.message)

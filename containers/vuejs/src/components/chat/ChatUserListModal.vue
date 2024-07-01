@@ -13,19 +13,20 @@
           class="flex flex-col bg-base-100 border rounded-md border-solid p-4 mt-4 overflow-y-auto h-[400px]"
         >
           <div v-for="(user, index) in users" :key="index">
-            <!-- <router-link :to="`/user/${user.intra_id}`"> -->
             <button
-              :class="`${user.intra_id === selectedIntraId ? 'bg-base-200' : ''} hover:bg-base-300 w-full p-2`"
-              @click="selectedIntraId = user.intra_id"
+              :class="`${user.intra_id === selectedUser?.intra_id ? 'bg-base-200' : ''} hover:bg-base-300 w-full p-2`"
+              @click="selectedUser = user"
             >
               <div class="flex flex-row gap-x-2">
-                <div :class="`w-16 h-16 avatar`">
-                  <img
-                    class="rounded"
-                    :src="profilePictures.get(user.intra_id)"
-                    alt="Profile picture"
-                  />
-                </div>
+                <router-link :to="`/user/${user.intra_id}`">
+                  <div :class="`w-16 h-16 avatar`">
+                    <img
+                      class="rounded"
+                      :src="profilePictures.get(user.intra_id)"
+                      alt="Profile picture"
+                    />
+                  </div>
+                </router-link>
 
                 <div class="flex flex-col">
                   <div class="mt-2">{{ user.username }}</div>
@@ -39,23 +40,46 @@
                 </div>
               </div>
             </button>
-            <!-- </router-link> -->
           </div>
+        </div>
+        <div v-if="myInfo.admin && selectedUser" class="flex flex-row space-x-1 mt-1">
+          <button
+            v-if="!selectedUser.is_mute"
+            class="flex-1 w-0 btn btn-warning"
+            @click="chatMuteModal.$.exposed.show()"
+          >
+            Mute
+          </button>
+          <button v-else class="flex-1 w-0 btn btn-warning" @click="unmute">Unmute</button>
+          <button class="flex-1 w-0 btn btn-warning" @click="kick">Kick</button>
+          <button class="flex-1 w-0 btn btn-warning" @click="ban">Ban</button>
+          <button
+            v-if="myInfo.owner && !selectedUser.is_admin"
+            class="flex-1 w-0 btn btn-warning"
+            @click="admin"
+          >
+            Admin
+          </button>
+          <button
+            v-if="myInfo.owner && selectedUser.is_admin"
+            class="flex-1 w-0 btn btn-warning"
+            @click="unAdmin"
+          >
+            De-admin
+          </button>
         </div>
       </div>
     </span>
-
-    <!-- TODO: Draw google icons for these actions at the bottom of the list
-		1. Kick
-		2. Ban
-		3. Mute
-		4. Admin
-	  -->
 
     <!-- Allows clicking outside of the modal to close it -->
     <form method="dialog" class="modal-backdrop">
       <button>close</button>
     </form>
+    <ChatMuteModal
+      ref="chatMuteModal"
+      @onCloseMuteModal="chatMuteModal.$.exposed.hide()"
+      @onMute="mute"
+    ></ChatMuteModal>
   </dialog>
 </template>
 
@@ -66,14 +90,17 @@ import { get, getImage, post } from '@/httpRequests'
 import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
+import ChatMuteModal from './ChatMuteModal.vue'
 
 type UserInfo = {
   intra_id: number
-  username: string
-  is_owner: boolean
-  is_admin: boolean
-  is_mute: boolean
+  username?: string
+  is_owner?: boolean
+  is_admin?: boolean
+  is_mute?: boolean
 }
+
+const chatMuteModal = ref()
 
 const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
@@ -92,12 +119,8 @@ defineExpose({
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
-const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
-// TODO: Remove this
-// for (let i = 0; i < 100; i++) {
-//   users.value.push(users.value[0])
-// }
+const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
@@ -108,9 +131,91 @@ users.value.forEach(
     )
 )
 
-const selectedIntraId = ref()
+chatSocket.on('addUser', async (user: UserInfo) => {
+  if (!users.value.some((other) => other.intra_id === user.intra_id)) {
+    profilePictures.value.set(
+      user.intra_id,
+      await getImage(`api/user/profilePicture/${user.intra_id}`)
+    )
+    users.value.push(user)
+  }
+})
+
+chatSocket.on('removeUser', (intra_id: number) => {
+  const index = users.value.findIndex((user) => user.intra_id === intra_id)
+  if (index !== -1) {
+    users.value.splice(index, 1)
+  }
+})
+
+chatSocket.on('editUserInfo', (info: UserInfo) => {
+  const user = users.value.find((user) => user.intra_id === info.intra_id)
+  if (user === undefined) {
+    return
+  }
+  if (info.is_owner !== undefined) {
+    user.is_owner = info.is_owner
+  }
+  if (info.is_admin !== undefined) {
+    user.is_admin = info.is_admin
+  }
+  if (info.is_mute !== undefined) {
+    user.is_mute = info.is_mute
+  }
+})
+
+const selectedUser = ref<UserInfo>()
 
 const modal = ref()
+
+async function mute(endDate: Date) {
+  await post(`api/chats/${props.currentChat?.chat_id}/mute`, {
+    intra_id: selectedUser.value?.intra_id,
+    endDate
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
+
+async function unmute() {
+  await post(`api/chats/${props.currentChat?.chat_id}/unmute`, {
+    intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
+
+async function kick() {
+  await post(`api/chats/${props.currentChat?.chat_id}/kick`, {
+    intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
+
+async function ban() {
+  await post(`api/chats/${props.currentChat?.chat_id}/ban`, {
+    intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
+
+async function admin() {
+  await post(`api/chats/${props.currentChat?.chat_id}/admin`, {
+    intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
+
+async function unAdmin() {
+  await post(`api/chats/${props.currentChat?.chat_id}/unadmin`, {
+    intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
+  })
+}
 
 const emit = defineEmits(['onCloseUserListModal'])
 </script>

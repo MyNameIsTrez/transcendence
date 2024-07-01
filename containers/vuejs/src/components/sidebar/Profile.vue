@@ -66,12 +66,10 @@
       </div>
 
       <div style="clear: both; padding-top: 50px">
-        <!-- <div tabindex="0" class="collapse w-96 bg-base-200"> -->
         <div class="collapse w-auto bg-base-200">
           <input type="checkbox" />
           <div class="collapse-title text-xl text-center font-bold px-0">Match history</div>
           <div class="collapse-content">
-            <!-- TODO: Add css padding between the MatchReports -->
             <MatchReport
               v-for="match in matchHistory"
               :key="match.id"

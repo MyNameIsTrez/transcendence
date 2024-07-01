@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -19,6 +20,13 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
+import ChatSockets from './chat.sockets';
+
+class ChatClass {
+  chat_id: string;
+  name: string;
+  visibility: Visibility;
+}
 
 class MyInfo {
   owner: boolean;
@@ -50,6 +58,7 @@ export class ChatService {
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly chatSockets: ChatSockets,
   ) {}
 
   public async create(
@@ -157,7 +166,12 @@ export class ChatService {
         username: user.username,
         is_owner: user.intra_id === chat.owner.intra_id,
         is_admin: chat.admins.some((other) => other.intra_id === user.intra_id),
-        is_mute: chat.muted.some((other) => other.intra_id === user.intra_id),
+        is_mute: chat.muted.some((mute) => {
+          return (
+            mute.intra_id === user.intra_id &&
+            !this.hasTimePassed(mute.time_of_unmute)
+          );
+        }),
       };
     });
 
@@ -180,6 +194,8 @@ export class ChatService {
           throw new WsException('You have been banned from this chat');
         }
 
+        this.chatSockets.emitToChat(chat_id, 'addUser', user);
+
         chat.users.push(user);
         await this.chatRepository.save(chat);
       },
@@ -196,18 +212,67 @@ export class ChatService {
     });
   }
 
-  async addAdmin(chat_id: string, intra_id: number) {
-    // TODO: Don't allow adminning someone who isn't the owner
-    return this.getChat({ chat_id }, { users: true, admins: true }).then(
-      async (chat) => {
-        chat.users.forEach(async (user) => {
-          if (intra_id === user.intra_id) {
-            chat.admins.push(user);
-            await this.chatRepository.save(chat);
-          }
-        });
-      },
-    );
+  async addAdmin(chat_id: string, adminner: number, adminned: number) {
+    return this.getChat(
+      { chat_id },
+      { owner: true, users: true, admins: true },
+    ).then(async (chat) => {
+      if (chat.owner.intra_id !== adminner) {
+        throw new ForbiddenException('You are not the owner');
+      }
+      const user = chat.users.find((user) => user.intra_id === adminned);
+
+      if (!user) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.admins.some((admin) => admin.intra_id === adminned)) {
+        throw new ForbiddenException('This user is already admin');
+      }
+
+      chat.admins.push(user);
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: adminned,
+        is_admin: true,
+      });
+    });
+  }
+
+  async removeAdmin(chat_id: string, unAdminner: number, unAdminned: number) {
+    return this.getChat(
+      { chat_id },
+      { owner: true, users: true, admins: true },
+    ).then(async (chat) => {
+      if (chat.owner.intra_id !== unAdminner) {
+        throw new ForbiddenException('You are not the owner');
+      }
+
+      if (chat.owner.intra_id === unAdminned) {
+        throw new BadRequestException('Owner can not lose admin');
+      }
+
+      if (!chat.users.some((user) => user.intra_id === unAdminned)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      const index = chat.admins.findIndex(
+        (admin) => admin.intra_id === unAdminned,
+      );
+      if (index === -1) {
+        throw new ForbiddenException('This user is not an admin');
+      }
+
+      chat.admins.splice(index, 1);
+
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unAdminned,
+        is_admin: false,
+      });
+    });
   }
 
   private hashPassword(password: string) {
@@ -223,43 +288,91 @@ export class ChatService {
       });
   }
 
-  public async banUser(chat_id: string, intra_id: number) {
-    // TODO: Don't allow us to ban someone, when we aren't an admin/owner
-    // TODO: Don't allow us to ban the owner
-    // TODO: Don't allow us to ban ourselves
-    // TODO: Don't allow admins to ban other admins
-    // TODO: DO allow the owner to ban admins
-    // TODO: Don't call kickUser() from this method
-    if (!(await this.kickUser(chat_id, intra_id))) return false;
+  public async banUser(chat_id: string, banned_id: number, banner_id: number) {
+    return this.getChat(
+      { chat_id },
+      { users: true, banned: true, owner: true, admins: true },
+    ).then(async (chat) => {
+      if (!chat.admins.some((admin) => admin.intra_id === banner_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
 
-    return this.getChat({ chat_id }, { users: true, banned: true }).then(
-      async (chat) => {
-        const user = await this.userService.findOne(intra_id);
-        chat.banned.push(user);
-        const result = await this.chatRepository.save(chat);
-        return !!result;
-      },
-    );
+      if (!chat.users.some((user) => user.intra_id === banned_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.banned.some((ban) => ban.intra_id === banned_id)) {
+        throw new BadRequestException('User already banned');
+      }
+
+      if (chat.owner.intra_id === banned_id) {
+        throw new ForbiddenException("Can't ban the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== banner_id &&
+        chat.admins.some((admin) => admin.intra_id === banned_id)
+      ) {
+        throw new ForbiddenException("Can't ban another admin");
+      }
+
+      const user = await this.userService.findOne(banned_id);
+      if (!user) {
+        throw new BadRequestException("Couldn't fetch user from database");
+      }
+
+      chat.users = chat.users.filter((user) => user.intra_id !== banned_id);
+      chat.admins = chat.admins.filter((user) => user.intra_id !== banned_id);
+      chat.banned.push(user);
+
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.removeUserFromChat(chat_id, banned_id);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
+      this.chatSockets.emitToClient(banned_id, 'banned', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
+    });
   }
 
-  public async kickUser(chat_id: string, intra_id: number) {
-    // TODO: Don't allow us to kick someone, when we aren't an admin/owner
-    // TODO: Don't allow us to kick the owner
-    // TODO: Don't allow us to kick ourselves
-    // TODO: Don't allow admins to kick other admins
-    // TODO: DO allow the owner to kick admins
+  public async kickUser(chat_id: string, kicked_id: number, kicker_id: number) {
     return this.getChat(
       { chat_id },
       { users: true, owner: true, admins: true },
     ).then(async (chat) => {
-      const user = await this.userService.findOne(intra_id);
-      if (chat.owner.intra_id == user.intra_id) return false;
+      if (!chat.admins.some((admin) => admin.intra_id === kicker_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
 
-      chat.users = chat.users.filter((u) => u.intra_id !== user.intra_id);
-      chat.admins = chat.admins.filter((u) => u.intra_id !== user.intra_id);
-      const result = await this.chatRepository.save(chat);
+      if (!chat.users.some((user) => user.intra_id === kicked_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
 
-      return !!result;
+      if (chat.owner.intra_id === kicked_id) {
+        throw new ForbiddenException("Can't kick the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== kicker_id &&
+        chat.admins.some((admin) => admin.intra_id === kicked_id)
+      ) {
+        throw new ForbiddenException("Can't kick another admin");
+      }
+
+      chat.users = chat.users.filter((user) => user.intra_id !== kicked_id);
+      chat.admins = chat.admins.filter((user) => user.intra_id !== kicked_id);
+
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.removeUserFromChat(chat_id, kicked_id);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', kicked_id);
+      this.chatSockets.emitToClient(kicked_id, 'kicked', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
     });
   }
 
@@ -325,12 +438,14 @@ export class ChatService {
     );
   }
 
-  private getTimeOfUnmute(days: number) {
-    const date = new Date();
-    const current_time = date.getTime();
-    const new_time = current_time + days * 24 * 60 * 60 * 1000;
-    date.setTime(new_time);
-    return date;
+  public async isMuted(chat_id: string, intra_id: number) {
+    return await this.getChat({ chat_id }, { muted: true }).then((chat) => {
+      return chat.muted.some((mute) => {
+        return (
+          mute.intra_id === intra_id && !this.hasTimePassed(mute.time_of_unmute)
+        );
+      });
+    });
   }
 
   private hasTimePassed(date: Date) {
@@ -338,40 +453,92 @@ export class ChatService {
     return date < current_date;
   }
 
-  public async isMuted(chat_id: string, intra_id: number) {
-    return this.getChat({ chat_id }, { muted: true }).then(async (chat) => {
-      let is_mute = false;
-      chat.muted.forEach((mute) => {
-        if (mute.intra_id === intra_id) {
-          if (!this.hasTimePassed(mute.time_of_unmute)) is_mute = true;
-        }
+  public async mute(
+    muter_id: number,
+    chat_id: string,
+    muted_id: number,
+    endDate: Date,
+  ) {
+    return await this.getChat(
+      { chat_id },
+      { owner: true, admins: true, muted: true, users: true },
+    ).then(async (chat) => {
+      if (!chat.admins.some((admin) => admin.intra_id === muter_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
+
+      if (!chat.users.some((user) => user.intra_id === muted_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.owner.intra_id === muted_id) {
+        throw new ForbiddenException("Can't mute the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== muter_id &&
+        chat.admins.some((admin) => admin.intra_id === muted_id)
+      ) {
+        throw new ForbiddenException("Can't mute another admin");
+      }
+
+      let mute = chat.muted.find((mute) => mute.intra_id === muted_id);
+      if (mute) {
+        mute.time_of_unmute = endDate;
+      } else {
+        mute = new Mute();
+        mute.intra_id = muted_id;
+        mute.time_of_unmute = endDate;
+      }
+
+      await this.muteRepository.save(mute);
+
+      chat.muted.push(mute);
+
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: muted_id,
+        is_mute: true,
       });
-      return is_mute;
     });
   }
 
-  public async mute(chat_id: string, intra_id: number, days: number) {
-    // TODO: Remove "admins: true"?
-
-    // TODO: Don't allow us to mute someone, when we aren't an admin/owner
-    // TODO: Don't allow us to mute the owner
-    // TODO: Don't allow us to mute ourselves
-    // TODO: Don't allow admins to mute other admins
-    // TODO: DO allow the owner to mute admins
+  public async unmute(unmuter_id: number, chat_id: string, unmuted_id: number) {
     return await this.getChat(
       { chat_id },
-      { owner: true, admins: true, muted: true },
+      { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
-      const user = await this.userService.findOne(intra_id);
-      if (chat.owner.intra_id == user.intra_id) return;
-      if (chat.muted.some((mute) => mute.intra_id == user.intra_id)) return;
+      if (!chat.admins.some((admin) => admin.intra_id === unmuter_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
 
-      const mute = new Mute();
-      mute.intra_id = user.intra_id;
-      mute.time_of_unmute = this.getTimeOfUnmute(days);
-      await this.muteRepository.save(mute);
-      chat.muted.push(mute);
-      return await this.chatRepository.save(chat);
+      if (!chat.users.some((user) => user.intra_id === unmuted_id)) {
+        throw new BadRequestException("User isn't in this chat");
+      }
+
+      if (chat.owner.intra_id === unmuted_id) {
+        throw new ForbiddenException("Can't unmute the owner");
+      }
+
+      if (
+        chat.owner.intra_id !== unmuter_id &&
+        chat.admins.some((admin) => admin.intra_id === unmuted_id)
+      ) {
+        throw new ForbiddenException("Can't unmute another admin");
+      }
+
+      const mute = chat.muted.find((mute) => mute.intra_id === unmuted_id);
+      if (!mute) {
+        throw new BadRequestException("This user isn't muted");
+      }
+
+      await this.muteRepository.delete(mute);
+
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unmuted_id,
+        is_mute: false,
+      });
     });
   }
 
@@ -405,6 +572,7 @@ export class ChatService {
     );
   }
 
+  // TODO: Delete?
   public async changePassword(chat_id: string, password: string) {
     // TODO: Throw if we aren't the owner of the chat
 
@@ -414,6 +582,7 @@ export class ChatService {
     });
   }
 
+  // TODO: Delete?
   public async changeVisibility(
     chat_id: string,
     visibility: Visibility,
@@ -445,7 +614,7 @@ export class ChatService {
     chat_id: string,
     intra_id: number,
     edit_fields: EditFields,
-  ): Promise<EditFields> {
+  ) {
     return await this.getChat({ chat_id }, { owner: true }).then(
       async (chat) => {
         if (intra_id !== chat.owner.intra_id) {
@@ -498,7 +667,11 @@ export class ChatService {
           chat.hashed_password = await this.hashPassword(edit_fields.password);
         }
         await this.chatRepository.save(chat);
-        return { name: edit_fields.name, visibility: edit_fields.visibility };
+        this.chatSockets.emitToAllSockets('editChatInfo', {
+          chat_id: chat.chat_id,
+          name: chat.name,
+          visibility: chat.visibility,
+        });
       },
     );
   }
@@ -515,16 +688,41 @@ export class ChatService {
         muted: true,
       },
     ).then(async (chat) => {
-      if (chat.owner.intra_id == intra_id) {
-        // console.log('removeChat called');
-        await this.removeChat(chat);
-        return;
+      if (!chat.users.some((user) => user.intra_id === intra_id)) {
+        throw new UnauthorizedException('You are not in this chat');
       }
 
-      if (chat.admins.some((admin) => admin.intra_id == intra_id))
-        chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
+      chat.admins = chat.admins.filter((admin) => admin.intra_id !== intra_id);
+      chat.users = chat.users.filter((user) => user.intra_id !== intra_id);
 
-      chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+      const sentChat: ChatClass = {
+        chat_id: chat.chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      };
+
+      this.chatSockets.removeUserFromChat(chat_id, intra_id);
+      this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
+
+      if (chat.owner.intra_id == intra_id) {
+        if (chat.admins.length > 0) {
+          chat.owner = chat.admins[0];
+        } else if (chat.users.length > 0) {
+          chat.owner = chat.users[0];
+          chat.admins.push(chat.users[0]);
+        } else {
+          await this.removeChat(chat);
+          this.chatSockets.emitToAllSockets('removeChat', chat_id);
+          return;
+        }
+        this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+          intra_id: chat.owner.intra_id,
+          is_owner: true,
+          is_admin: true,
+        });
+      }
+
+      this.chatSockets.emitToChat(chat_id, 'removeUser', intra_id);
 
       await this.chatRepository.save(chat);
     });

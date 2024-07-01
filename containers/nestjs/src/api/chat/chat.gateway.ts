@@ -32,6 +32,7 @@ import { UserService } from '../../user/user.service';
 import { Visibility } from '../../chat/chat.entity';
 import { BaseEntity } from 'typeorm';
 import { Transform, TransformFnParams } from 'class-transformer';
+import ChatSockets from 'src/chat/chat.sockets';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -109,13 +110,11 @@ export class ChatGateway {
   @WebSocketServer()
   server!: Server;
 
-  private connectedClients = new Set<Socket>();
-  private chatToSockets = new Map<string, Set<Socket>>();
-
   constructor(
     private readonly chatService: ChatService,
     private readonly userService: UserService,
     private readonly transJwtService: TransJwtService,
+    private readonly chatSockets: ChatSockets,
   ) {}
 
   handleConnection(@ConnectedSocket() client: Socket) {
@@ -144,29 +143,11 @@ export class ChatGateway {
       });
     }
 
-    this.connectedClients.add(client);
+    this.chatSockets.add(client);
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
-    this.chatToSockets.forEach(async (sockets, chatId) => {
-      await this.removeChatSocket(sockets, client, chatId);
-    });
-
-    this.connectedClients.delete(client);
-  }
-
-  private async removeChatSocket(
-    sockets: Set<Socket>,
-    socket: Socket,
-    chatId: string,
-  ) {
-    if (sockets.has(socket)) {
-      sockets.delete(socket);
-    }
-
-    if (sockets.size <= 0) {
-      this.chatToSockets.delete(chatId);
-    }
+    this.chatSockets.disconnect(client);
   }
 
   @SubscribeMessage('create')
@@ -190,9 +171,7 @@ export class ChatGateway {
     client.emit('addMyChat', sentChat);
 
     if (chat.visibility !== Visibility.PRIVATE) {
-      for (const socket of this.connectedClients.values()) {
-        socket.emit('addChat', sentChat);
-      }
+      this.chatSockets.emitToAllSockets('addChat', sentChat);
     }
 
     return sentChat;
@@ -214,13 +193,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
-    if (!this.chatToSockets.has(dto.chatId)) {
-      this.chatToSockets.set(dto.chatId, new Set());
-    }
-
-    const sockets = this.chatToSockets.get(dto.chatId);
-
-    sockets.add(client);
+    this.chatSockets.addToChat(dto.chatId, client);
 
     await this.chatService.openChat(dto.chatId, client.data.intra_id);
 
@@ -232,11 +205,7 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() dto: ChatDto,
   ) {
-    const sockets = this.chatToSockets.get(dto.chatId);
-
-    if (sockets) {
-      await this.removeChatSocket(sockets, client, dto.chatId);
-    }
+    this.chatSockets.removeSocketFromChat(dto.chatId, client);
 
     return {};
   }
@@ -269,18 +238,14 @@ export class ChatGateway {
       date,
     );
 
-    const sockets = this.chatToSockets.get(dto.chatId) ?? [];
+    const newMessage = {
+      sender: client.data.intra_id,
+      sender_name: await this.userService.getUsername(client.data.intra_id),
+      body,
+      date: date,
+    };
 
-    const senderName = await this.userService.getUsername(client.data.intra_id);
-
-    sockets.forEach((otherClient) => {
-      otherClient.emit('newMessage', {
-        sender: client.data.intra_id,
-        sender_name: senderName,
-        body,
-        date: date,
-      });
-    });
+    this.chatSockets.emitToChat(dto.chatId, 'newMessage', newMessage);
 
     return {};
   }

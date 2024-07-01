@@ -45,8 +45,8 @@ class SetUsernameDto {
   @IsNotEmpty({
     message: 'Username should not be empty',
   })
-  @MaxLength(16, {
-    message: 'Name exceeds character limit of 16',
+  @MaxLength(14, {
+    message: 'Name exceeds character limit of 14',
   })
   @IsNotEmpty()
   @Transform(({ value }: TransformFnParams) => value?.trim())

@@ -14,8 +14,6 @@ defineProps(['chatsFn', 'onClickFn'])
 .scrollable-container {
   width: 100%;
   height: 700px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
   padding: 10px;
   overflow-y: auto;
   word-break: break-all;

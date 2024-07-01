@@ -11,13 +11,13 @@
           </div>
         </div>
         <div>
-          <div class="text font-bold">{{ username }}</div>
-          <!-- TODO: naam clickable maken om profiel te bezoeken -->
+          <router-link :to="{ path: `user/${intraId}` }">
+            <div class="text font-bold">{{ username }}</div>
+          </router-link>
         </div>
       </div>
     </td>
     <th class="align-middle">
-      <!-- <div class="grid grid-cols-3 place-items-center"> -->
       <div class="text text-center">{{ wins }}/{{ losses }}</div>
     </th>
   </tr>
