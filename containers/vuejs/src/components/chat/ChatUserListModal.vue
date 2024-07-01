@@ -13,19 +13,20 @@
           class="flex flex-col bg-base-100 border rounded-md border-solid p-4 mt-4 overflow-y-auto h-[400px]"
         >
           <div v-for="(user, index) in users" :key="index">
-            <!-- <router-link :to="`/user/${user.intra_id}`"> -->
             <button
               :class="`${user.intra_id === selectedUser?.intra_id ? 'bg-base-200' : ''} hover:bg-base-300 w-full p-2`"
               @click="selectedUser = user"
             >
               <div class="flex flex-row gap-x-2">
-                <div :class="`w-16 h-16 avatar`">
-                  <img
-                    class="rounded"
-                    :src="profilePictures.get(user.intra_id)"
-                    alt="Profile picture"
-                  />
-                </div>
+                <router-link :to="`/user/${user.intra_id}`">
+                  <div :class="`w-16 h-16 avatar`">
+                    <img
+                      class="rounded"
+                      :src="profilePictures.get(user.intra_id)"
+                      alt="Profile picture"
+                    />
+                  </div>
+                </router-link>
 
                 <div class="flex flex-col">
                   <div class="mt-2">{{ user.username }}</div>
@@ -39,7 +40,6 @@
                 </div>
               </div>
             </button>
-            <!-- </router-link> -->
           </div>
         </div>
         <div v-if="myInfo.admin && selectedUser" class="flex flex-row space-x-1 mt-1">

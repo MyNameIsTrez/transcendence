@@ -6,14 +6,7 @@
   </Suspense>
 </template>
 
-<!-- TODO: Is this still used? -->
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 #app {
   display: flex;
   justify-content: center;
