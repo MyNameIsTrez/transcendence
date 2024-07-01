@@ -5,28 +5,37 @@
         <div class="text text-base justify-self-start self-center text-yellow-200 w-64">
           {{ username }}
         </div>
-        <div
-          v-if="isFriendRequestedRef"
-          class="tooltip justify-self-end"
-          data-tip="Revoke friend request"
-        >
-          <button :class="`btn btn-square btn-warning`" @click="revokeFriendRequest">
-            <span class="material-symbols-outlined">person_cancel</span>
-          </button>
-        </div>
-        <div v-if="isFriendRef" class="tooltip justify-self-end" data-tip="Remove friend">
-          <button :class="`btn btn-square btn-error`" @click="removeFriend">
-            <span class="material-symbols-outlined">person_remove</span>
-          </button>
-        </div>
-        <div
-          v-if="!isFriendRef && !isFriendRequestedRef"
-          class="tooltip justify-self-end"
-          data-tip="Send friend request"
-        >
-          <button :class="`btn btn-square btn-primary`" @click="sendFriendRequest">
-            <span class="material-symbols-outlined">person_add</span>
-          </button>
+
+        <div class="justify-self-end space-x-3">
+          <div class="tooltip justify-self-end" data-tip="Open direct message">
+            <button v-if="true" :class="`btn btn-square btn-info justify-self-end`" @click="openDM">
+              <span class="material-symbols-outlined">chat</span>
+            </button>
+          </div>
+
+          <div
+            v-if="isFriendRequestedRef"
+            class="tooltip justify-self-end"
+            data-tip="Revoke friend request"
+          >
+            <button :class="`btn btn-square btn-warning`" @click="revokeFriendRequest">
+              <span class="material-symbols-outlined">person_cancel</span>
+            </button>
+          </div>
+          <div v-if="isFriendRef" class="tooltip justify-self-end" data-tip="Remove friend">
+            <button :class="`btn btn-square btn-error`" @click="removeFriend">
+              <span class="material-symbols-outlined">person_remove</span>
+            </button>
+          </div>
+          <div
+            v-if="!isFriendRef && !isFriendRequestedRef"
+            class="tooltip justify-self-end"
+            data-tip="Send friend request"
+          >
+            <button :class="`btn btn-square btn-primary`" @click="sendFriendRequest">
+              <span class="material-symbols-outlined">person_add</span>
+            </button>
+          </div>
         </div>
       </span>
       <div class="flex justify-between mt-6">
@@ -103,7 +112,10 @@ onBeforeRouteUpdate(async (to) => {
   })
 })
 
+const emit = defineEmits(['onCreatedChat'])
+
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
+const chatSocket: Socket = inject('chatSocket')!
 const gameSocket: Socket = inject('gameSocket')!
 
 const props = defineProps({ intraId: String })
@@ -192,6 +204,12 @@ async function handleBlock() {
       console.error('handleBlock error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
+}
+
+function openDM() {
+  chatSocket.emit('openDM', {
+    invitedIntraId: intra_id.value
+  })
 }
 
 async function revokeFriendRequest() {

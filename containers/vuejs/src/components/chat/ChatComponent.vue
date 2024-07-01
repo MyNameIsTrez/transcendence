@@ -56,7 +56,8 @@
       class="h-[700px] flex flex-col gap-y-2 bg-base-100 rounded-box p-2 overflow-y-auto break-all"
     >
       <div v-for="(message, index) in chatHistory" :key="index">
-        <div class="flex flex-row gap-x-2">
+        <div v-if="blocked.has(message.sender)">Blocked user's message</div>
+        <div v-else class="flex flex-row gap-x-2">
           <div>
             <div :class="`w-16 h-16 avatar mask mask-squircle`">
               <router-link :to="`/user/${message.sender}`">
@@ -132,6 +133,8 @@ const profilePictures = ref(new Map<Message['sender'], string>())
 const chatUserListModal = ref()
 const chatSettingsModal = ref()
 
+const blocked = ref(new Set<number>())
+
 const emit = defineEmits(['onCloseChat'])
 
 function sendMessage() {
@@ -196,19 +199,24 @@ async function scrollToBottom() {
 async function getChat() {
   if (props.currentChat) {
     const blockedUsers = await get('api/user/blocked')
-      .then((blockedUsers) => blockedUsers.map((user: any) => user.intra_id))
+      .then((blockedUsers) =>
+        blockedUsers.map((user: any) => {
+          return user.intraId
+        })
+      )
       .catch((err) => {
         alertPopup.value.showWarning(err.response.data.message)
       })
-    const blocked = new Set<number>(blockedUsers)
+    blocked.value = new Set<number>(blockedUsers)
 
     chatHistory.value = await get('api/chats/history/' + props.currentChat.chat_id)
       .then((messages) =>
-        messages
-          .filter((message: Message) => !blocked.has(message.sender))
-          .map((message: Message) => {
-            return { ...message, date: new Date(message.date) } // Serialize date
-          })
+        messages.map((message: Message) => {
+          return {
+            ...message,
+            date: new Date(message.date)
+          }
+        })
       )
       .catch((err) => {
         alertPopup.value.showWarning(err.response.data.message)
@@ -219,6 +227,13 @@ async function getChat() {
     await scrollToBottom()
   }
 }
+
+chatSocket.on('blockedUser', async (blockedUserIntraId: number) => {
+  blocked.value.add(blockedUserIntraId)
+})
+chatSocket.on('unblockedUser', async (unblockedUserIntraId: number) => {
+  blocked.value.delete(unblockedUserIntraId)
+})
 
 getChat()
 </script>

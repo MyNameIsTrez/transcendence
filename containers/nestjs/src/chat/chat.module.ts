@@ -6,15 +6,16 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { ChatService } from './chat.service';
 import { UserModule } from '../user/user.module';
-import ChatSockets from './chat.sockets';
+import { ChatSocketsModule } from './chatSockets.module';
 
 @Module({
   imports: [
     ConfigModule,
     UserModule,
+    ChatSocketsModule,
     TypeOrmModule.forFeature([Chat, Message, Mute]),
   ],
-  providers: [ChatService, ChatSockets],
-  exports: [ChatService, ChatSockets],
+  providers: [ChatService],
+  exports: [ChatService],
 })
 export class ChatModule {}

@@ -17,7 +17,9 @@ import { Server } from 'http';
 import { ChatService } from '../../chat/chat.service';
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
+  IsPositive,
   IsUUID,
   MaxLength,
   Validate,
@@ -86,6 +88,12 @@ class JoinChatDto extends BaseEntity {
 class ChatDto {
   @IsUUID()
   chatId: string;
+}
+
+class DMDto {
+  @IsInt()
+  @IsPositive()
+  invitedIntraId: number;
 }
 
 class HandleMessageDto {
@@ -206,6 +214,13 @@ export class ChatGateway {
     @MessageBody() dto: ChatDto,
   ) {
     this.chatSockets.removeSocketFromChat(dto.chatId, client);
+
+    return {};
+  }
+
+  @SubscribeMessage('openDM')
+  async openDM(@ConnectedSocket() client: Socket, @MessageBody() dto: DMDto) {
+    await this.chatService.openDM(dto.invitedIntraId, client.data.intra_id);
 
     return {};
   }
