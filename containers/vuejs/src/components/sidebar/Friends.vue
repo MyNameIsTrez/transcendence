@@ -53,6 +53,7 @@
         :key="request.intraId"
         :name="request.name"
         :intraId="request.intraId"
+        @on-remove-friend-request="removeFriendRequest"
         class="mt-6"
       />
     </div>
@@ -156,4 +157,10 @@ const incomingFriendRequests = ref<IncomingFriendRequest[]>(
 userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
   incomingFriendRequests.value.push(incomingFriendRequest)
 })
+
+function removeFriendRequest(intraId: number) {
+  incomingFriendRequests.value = incomingFriendRequests.value.filter(
+    (req) => req.intraId != intraId
+  )
+}
 </script>
