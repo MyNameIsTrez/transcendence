@@ -28,6 +28,8 @@ import AlertPopup from '../../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
+const emit = defineEmits(['onRemoveFriendRequest'])
+
 const props = defineProps({
   name: String,
   intraId: Number
@@ -39,11 +41,13 @@ async function acceptFriendRequest() {
   await post('api/user/acceptFriendRequest', { sender_id: props.intraId }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
   })
+  emit('onRemoveFriendRequest', props.intraId)
 }
 
 async function declineFriendRequest() {
   await post('api/user/declineFriendRequest', { sender_id: props.intraId }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
   })
+  emit('onRemoveFriendRequest', props.intraId)
 }
 </script>

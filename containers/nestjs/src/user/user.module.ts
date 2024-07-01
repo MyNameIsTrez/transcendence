@@ -9,11 +9,13 @@ import { Match } from './match.entity';
 import { MatchService } from './match.service';
 import { ConfigModule } from '@nestjs/config';
 import UserSockets from './user.sockets';
+import { ChatSocketsModule } from '../chat/chatSockets.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Chat, Achievements, Match, User]),
     ConfigModule,
+    ChatSocketsModule,
   ],
   providers: [UserService, AchievementsService, MatchService, UserSockets],
   exports: [UserService, MatchService, UserSockets],

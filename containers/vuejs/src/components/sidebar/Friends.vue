@@ -53,6 +53,7 @@
         :key="request.intraId"
         :name="request.name"
         :intraId="request.intraId"
+        @on-remove-friend-request="removeFriendRequest"
         class="mt-6"
       />
     </div>
@@ -113,8 +114,13 @@ class Invitation {
   }
 }
 const invitations = ref<Invitation[]>(await get('api/game/invitations'))
-gameSocket.on('updateInvitations', (invites: Invitation[]) => {
-  invitations.value = invites
+gameSocket.on('addInvitation', (invitation: Invitation) => {
+  if (!invitations.value.some((invite) => invite.inviterIntraId === invitation.inviterIntraId)) {
+    invitations.value.push(invitation)
+  }
+})
+gameSocket.on('removeInvitation', (inviterIntraId: number) => {
+  invitations.value = invitations.value.filter((invite) => invite.inviterIntraId !== inviterIntraId)
 })
 
 async function searchUser() {
@@ -151,4 +157,10 @@ const incomingFriendRequests = ref<IncomingFriendRequest[]>(
 userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
   incomingFriendRequests.value.push(incomingFriendRequest)
 })
+
+function removeFriendRequest(intraId: number) {
+  incomingFriendRequests.value = incomingFriendRequests.value.filter(
+    (req) => req.intraId != intraId
+  )
+}
 </script>

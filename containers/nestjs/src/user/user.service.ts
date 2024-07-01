@@ -6,11 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsSelect, Repository } from 'typeorm';
 import { User } from './user.entity';
-import { Chat } from 'src/chat/chat.entity';
+import { Chat, Visibility } from '../chat/chat.entity';
 import { createReadStream } from 'fs';
 import { AchievementsService } from './achievements.service';
 import { ConfigService } from '@nestjs/config';
 import UserSockets from './user.sockets';
+import ChatSockets from '../chat/chat.sockets';
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,7 @@ export class UserService {
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
     private readonly userSockets: UserSockets,
+    private readonly chatSockets: ChatSockets,
   ) {}
 
   // Adds a dummy user that is used to play against oneself during development
@@ -144,7 +146,9 @@ export class UserService {
     return this.findOne(
       intra_id,
       {
-        chats: true,
+        chats: {
+          users: true,
+        },
       },
       {
         chats: {
@@ -154,6 +158,13 @@ export class UserService {
         },
       },
     ).then((user) => {
+      user?.chats.map((chat) => {
+        if (chat.visibility === Visibility.DM) {
+          chat.name = chat.users.find(
+            (user) => user.intra_id !== intra_id,
+          )?.username;
+        }
+      });
       return user?.chats;
     });
   }
@@ -206,9 +217,13 @@ export class UserService {
     });
     const other = await this.findOne(other_intra_id);
 
-    await this.removeFriend(my_intra_id, other_intra_id);
+    try {
+      await this.removeFriend(my_intra_id, other_intra_id);
+    } catch (e) {}
 
     me.blocked.push(other);
+
+    this.chatSockets.emitToClient(my_intra_id, 'blockedUser', other_intra_id);
 
     return await this.usersRepository.save(me);
   }
@@ -219,6 +234,8 @@ export class UserService {
     });
 
     me.blocked = me.blocked.filter((user) => user.intra_id !== other_intra_id);
+
+    this.chatSockets.emitToClient(my_intra_id, 'unblockedUser', other_intra_id);
 
     return await this.usersRepository.save(me);
   }

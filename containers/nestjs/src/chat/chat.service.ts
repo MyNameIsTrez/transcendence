@@ -7,12 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import {
-  FindOptionsRelations,
-  FindOptionsWhere,
-  Repository,
-  UnorderedBulkOperation,
-} from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 import { Chat, Visibility } from './chat.entity';
@@ -209,6 +204,51 @@ export class ChatService {
       if (!chat.users.some((other) => other.intra_id === user.intra_id)) {
         throw new WsException("You can't open a chat you haven't joined yet");
       }
+    });
+  }
+
+  async openDM(invitedIntraId: number, intra_id: number) {
+    // console.log('invitedIntraId', invitedIntraId);
+    // console.log('intra_id', intra_id);
+
+    if (invitedIntraId === intra_id) {
+      throw new WsException("You can't start a chat with yourself");
+    }
+
+    const invited_user = await this.userService.findOne(invitedIntraId, {
+      blocked: true,
+    });
+
+    const current_user = await this.userService.findOne(intra_id, {
+      chats: { users: true },
+    });
+
+    let dm = current_user.chats.find(
+      (chat) =>
+        chat.visibility === Visibility.DM &&
+        chat.users.some((user) => user.intra_id === invitedIntraId),
+    );
+
+    if (!dm) {
+      if (invited_user.blocked.some((user) => user.intra_id === intra_id)) {
+        throw new WsException('This user has blocked you');
+      }
+
+      dm = await this.chatRepository.save({
+        chat_id: uuid(),
+        name: 'placeholder',
+        users: [current_user, invited_user],
+        visibility: Visibility.DM,
+        hashed_password: '',
+        owner: current_user,
+        admins: [current_user, invited_user],
+      });
+    }
+
+    this.chatSockets.emitToClient(intra_id, 'openDM', {
+      chat_id: dm.chat_id,
+      name: invited_user.username,
+      visibility: dm.visibility,
     });
   }
 

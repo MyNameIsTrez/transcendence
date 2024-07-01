@@ -4,6 +4,7 @@ import { WsException } from '@nestjs/websockets';
 import { UserService } from '../user/user.service';
 import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
+import Invitation from './invitation';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -30,35 +31,15 @@ export default class LobbyManager {
     this.intraIdToLobby.set(client.data.intra_id, lobby);
   }
 
-  public isInQueue(intra_id: number) {
-    return this.intraIdToLobby.has(intra_id);
+  public async sendInvitation(sockets: Socket[], invitation: Invitation) {
+    sockets.forEach((socket) => {
+      socket.emit('addInvitation', invitation);
+    });
   }
 
-  public async leaveQueue(client: Socket, clients: Map<number, Socket[]>) {
-    const lobby = this.intraIdToLobby.get(client.data.intra_id);
-    if (!lobby) {
-      throw new WsException("Can't leave queue when not in a lobby");
-    }
-
-    client.emit('inQueue', { inQueue: false });
-
-    if (lobby.isPrivate) {
-      const invitedSockets = clients.get(lobby.invitedIntraId);
-      if (!invitedSockets) {
-        throw new WsException('Invited user is not online');
-      }
-
-      await this.updateInvitations(invitedSockets, lobby.invitedIntraId);
-    }
-  }
-
-  public async updateInvitations(
-    invitedSockets: Socket[],
-    invitedIntraId: number,
-  ) {
-    const invitations = await this.getInvitations(invitedIntraId);
-    invitedSockets.forEach((socket) => {
-      socket.emit('updateInvitations', invitations);
+  private async removeInvitation(sockets: Socket[], inviterIntraId: number) {
+    sockets.forEach((socket) => {
+      socket.emit('removeInvitation', inviterIntraId);
     });
   }
 
@@ -122,7 +103,7 @@ export default class LobbyManager {
     lobby?.movePaddle(playerIndex, keydown, north);
   }
 
-  public async removeClient(client: Socket) {
+  public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
     if (lobby) {
@@ -136,6 +117,7 @@ export default class LobbyManager {
         await this.userService.addLoss(client.data.intra_id);
       }
 
+      this.intraIdToLobby.delete(client.data.intra_id);
       await lobby.removeClient(client);
 
       // If one of the clients disconnects, the other client wins
@@ -185,11 +167,11 @@ export default class LobbyManager {
 
     const mappedLobbiesArray = await Promise.all(
       filteredLobbies.map(async (lobby) => {
-        return {
-          inviterIntraId: lobby.inviterIntraId,
-          inviterName: await this.userService.getUsername(lobby.inviterIntraId),
-          gamemode: lobby.gamemode,
-        };
+        return new Invitation(
+          lobby.inviterIntraId,
+          await this.userService.getUsername(lobby.inviterIntraId),
+          lobby.gamemode,
+        );
       }),
     );
 

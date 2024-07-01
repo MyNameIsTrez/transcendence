@@ -1,7 +1,8 @@
 enum Visibility {
   PUBLIC = 'PUBLIC',
   PRIVATE = 'PRIVATE',
-  PROTECTED = 'PROTECTED'
+  PROTECTED = 'PROTECTED',
+  DM = 'DM'
 }
 
 export default Visibility

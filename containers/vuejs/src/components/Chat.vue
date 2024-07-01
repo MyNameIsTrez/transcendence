@@ -4,6 +4,13 @@
       <div class="grid grid-flow-col">
         <button
           class="btn text-xs tooltip tooltip-left"
+          data-tip="Direct messages"
+          @click="viewedBrowserRef = ViewedBrowser.DMS"
+        >
+          <span class="material-symbols-outlined align-bottom">message</span>
+        </button>
+        <button
+          class="btn text-xs tooltip tooltip-left"
           data-tip="My chats"
           @click="viewedBrowserRef = ViewedBrowser.MY_CHATS"
         >
@@ -27,8 +34,14 @@
 
       <div class="flex flex-col gap-y-2 bg-base-100">
         <ChatList
+          v-if="viewedBrowserRef === ViewedBrowser.DMS"
+          :chatsFn="getDMs"
+          :onClickFn="openChat"
+        />
+
+        <ChatList
           v-if="viewedBrowserRef === ViewedBrowser.MY_CHATS"
-          :chatsFn="() => myChats"
+          :chatsFn="getMyChats"
           :onClickFn="openChat"
         />
 
@@ -75,6 +88,7 @@ import Chat from './chat/ChatClass'
 import Visibility from './chat/VisibilityEnum'
 
 enum ViewedBrowser {
+  DMS,
   MY_CHATS,
   PUBLIC_CHATS,
   PROTECTED_CHATS
@@ -234,6 +248,13 @@ function closeChat() {
 //   }
 // }
 
+chatSocket.on('openDM', (chat: Chat) => {
+  if (currentChat.value) {
+    chatSocket.emit('closeChat', { chatId: currentChat.value.chat_id })
+  }
+  openChat(chat)
+})
+
 function openChat(chat: Chat) {
   chatSocket.emit('openChat', { chatId: chat.chat_id }, () => {
     currentChat.value = chat
@@ -374,6 +395,14 @@ chatSocket.on('editChatInfo', (chat: Chat) => {
 chatSocket.on('exception', (data) => {
   alertPopup.value.showWarning(data.message)
 })
+
+function getDMs() {
+  return myChats.value.filter((chat) => chat.visibility === Visibility.DM)
+}
+
+function getMyChats() {
+  return myChats.value.filter((chat) => chat.visibility !== Visibility.DM)
+}
 
 function getPublicChats() {
   const publicChats = publicAndProtectedChats.value.filter(
