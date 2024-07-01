@@ -20,6 +20,13 @@ import { Message } from './message.entity';
 import { Mute } from './mute.entity';
 import { UserService } from '../user/user.service';
 import { WsException } from '@nestjs/websockets';
+import ChatSockets from './chat.sockets';
+
+class ChatClass {
+  chat_id: string;
+  name: string;
+  visibility: Visibility;
+}
 
 class MyInfo {
   owner: boolean;
@@ -51,6 +58,7 @@ export class ChatService {
     @InjectRepository(Mute) private readonly muteRepository: Repository<Mute>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    private readonly chatSockets: ChatSockets,
   ) {}
 
   public async create(
@@ -186,6 +194,8 @@ export class ChatService {
           throw new WsException('You have been banned from this chat');
         }
 
+        this.chatSockets.emitToChat(chat_id, 'addUser', user);
+
         chat.users.push(user);
         await this.chatRepository.save(chat);
       },
@@ -223,7 +233,10 @@ export class ChatService {
       chat.admins.push(user);
       await this.chatRepository.save(chat);
 
-      return { intra_id: adminned, is_adminned: true };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: adminned,
+        is_admin: true,
+      });
     });
   }
 
@@ -255,7 +268,10 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: unAdminned, is_adminned: false };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unAdminned,
+        is_admin: false,
+      });
     });
   }
 
@@ -311,7 +327,13 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: banned_id, is_banned: true };
+      this.chatSockets.removeUserFromChat(chat_id, banned_id);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
+      this.chatSockets.emitToClient(banned_id, 'banned', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
     });
   }
 
@@ -344,15 +366,13 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: kicked_id, is_kicked: true };
-
-      // if (chat.owner.intra_id == kicker_id) return false;
-
-      // chat.users = chat.users.filter((u) => u.intra_id !== kicker_id);
-      // chat.admins = chat.admins.filter((u) => u.intra_id !== kicker_id);
-      // const result = await this.chatRepository.save(chat);
-
-      // return !!result;
+      this.chatSockets.removeUserFromChat(chat_id, kicked_id);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', kicked_id);
+      this.chatSockets.emitToClient(kicked_id, 'kicked', {
+        chat_id: chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      });
     });
   }
 
@@ -477,7 +497,10 @@ export class ChatService {
 
       await this.chatRepository.save(chat);
 
-      return { intra_id: muted_id, is_mute: true };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: muted_id,
+        is_mute: true,
+      });
     });
   }
 
@@ -512,7 +535,10 @@ export class ChatService {
 
       await this.muteRepository.delete(mute);
 
-      return { intra_id: unmuted_id, is_mute: false };
+      this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+        intra_id: unmuted_id,
+        is_mute: false,
+      });
     });
   }
 
@@ -546,6 +572,7 @@ export class ChatService {
     );
   }
 
+  // TODO: Delete?
   public async changePassword(chat_id: string, password: string) {
     // TODO: Throw if we aren't the owner of the chat
 
@@ -555,6 +582,7 @@ export class ChatService {
     });
   }
 
+  // TODO: Delete?
   public async changeVisibility(
     chat_id: string,
     visibility: Visibility,
@@ -586,7 +614,7 @@ export class ChatService {
     chat_id: string,
     intra_id: number,
     edit_fields: EditFields,
-  ): Promise<EditFields> {
+  ) {
     return await this.getChat({ chat_id }, { owner: true }).then(
       async (chat) => {
         if (intra_id !== chat.owner.intra_id) {
@@ -639,7 +667,11 @@ export class ChatService {
           chat.hashed_password = await this.hashPassword(edit_fields.password);
         }
         await this.chatRepository.save(chat);
-        return { name: edit_fields.name, visibility: edit_fields.visibility };
+        this.chatSockets.emitToAllSockets('editChatInfo', {
+          chat_id: chat.chat_id,
+          name: chat.name,
+          visibility: chat.visibility,
+        });
       },
     );
   }
@@ -656,10 +688,20 @@ export class ChatService {
         muted: true,
       },
     ).then(async (chat) => {
+      if (!chat.users.some((user) => user.intra_id === intra_id)) {
+        throw new UnauthorizedException('You are not in this chat');
+      }
+
       if (chat.admins.some((admin) => admin.intra_id == intra_id))
         chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
 
       chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+
+      const sentChat: ChatClass = {
+        chat_id: chat.chat_id,
+        name: chat.name,
+        visibility: chat.visibility,
+      };
 
       if (chat.owner.intra_id == intra_id) {
         if (chat.admins.length > 0) {
@@ -669,9 +711,21 @@ export class ChatService {
           chat.admins.push(chat.users[0]);
         } else {
           await this.removeChat(chat);
+          this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
+          this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
+        this.chatSockets.emitToChat(chat_id, 'editUserInfo', {
+          intra_id: chat.owner.intra_id,
+          is_owner: true,
+          is_admin: true,
+        });
       }
+
+      // TODO: Find out why this is not needed. I expect a user to still enter the `newMessage` event on the front end without this line but they don't. This line is needed in the kickUser() and banUser() functions.
+      this.chatSockets.removeUserFromChat(chat_id, intra_id);
+      this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
+      this.chatSockets.emitToChat(chat_id, 'removeUser', intra_id);
 
       await this.chatRepository.save(chat);
     });

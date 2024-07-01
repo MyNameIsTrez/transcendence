@@ -94,10 +94,10 @@ import ChatMuteModal from './ChatMuteModal.vue'
 
 type UserInfo = {
   intra_id: number
-  username: string
-  is_owner: boolean
-  is_admin: boolean
-  is_mute: boolean
+  username?: string
+  is_owner?: boolean
+  is_admin?: boolean
+  is_mute?: boolean
 }
 
 const chatMuteModal = ref()
@@ -119,6 +119,7 @@ defineExpose({
 })
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
@@ -130,6 +131,39 @@ users.value.forEach(
     )
 )
 
+chatSocket.on('addUser', async (user: UserInfo) => {
+  if (!users.value.some((other) => other.intra_id === user.intra_id)) {
+    profilePictures.value.set(
+      user.intra_id,
+      await getImage(`api/user/profilePicture/${user.intra_id}`)
+    )
+    users.value.push(user)
+  }
+})
+
+chatSocket.on('removeUser', (intra_id: number) => {
+  const index = users.value.findIndex((user) => user.intra_id === intra_id)
+  if (index !== -1) {
+    users.value.splice(index, 1)
+  }
+})
+
+chatSocket.on('editUserInfo', (info: UserInfo) => {
+  const user = users.value.find((user) => user.intra_id === info.intra_id)
+  if (user === undefined) {
+    return
+  }
+  if (info.is_owner !== undefined) {
+    user.is_owner = info.is_owner
+  }
+  if (info.is_admin !== undefined) {
+    user.is_admin = info.is_admin
+  }
+  if (info.is_mute !== undefined) {
+    user.is_mute = info.is_mute
+  }
+})
+
 const selectedUser = ref<UserInfo>()
 
 const modal = ref()
@@ -138,89 +172,49 @@ async function mute(endDate: Date) {
   await post(`api/chats/${props.currentChat?.chat_id}/mute`, {
     intra_id: selectedUser.value?.intra_id,
     endDate
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value.forEach((user) => {
-        if (user.intra_id === res.intra_id) {
-          user.is_mute = true
-        }
-      })
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function unmute() {
   await post(`api/chats/${props.currentChat?.chat_id}/unmute`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value.forEach((user) => {
-        if (user.intra_id === res.intra_id) {
-          user.is_mute = false
-        }
-      })
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function kick() {
   await post(`api/chats/${props.currentChat?.chat_id}/kick`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function ban() {
   await post(`api/chats/${props.currentChat?.chat_id}/ban`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value = users.value.filter((user) => user.intra_id !== res.intra_id)
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function admin() {
   await post(`api/chats/${props.currentChat?.chat_id}/admin`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value.forEach((user) => {
-        if (user.intra_id === res.intra_id) {
-          user.is_admin = true
-        }
-      })
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 async function unAdmin() {
   await post(`api/chats/${props.currentChat?.chat_id}/unadmin`, {
     intra_id: selectedUser.value?.intra_id
+  }).catch((err) => {
+    alertPopup.value.showWarning(err.response.data.message)
   })
-    .then((res) => {
-      users.value.forEach((user) => {
-        if (user.intra_id === res.intra_id) {
-          user.is_admin = false
-        }
-      })
-    })
-    .catch((err) => {
-      alertPopup.value.showWarning(err.response.data.message)
-    })
 }
 
 const emit = defineEmits(['onCloseUserListModal'])
