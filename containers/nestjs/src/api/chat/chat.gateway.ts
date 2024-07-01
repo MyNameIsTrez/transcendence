@@ -238,12 +238,14 @@ export class ChatGateway {
       date,
     );
 
-    this.chatSockets.emitToChat(dto.chatId, 'newMessage', {
+    const newMessage = {
       sender: client.data.intra_id,
       sender_name: await this.userService.getUsername(client.data.intra_id),
       body,
       date: date,
-    });
+    };
+
+    this.chatSockets.emitToChat(dto.chatId, 'newMessage', newMessage);
 
     return {};
   }

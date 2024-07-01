@@ -27,7 +27,7 @@ export default class ChatSockets {
   }
 
   public removeSocketFromChat(chatId: string, client: Socket) {
-    let sockets = this.chatToSockets.get(chatId);
+    const sockets = this.chatToSockets.get(chatId);
     if (sockets) {
       sockets.delete(client);
       if (sockets.size <= 0) {
@@ -37,7 +37,7 @@ export default class ChatSockets {
   }
 
   public removeUserFromChat(chatId: string, intra_id: number) {
-    let sockets = this.chatToSockets.get(chatId);
+    const sockets = this.chatToSockets.get(chatId);
     if (sockets) {
       sockets.forEach((socket) => {
         if (socket.data.intra_id === intra_id) {

@@ -692,16 +692,17 @@ export class ChatService {
         throw new UnauthorizedException('You are not in this chat');
       }
 
-      if (chat.admins.some((admin) => admin.intra_id == intra_id))
-        chat.admins = chat.admins.filter((u) => u.intra_id !== intra_id);
-
-      chat.users = chat.users.filter((u) => u.intra_id !== intra_id);
+      chat.admins = chat.admins.filter((admin) => admin.intra_id !== intra_id);
+      chat.users = chat.users.filter((user) => user.intra_id !== intra_id);
 
       const sentChat: ChatClass = {
         chat_id: chat.chat_id,
         name: chat.name,
         visibility: chat.visibility,
       };
+
+      this.chatSockets.removeUserFromChat(chat_id, intra_id);
+      this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
 
       if (chat.owner.intra_id == intra_id) {
         if (chat.admins.length > 0) {
@@ -711,7 +712,6 @@ export class ChatService {
           chat.admins.push(chat.users[0]);
         } else {
           await this.removeChat(chat);
-          this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
           this.chatSockets.emitToAllSockets('removeChat', chat_id);
           return;
         }
@@ -722,9 +722,6 @@ export class ChatService {
         });
       }
 
-      // TODO: Find out why this is not needed. I expect a user to still enter the `newMessage` event on the front end without this line but they don't. This line is needed in the kickUser() and banUser() functions.
-      this.chatSockets.removeUserFromChat(chat_id, intra_id);
-      this.chatSockets.emitToClient(intra_id, 'leaveChat', sentChat);
       this.chatSockets.emitToChat(chat_id, 'removeUser', intra_id);
 
       await this.chatRepository.save(chat);
