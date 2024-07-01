@@ -37,6 +37,9 @@ const router = createRouter({
             if (to.params.intraId === me.intra_id.toString()) {
               return '/'
             }
+            await get(`api/user/other/${to.params.intraId}`).catch((err) => {
+              router.replace({ path: '/' })
+            })
           }
         },
         {
