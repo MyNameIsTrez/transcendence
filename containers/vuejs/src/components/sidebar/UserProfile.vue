@@ -110,7 +110,6 @@ const props = defineProps({ intraId: String })
 const intra_id = computed(() => parseInt(props.intraId!))
 
 const otherUser = ref(await get(`api/user/other/${intra_id.value}`))
-console.log('otherUser: ', otherUser)
 const username = ref(otherUser.value.username)
 const wins = ref(otherUser.value.wins)
 const losses = ref(otherUser.value.losses)
