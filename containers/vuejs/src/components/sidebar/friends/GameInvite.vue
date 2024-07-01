@@ -38,12 +38,10 @@ const props = defineProps({
 const profilePicture = await getImage(`api/user/profilePicture/${props.inviterIntraId}`)
 
 async function acceptGameInvite() {
-  // console.log('Accepting game invite from intra id', props.inviterIntraId)
   gameSocket.emit('acceptInvitation', { acceptedIntraId: props.inviterIntraId })
 }
 
 async function declineGameInvite() {
-  // console.log('Declining game invite from intra id', props.inviterIntraId)
   gameSocket.emit('declineInvitation', { declinedIntraId: props.inviterIntraId })
 }
 </script>

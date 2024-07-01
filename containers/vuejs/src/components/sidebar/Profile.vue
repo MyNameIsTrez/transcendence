@@ -96,7 +96,7 @@
       </div>
       <Achievements :intraId="intraId" class="mt-6" />
 
-      <button class="btn w-auto text-xl mt-6" @click="logout">Logout</button>
+      <button class="btn w-auto text-xl mt-6" @click="logOut">Log out</button>
     </div>
   </div>
 </template>
@@ -142,7 +142,6 @@ async function changeUsername() {
     .then(async () => {
       me = await get(`api/user/me`)
       username.value = me.username
-      console.log('foo')
     })
     .catch((err) => {
       console.error('setUsername error', err)
@@ -150,7 +149,7 @@ async function changeUsername() {
     })
 }
 
-function logout() {
+function logOut() {
   localStorage.removeItem('jwt')
   window.location.href = '/'
 }

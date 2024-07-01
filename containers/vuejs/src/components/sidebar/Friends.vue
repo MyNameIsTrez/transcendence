@@ -113,8 +113,13 @@ class Invitation {
   }
 }
 const invitations = ref<Invitation[]>(await get('api/game/invitations'))
-gameSocket.on('updateInvitations', (invites: Invitation[]) => {
-  invitations.value = invites
+gameSocket.on('addInvitation', (invitation: Invitation) => {
+  if (!invitations.value.some((invite) => invite.inviterIntraId === invitation.inviterIntraId)) {
+    invitations.value.push(invitation)
+  }
+})
+gameSocket.on('removeInvitation', (inviterIntraId: number) => {
+  invitations.value = invitations.value.filter((invite) => invite.inviterIntraId !== inviterIntraId)
 })
 
 async function searchUser() {
