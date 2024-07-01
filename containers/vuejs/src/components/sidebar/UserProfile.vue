@@ -5,28 +5,29 @@
         <div class="text text-base justify-self-start self-center text-yellow-200 w-64">
           {{ username }}
         </div>
-
-        <button
+        <div
           v-if="isFriendRequestedRef"
-          :class="`btn btn-square btn-warning justify-self-end`"
-          @click="revokeFriendRequest"
+          class="tooltip justify-self-end"
+          data-tip="Revoke friend request"
         >
-          <span class="material-symbols-outlined">person_cancel</span>
-        </button>
-        <button
-          v-if="isFriendRef"
-          :class="`btn btn-square btn-error justify-self-end`"
-          @click="removeFriend"
-        >
-          <span class="material-symbols-outlined">person_remove</span>
-        </button>
-        <button
+          <button :class="`btn btn-square btn-warning`" @click="revokeFriendRequest">
+            <span class="material-symbols-outlined">person_cancel</span>
+          </button>
+        </div>
+        <div v-if="isFriendRef" class="tooltip justify-self-end" data-tip="Remove friend">
+          <button :class="`btn btn-square btn-error`" @click="removeFriend">
+            <span class="material-symbols-outlined">person_remove</span>
+          </button>
+        </div>
+        <div
           v-if="!isFriendRef && !isFriendRequestedRef"
-          :class="`btn btn-square btn-primary justify-self-end`"
-          @click="sendFriendRequest"
+          class="tooltip justify-self-end"
+          data-tip="Send friend request"
         >
-          <span class="material-symbols-outlined">person_add</span>
-        </button>
+          <button :class="`btn btn-square btn-primary`" @click="sendFriendRequest">
+            <span class="material-symbols-outlined">person_add</span>
+          </button>
+        </div>
       </span>
       <div class="flex justify-between mt-6">
         <div class="avatar justify-start">
@@ -89,12 +90,17 @@ import { Socket } from 'socket.io-client'
 import { computed, inject, ref, watch, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
 import { onBeforeRouteUpdate } from 'vue-router'
+import router from '@/router'
 
 onBeforeRouteUpdate(async (to) => {
   let me = await get(`api/user/me`)
   if (to.params.intraId === me.intra_id.toString()) {
     return '/'
   }
+  await get(`api/user/other/${to.params.intraId}`).catch((err) => {
+    router.replace({ path: '/' })
+    alertPopup.value.showWarning('User does not exist')
+  })
 })
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
@@ -104,6 +110,7 @@ const props = defineProps({ intraId: String })
 const intra_id = computed(() => parseInt(props.intraId!))
 
 const otherUser = ref(await get(`api/user/other/${intra_id.value}`))
+console.log('otherUser: ', otherUser)
 const username = ref(otherUser.value.username)
 const wins = ref(otherUser.value.wins)
 const losses = ref(otherUser.value.losses)
