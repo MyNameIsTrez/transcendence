@@ -18,9 +18,11 @@
         :d="`${getSvgPath(alertTypeRef)}`"
       />
     </svg>
-    <span class="first-letter:uppercase">
-      {{ messageRef }}
-    </span>
+    <div class="flex flex-col">
+      <span v-for="(line, index) in messageRef" v-bind:key="index">
+        <div class="first-letter:uppercase">{{ line }}</div>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -31,29 +33,22 @@ import { AlertType } from '../types'
 // Used to let the timeout reset whenever show() is called while an alert is being shown
 let timeoutId: ReturnType<typeof setTimeout>
 
-const messageRef = ref('')
+const messageRef = ref<string[]>([])
 const visibleRef = ref(false)
 const alertTypeRef = ref()
 
-function showSuccess(message: string) {
+function showSuccess(message: string | string[]) {
   alertTypeRef.value = AlertType.ALERT_SUCCESS
   show(message)
 }
 
-function showWarning(message: string) {
+function showWarning(message: string | string[]) {
   alertTypeRef.value = AlertType.ALERT_WARNING
-  show(getErrorMessage(message))
+  show(message)
 }
 
-function getErrorMessage(msg: string | string[]) {
-  if (typeof msg === 'string') {
-    return msg
-  }
-  return msg.join('\n')
-}
-
-function show(message: string) {
-  messageRef.value = message
+function show(message: string | string[]) {
+  messageRef.value = typeof message === 'string' ? [message] : message
   visibleRef.value = true
 
   clearTimeout(timeoutId)
