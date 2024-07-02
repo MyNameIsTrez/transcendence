@@ -29,6 +29,8 @@ import { inject } from 'vue'
 
 const gameSocket: Socket = inject('gameSocket')!
 
+const emit = defineEmits(['onRemoveGameInvite'])
+
 const props = defineProps({
   inviterIntraId: Number,
   inviterName: String,
@@ -39,9 +41,11 @@ const profilePicture = await getImage(`api/user/profilePicture/${props.inviterIn
 
 async function acceptGameInvite() {
   gameSocket.emit('acceptInvitation', { acceptedIntraId: props.inviterIntraId })
+  emit('onRemoveGameInvite', props.inviterIntraId)
 }
 
 async function declineGameInvite() {
   gameSocket.emit('declineInvitation', { declinedIntraId: props.inviterIntraId })
+  emit('onRemoveGameInvite', props.inviterIntraId)
 }
 </script>

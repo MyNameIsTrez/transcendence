@@ -33,7 +33,7 @@ const router = createRouter({
           component: UserProfile,
           props: true,
           async beforeEnter(to) {
-            let me = await get(`api/user/me`)
+            const me = await get(`api/user/me`)
             if (to.params.intraId === me.intra_id.toString()) {
               return '/'
             }

@@ -43,6 +43,7 @@
       :inviterName="invite.inviterName"
       :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
+      @on-remove-game-invite="removeGameInvite"
       class="my-3"
     />
 
@@ -158,9 +159,13 @@ userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriend
   incomingFriendRequests.value.push(incomingFriendRequest)
 })
 
+function removeGameInvite(intraId: number) {
+  invitations.value = invitations.value.filter((req) => req.inviterIntraId !== intraId)
+}
+
 function removeFriendRequest(intraId: number) {
   incomingFriendRequests.value = incomingFriendRequests.value.filter(
-    (req) => req.intraId != intraId
+    (req) => req.intraId !== intraId
   )
 }
 </script>
