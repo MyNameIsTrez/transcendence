@@ -97,7 +97,7 @@ enum ViewedBrowser {
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
 
-const viewedBrowserRef = ref(ViewedBrowser.MY_CHATS)
+const viewedBrowserRef = ref(ViewedBrowser.DMS)
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
 const currentChat = ref<Chat | null>(null)
