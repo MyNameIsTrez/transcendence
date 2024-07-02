@@ -45,27 +45,27 @@
         <div v-if="myInfo.admin && selectedUser" class="flex flex-row space-x-1 mt-1">
           <button
             v-if="!selectedUser.is_mute"
-            class="flex-1 w-0 btn btn-warning"
+            class="flex-1 btn btn-warning"
             @click="chatMuteModal.$.exposed.show()"
           >
             Mute
           </button>
-          <button v-else class="flex-1 w-0 btn btn-warning" @click="unmute">Unmute</button>
-          <button class="flex-1 w-0 btn btn-warning" @click="kick">Kick</button>
-          <button class="flex-1 w-0 btn btn-warning" @click="ban">Ban</button>
+          <button v-else class="flex-1 btn btn-warning" @click="unmute">Unmute</button>
+          <button class="flex-1 btn btn-warning" @click="kick">Kick</button>
+          <button class="flex-1 btn btn-warning" @click="ban">Ban</button>
           <button
             v-if="myInfo.owner && !selectedUser.is_admin"
-            class="flex-1 w-0 btn btn-warning"
+            class="flex-1 btn btn-warning"
             @click="admin"
           >
             Admin
           </button>
           <button
             v-if="myInfo.owner && selectedUser.is_admin"
-            class="flex-1 w-0 btn btn-warning"
-            @click="unAdmin"
+            class="flex-1 btn btn-warning"
+            @click="unadmin"
           >
-            De-admin
+            Unadmin
           </button>
         </div>
       </div>
@@ -209,7 +209,7 @@ async function admin() {
   })
 }
 
-async function unAdmin() {
+async function unadmin() {
   await post(`api/chats/${props.currentChat?.chat_id}/unadmin`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {

@@ -1,25 +1,14 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  Request,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
 import { ChatService } from '../../chat/chat.service';
 import {
   ChatIdDto,
-  NameDto,
-  AddUserDto,
   OtherUserDto,
   MuteDto,
-  PasswordDto,
-  ChangeVisibilityDto,
   IntraIdDto,
+  EditDto,
 } from './chat.dto';
-import { Visibility } from 'src/chat/chat.entity';
 
+// TODO: Remove
 //	/api/chats GET => alle chats
 //	/api/chats/:chat_id GET
 //	/api/chats/:chat_id/history GET
@@ -107,13 +96,14 @@ export class ChatController {
   // TODO: Change to `:chat_id/name`
   // TODO: Don't allow this if the chat is private and user is not in chat preferably
   @Get('name/:chat_id')
-  public async name(@Param() dto: NameDto) {
+  public async name(@Param() dto: ChatIdDto) {
     return await this.chatService.getName(dto.chat_id);
   }
+
   // TODO: Change to `:chat_id/history`
   // TODO: Only allow if user is in the chat
   @Get('history/:chat_id')
-  public async history(@Param() dto: NameDto) {
+  public async history(@Param() dto: ChatIdDto) {
     return await this.chatService.getHistory(dto.chat_id);
   }
 
@@ -161,20 +151,18 @@ export class ChatController {
   @Post(':chat_id/edit')
   public async edit(
     @Request() req,
-    @Param() dto: NameDto,
-    @Body('name') name: string,
-    @Body('password') password: string,
-    @Body('visibility') visibility: Visibility,
+    @Param() paramDto: ChatIdDto,
+    @Body() dto: EditDto,
   ) {
-    return await this.chatService.edit(dto.chat_id, req.user.intra_id, {
-      name,
-      password,
-      visibility,
+    return await this.chatService.edit(paramDto.chat_id, req.user.intra_id, {
+      name: dto.name,
+      password: dto.password,
+      visibility: dto.visibility,
     });
   }
 
   @Post(':chat_id/leave')
-  public async leave(@Request() req, @Param() dto: NameDto) {
+  public async leave(@Request() req, @Param() dto: ChatIdDto) {
     return await this.chatService.leave(dto.chat_id, req.user.intra_id);
   }
 }

@@ -6,8 +6,9 @@ import {
   IsPositive,
   IsInt,
   IsDate,
+  MaxLength,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 
 import { Visibility } from 'src/chat/chat.entity';
 
@@ -34,14 +35,28 @@ export class IntraIdDto {
   intra_id: number;
 }
 
+export class EditDto {
+  @IsNotEmpty({
+    message: 'Name should not be empty',
+  })
+  @MaxLength(14, {
+    message: 'Name exceeds character limit of 14',
+  })
+  @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  name: string;
+
+  @IsEnum(Visibility)
+  visibility: Visibility;
+
+  @ValidateIf((x) => x.visibility === Visibility.PROTECTED)
+  @IsNotEmpty()
+  password: string;
+}
+
 //////////
 
 // TODO: Get rid of all of these
-
-export class NameDto {
-  @IsUUID()
-  chat_id: string;
-}
 
 export class AddUserDto {
   @IsNotEmpty()
