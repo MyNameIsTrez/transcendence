@@ -201,7 +201,7 @@ chatSocket.on('removeChat', (chat_id: string) => {
 })
 
 chatSocket.on('leaveChat', (chat: Chat) => {
-  const index = myChats.value.findIndex((chat) => chat.chat_id === chat.chat_id)
+  const index = myChats.value.findIndex((c) => c.chat_id === chat.chat_id)
   if (index !== -1) {
     myChats.value.splice(index, 1)
   }
