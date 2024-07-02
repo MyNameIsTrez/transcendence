@@ -224,19 +224,6 @@ async function revokeFriendRequest() {
     })
 }
 
-userSocket.on('declinedFriendRequest', (decliner_intra_id: number) => {
-  if (decliner_intra_id === intra_id.value) {
-    isFriendRequestedRef.value = false
-  }
-})
-
-userSocket.on('acceptedFriendRequest', (accepter_intra_id: number) => {
-  if (accepter_intra_id === intra_id.value) {
-    isFriendRequestedRef.value = false
-    isFriendRef.value = true
-  }
-})
-
 async function removeFriend() {
   await post('api/user/removeFriend', { friend_id: intra_id.value })
     .then(() => {
@@ -259,4 +246,24 @@ async function sendFriendRequest() {
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
+
+userSocket.on('declinedFriendRequest', (decliner_intra_id: number) => {
+  if (decliner_intra_id === intra_id.value) {
+    isFriendRequestedRef.value = false
+  }
+})
+
+userSocket.on('acceptedFriendRequest', (accepter_intra_id: number) => {
+  if (accepter_intra_id === intra_id.value) {
+    isFriendRequestedRef.value = false
+    isFriendRef.value = true
+  }
+})
+
+userSocket.on('removeFriend', (remover_intra_id: number) => {
+  if (remover_intra_id === intra_id.value) {
+    isFriendRequestedRef.value = false
+    isFriendRef.value = false
+  }
+})
 </script>
