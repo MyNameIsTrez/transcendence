@@ -541,7 +541,7 @@ export class UserService {
     };
   }
 
-  private async isOnline(user: User) {
+  private isOnline(user: User) {
     const nowMs = Date.now();
     const lastOnlineMs = user.lastOnline.getTime();
     return nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
