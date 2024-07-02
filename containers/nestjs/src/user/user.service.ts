@@ -506,9 +506,7 @@ export class UserService {
 
     await this.declineFriendRequest(other_id, user_id);
 
-    this.userSockets.emitToClient(other_id, 'removeFriendRequest', {
-      intraId: user_id,
-    });
+    this.userSockets.emitToClient(other_id, 'removeFriendRequest', user_id);
   }
 
   public async removeFriend(user_id: number, friend_id: number) {
@@ -544,9 +542,7 @@ export class UserService {
 
     await this.usersRepository.save(friend);
 
-    this.userSockets.emitToClient(friend_id, 'removeFriend', {
-      intraId: user_id,
-    });
+    this.userSockets.emitToClient(friend_id, 'removeFriend', user_id);
   }
 
   public async updateLastOnline(intra_id: number) {

@@ -127,7 +127,7 @@ userSocket.on('addFriend', (addedFriend: FriendClass) => {
     friends.value.push(addedFriend)
   }
 })
-userSocket.on('removeFriend', ({ intraId }: FriendClass) => {
+userSocket.on('removeFriend', (intraId: number) => {
   friends.value = friends.value.filter((friend) => friend.intraId !== intraId)
 })
 
@@ -170,7 +170,7 @@ userSocket.on('addFriendRequest', (incomingFriendRequest: IncomingFriendRequest)
     incomingFriendRequests.value.push(incomingFriendRequest)
   }
 })
-userSocket.on('removeFriendRequest', ({ intraId }: IncomingFriendRequest) => {
+userSocket.on('removeFriendRequest', (intraId: number) => {
   incomingFriendRequests.value = incomingFriendRequests.value.filter(
     (request) => request.intraId !== intraId
   )
