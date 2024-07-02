@@ -425,6 +425,16 @@ export class UserService {
       incoming_friend_requests: true,
       friends: true,
     });
+    if (
+      !receiver.incoming_friend_requests.some(
+        (request) => request.intra_id === sender_id,
+      )
+    ) {
+      throw new BadRequestException(
+        "This person hasn't sent you a friend request",
+      );
+    }
+
     const sender = await this.findOne(sender_id, {
       friends: true,
     });
