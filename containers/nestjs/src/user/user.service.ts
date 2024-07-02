@@ -255,20 +255,9 @@ export class UserService {
       blocked: true,
     }).then(async (user) => {
       return await Promise.all(
-        user.blocked.map(async (blockedUser) => {
-          const nowMs = Date.now();
-          const lastOnlineMs = (
-            await this.getLastOnline(blockedUser.intra_id)
-          ).getTime();
-          const isOnline =
-            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
-
-          return {
-            name: blockedUser.username,
-            isOnline,
-            intraId: blockedUser.intra_id,
-          };
-        }),
+        user.blocked.map(async (blockedUser) =>
+          this.getFrontendUser(blockedUser),
+        ),
       );
     });
   }
@@ -404,20 +393,7 @@ export class UserService {
       friends: true,
     }).then(async (user) => {
       return await Promise.all(
-        user.friends.map(async (friend) => {
-          const nowMs = Date.now();
-          const lastOnlineMs = (
-            await this.getLastOnline(friend.intra_id)
-          ).getTime();
-          const isOnline =
-            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
-
-          return {
-            name: friend.username,
-            isOnline,
-            intraId: friend.intra_id,
-          };
-        }),
+        user.friends.map(async (friend) => this.getFrontendUser(friend)),
       );
     });
   }
@@ -467,6 +443,12 @@ export class UserService {
       1,
     );
     await this.usersRepository.save([sender, receiver]);
+
+    this.userSockets.emitToClient(
+      receiver_id,
+      'addFriend',
+      this.getFrontendUser(sender),
+    );
   }
 
   public async declineFriendRequest(receiver_id: number, sender_id: number) {
@@ -541,16 +523,28 @@ export class UserService {
     await this.usersRepository.save(user);
 
     await this.usersRepository.save(friend);
+
+    this.userSockets.emitToClient(friend_id, 'removeFriend', {
+      intraId: user_id,
+    });
   }
 
   public async updateLastOnline(intra_id: number) {
     await this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
   }
 
-  private async getLastOnline(intra_id: number) {
-    return await this.findOne(intra_id).then((user) => {
-      return user.lastOnline;
-    });
+  private async getFrontendUser(user: User) {
+    return {
+      name: user.username,
+      isOnline: this.isOnline(user),
+      intraId: user.intra_id,
+    };
+  }
+
+  private async isOnline(user: User) {
+    const nowMs = Date.now();
+    const lastOnlineMs = user.lastOnline.getTime();
+    return nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
   }
 
   public async getMatchHistory(intra_id: number) {
