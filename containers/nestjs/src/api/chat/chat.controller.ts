@@ -40,6 +40,14 @@ export class ChatController {
     );
   }
 
+  @Get(':chat_id/banned_users')
+  public async getBannedUsers(@Request() req, @Param() ChatIdDto: ChatIdDto) {
+    return await this.chatService.getBannedUsers(
+      ChatIdDto.chat_id,
+      req.user.intra_id,
+    );
+  }
+
   @Post(':chat_id/admin')
   public async admin(
     @Request() req,
@@ -73,6 +81,19 @@ export class ChatController {
     @Body() bodyDto: IntraIdDto,
   ) {
     return await this.chatService.banUser(
+      chatIdDto.chat_id,
+      bodyDto.intra_id,
+      req.user.intra_id,
+    );
+  }
+
+  @Post(':chat_id/unban')
+  public async unban(
+    @Request() req,
+    @Param() chatIdDto: ChatIdDto,
+    @Body() bodyDto: IntraIdDto,
+  ) {
+    return await this.chatService.unbanUser(
       chatIdDto.chat_id,
       bodyDto.intra_id,
       req.user.intra_id,

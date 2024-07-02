@@ -12,6 +12,13 @@
         <span class="material-symbols-outlined"> group </span>
       </button>
       <button
+        v-if="currentChat?.visibility !== Visibility.DM && myInfo.admin"
+        :class="'btn btn-error'"
+        @click="chatBannedListModal.$.exposed.show()"
+      >
+        <span class="material-symbols-outlined"> group_remove </span>
+      </button>
+      <button
         v-if="currentChat?.visibility !== Visibility.DM"
         :class="'btn btn-warning'"
         @click="chatSettingsModal.$.exposed.show()"
@@ -69,6 +76,13 @@
       ref="chatUserListModal"
       @onCloseUserListModal="chatUserListModal.$.exposed.hide()"
       :currentChat="currentChat"
+	  :myInfo="myInfo"
+    />
+    <ChatBannedListModal
+      v-if="myInfo.admin"
+      ref="chatBannedListModal"
+      @onCloseBannedListModal="chatBannedListModal.$.exposed.hide()"
+      :currentChat="currentChat"
     />
     <ChatSettingsModal
       ref="chatSettingsModal"
@@ -88,7 +102,9 @@ import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 import ChatUserListModal from './ChatUserListModal.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
+import ChatBannedListModal from './ChatBannedListModal.vue'
 import Visibility from './VisibilityEnum'
+import MyInfo from './MyInfoClass'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
@@ -97,6 +113,8 @@ const props = defineProps({
   currentChat: Object as PropType<Chat>
 })
 
+const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+
 const muted = ref(false)
 const sentMessageRef = ref('')
 const chatHistory = ref<Message[]>([])
@@ -104,6 +122,7 @@ const chatRef = ref()
 const profilePictures = ref(new Map<Message['sender'], string>())
 const chatUserListModal = ref()
 const chatSettingsModal = ref()
+const chatBannedListModal = ref()
 
 const blocked = ref(new Set<number>())
 
@@ -125,6 +144,27 @@ function sendMessage() {
     })
   }
 }
+
+type UserInfo = {
+  intra_id: number
+  username?: string
+  is_owner?: boolean
+  is_admin?: boolean
+  is_mute?: boolean
+}
+
+chatSocket.on('editUserInfo', async (info: UserInfo) => {
+  const me = await get('api/user/me')
+  if (info.intra_id !== me.intra_id) {
+    return
+  }
+  if (info.is_owner !== undefined) {
+    myInfo.value.owner = info.is_owner
+  }
+  if (info.is_admin !== undefined) {
+    myInfo.value.admin = info.is_admin
+  }
+})
 
 chatSocket.on('newMessage', async (message: Message) => {
   message.date = new Date(message.date)
