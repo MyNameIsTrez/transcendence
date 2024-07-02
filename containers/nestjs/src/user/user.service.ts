@@ -376,7 +376,7 @@ export class UserService {
       const receiverSockets = this.userSockets.get(receiver.intra_id);
 
       receiverSockets.forEach((receiverSocket) =>
-        receiverSocket.emit('newIncomingFriendRequest', {
+        receiverSocket.emit('addFriendRequest', {
           intraId: sender_id,
           name: sender.username,
         }),

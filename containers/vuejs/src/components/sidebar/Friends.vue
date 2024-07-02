@@ -162,8 +162,14 @@ const incomingFriendRequests = ref<IncomingFriendRequest[]>(
   await get('api/user/incomingFriendRequests')
 )
 
-userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
-  incomingFriendRequests.value.push(incomingFriendRequest)
+userSocket.on('addFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
+  if (
+    !incomingFriendRequests.value.some(
+      (request) => request.intraId === incomingFriendRequest.intraId
+    )
+  ) {
+    incomingFriendRequests.value.push(incomingFriendRequest)
+  }
 })
 
 function removeGameInvite(intraId: number) {
