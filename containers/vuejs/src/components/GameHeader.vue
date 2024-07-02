@@ -100,8 +100,4 @@ gameSocket.on('inQueue', (data: any) => {
   reset()
   queueing.value = data.inQueue
 })
-
-gameSocket.on('exception', (error: any) => {
-  alertPopup.value.showWarning(error.message)
-})
 </script>

@@ -256,10 +256,6 @@ chatSocket.on('editChatInfo', (chat: Chat) => {
   foundChat.visibility = chat.visibility
 })
 
-chatSocket.on('exception', (data) => {
-  alertPopup.value.showWarning(data.message)
-})
-
 function getDMs() {
   return myChats.value.filter((chat) => chat.visibility === Visibility.DM)
 }

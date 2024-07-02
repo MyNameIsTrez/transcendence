@@ -67,6 +67,7 @@ gameSocket.on('exception', (error) => {
     console.error('Redirecting to /login')
     router.replace({ path: '/login' })
   }
+  alertPopup.value.showWarning(error.message)
 })
 
 chatSocket.on('exception', (error) => {
@@ -75,6 +76,7 @@ chatSocket.on('exception', (error) => {
     console.error('Redirecting to /login')
     router.replace({ path: '/login' })
   }
+  alertPopup.value.showWarning(error.message)
 })
 
 userSocket.on('exception', (error) => {
@@ -83,6 +85,7 @@ userSocket.on('exception', (error) => {
     console.error('Redirecting to /login')
     router.replace({ path: '/login' })
   }
+  alertPopup.value.showWarning(error.message)
 })
 
 onUnmounted(() => {
