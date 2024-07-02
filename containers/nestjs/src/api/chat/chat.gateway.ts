@@ -65,7 +65,14 @@ export class PasswordConstraint implements ValidatorConstraintInterface {
 }
 
 class CreateDto {
+  @IsNotEmpty({
+    message: 'Name should not be empty',
+  })
+  @MaxLength(14, {
+    message: 'Name exceeds character limit of 14',
+  })
   @IsNotEmpty()
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   name: string;
 
   @IsEnum(Visibility)
@@ -165,7 +172,7 @@ export class ChatGateway {
   ) {
     const chat = await this.chatService.create(
       client.data.intra_id,
-      dto.name,
+      dto.name.trim(),
       dto.visibility,
       dto.password,
     );
