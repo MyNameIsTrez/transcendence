@@ -453,6 +453,12 @@ export class UserService {
       'addFriend',
       this.getFrontendUser(sender),
     );
+
+    this.userSockets.emitToClient(
+      sender_id,
+      'acceptedFriendRequest',
+      receiver_id,
+    );
   }
 
   public async declineFriendRequest(receiver_id: number, sender_id: number) {
@@ -467,6 +473,12 @@ export class UserService {
       1,
     );
     await this.usersRepository.save(receiver);
+
+    this.userSockets.emitToClient(
+      sender_id,
+      'declinedFriendRequest',
+      receiver_id,
+    );
   }
 
   public async revokeFriendRequest(user_id: number, other_id: number) {

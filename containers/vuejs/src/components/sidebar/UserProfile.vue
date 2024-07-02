@@ -117,6 +117,7 @@ const emit = defineEmits(['onCreatedChat'])
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
 const gameSocket: Socket = inject('gameSocket')!
+const userSocket: Socket = inject('userSocket')!
 
 const props = defineProps({ intraId: String })
 const intra_id = computed(() => parseInt(props.intraId!))
@@ -222,6 +223,19 @@ async function revokeFriendRequest() {
       alertPopup.value.showWarning(err.response.data.message)
     })
 }
+
+userSocket.on('declinedFriendRequest', (decliner_intra_id: number) => {
+  if (decliner_intra_id === intra_id.value) {
+    isFriendRequestedRef.value = false
+  }
+})
+
+userSocket.on('acceptedFriendRequest', (accepter_intra_id: number) => {
+  if (accepter_intra_id === intra_id.value) {
+    isFriendRequestedRef.value = false
+    isFriendRef.value = true
+  }
+})
 
 async function removeFriend() {
   await post('api/user/removeFriend', { friend_id: intra_id.value })
