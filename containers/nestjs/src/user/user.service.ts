@@ -253,13 +253,9 @@ export class UserService {
   async blocked(intra_id: number) {
     return await this.findOne(intra_id, {
       blocked: true,
-    }).then(async (user) => {
-      return await Promise.all(
-        user.blocked.map(async (blockedUser) =>
-          this.getFrontendUser(blockedUser),
-        ),
-      );
-    });
+    }).then((user) =>
+      user.blocked.map((blockedUser) => this.getFrontendUser(blockedUser)),
+    );
   }
 
   async addWin(intra_id: number) {
@@ -391,11 +387,9 @@ export class UserService {
   async getFriends(intra_id: number) {
     return await this.findOne(intra_id, {
       friends: true,
-    }).then(async (user) => {
-      return await Promise.all(
-        user.friends.map(async (friend) => this.getFrontendUser(friend)),
-      );
-    });
+    }).then((user) =>
+      user.friends.map((friend) => this.getFrontendUser(friend)),
+    );
   }
 
   async getIncomingFriendRequests(intra_id: number) {
@@ -533,7 +527,7 @@ export class UserService {
     await this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
   }
 
-  private async getFrontendUser(user: User) {
+  private getFrontendUser(user: User) {
     return {
       name: user.username,
       isOnline: this.isOnline(user),
