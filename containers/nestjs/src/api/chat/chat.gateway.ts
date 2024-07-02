@@ -183,7 +183,7 @@ export class ChatGateway {
       visibility: chat.visibility,
     };
 
-    client.emit('addMyChat', sentChat);
+    this.chatSockets.emitToClient(client.data.intra_id, 'addMyChat', sentChat);
 
     if (chat.visibility !== Visibility.PRIVATE) {
       this.chatSockets.emitToAllSockets('addChat', sentChat);

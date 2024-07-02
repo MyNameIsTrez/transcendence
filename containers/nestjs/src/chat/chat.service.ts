@@ -242,6 +242,17 @@ export class ChatService {
       });
     }
 
+    this.chatSockets.emitToClient(invitedIntraId, 'addMyChat', {
+      chat_id: dm.chat_id,
+      name: current_user.username,
+      visibility: dm.visibility,
+    });
+    this.chatSockets.emitToClient(intra_id, 'addMyChat', {
+      chat_id: dm.chat_id,
+      name: invited_user.username,
+      visibility: dm.visibility,
+    });
+
     this.chatSockets.emitToClient(intra_id, 'openDM', {
       chat_id: dm.chat_id,
       name: invited_user.username,
