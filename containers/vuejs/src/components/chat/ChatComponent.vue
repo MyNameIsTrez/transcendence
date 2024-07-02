@@ -4,52 +4,23 @@
       <button :class="'btn btn-accent'" @click="emit('onCloseChat')">
         <span class="material-symbols-outlined"> arrow_back </span>
       </button>
-      <button :class="'btn btn-primary ml-auto'" @click="chatUserListModal.$.exposed.show()">
+      <button
+        v-if="currentChat?.visibility !== Visibility.DM"
+        :class="'btn btn-primary ml-auto'"
+        @click="chatUserListModal.$.exposed.show()"
+      >
         <span class="material-symbols-outlined"> group </span>
       </button>
-      <button :class="'btn btn-warning'" @click="chatSettingsModal.$.exposed.show()">
+      <button
+        v-if="currentChat?.visibility !== Visibility.DM"
+        :class="'btn btn-warning'"
+        @click="chatSettingsModal.$.exposed.show()"
+      >
         <span class="material-symbols-outlined"> settings </span>
       </button>
     </div>
+
     {{ currentChat?.name }}
-
-    <!-- <div v-if="iAmUser">
-      <button class="btn btn-secondary" @click="leave">Leave chat</button>
-    </div> -->
-
-    <!-- <div v-if="iAmOwner">
-      <div v-if="isProtected"> -->
-    <!-- <input
-            v-model="password"
-            type="password"
-            placeholder="New password..."
-            @keyup.enter="changePassword"
-          /> -->
-    <!-- <button @click="changePassword">Change password</button>
-      </div>
-      <button :class="'btn ' + getBtnColor(visibility)" @click="cycleChatVisibility">
-        {{ visibility }}
-      </button> -->
-    <!-- <button @click="changeVisibility">Change visibility</button> -->
-    <!-- </div> -->
-
-    <!-- <div v-if="iAmAdmin">
-      <button @click="() => (showOptions = !showOptions)">
-        {{ showOptions ? '~ open options ~' : '~ close options ~' }}
-      </button>
-      <div v-if="showOptions"> -->
-    <!-- <input v-model="otherUser" placeholder="42 student..." />
-          <button @click="addUser">Add</button>
-          <button @click="muteUser">Mute</button>
-          <button @click="kickUser">Kick</button>
-          <button @click="banUser">Ban</button>
-          <button @click="addAdmin">Make admin</button> -->
-    <!-- TODO: Use number input here -->
-    <!-- <input v-model="daysToMute" placeholder="days to mute..." /> -->
-    <!-- </div>
-    </div> -->
-
-    <!-- <div v-if="isDirect">(DM)</div> -->
 
     <div
       ref="chatRef"
@@ -117,6 +88,7 @@ import { get, getImage } from '../../httpRequests'
 import AlertPopup from '../AlertPopup.vue'
 import ChatUserListModal from './ChatUserListModal.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
+import Visibility from './VisibilityEnum'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!

@@ -208,9 +208,6 @@ export class ChatService {
   }
 
   async openDM(invitedIntraId: number, intra_id: number) {
-    // console.log('invitedIntraId', invitedIntraId);
-    // console.log('intra_id', intra_id);
-
     if (invitedIntraId === intra_id) {
       throw new WsException("You can't start a chat with yourself");
     }
@@ -257,6 +254,12 @@ export class ChatService {
       { chat_id },
       { owner: true, users: true, admins: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (chat.owner.intra_id !== adminner) {
         throw new ForbiddenException('You are not the owner');
       }
@@ -285,6 +288,12 @@ export class ChatService {
       { chat_id },
       { owner: true, users: true, admins: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (chat.owner.intra_id !== unAdminner) {
         throw new ForbiddenException('You are not the owner');
       }
@@ -333,6 +342,12 @@ export class ChatService {
       { chat_id },
       { users: true, banned: true, owner: true, admins: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (!chat.admins.some((admin) => admin.intra_id === banner_id)) {
         throw new ForbiddenException('You are not an admin');
       }
@@ -382,6 +397,12 @@ export class ChatService {
       { chat_id },
       { users: true, owner: true, admins: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (!chat.admins.some((admin) => admin.intra_id === kicker_id)) {
         throw new ForbiddenException('You are not an admin');
       }
@@ -444,12 +465,6 @@ export class ChatService {
     });
   }
 
-  private async isProtected(chat_id: string) {
-    return this.getChat({ chat_id }).then(async (chat) => {
-      return chat.visibility === Visibility.PROTECTED;
-    });
-  }
-
   public async isUser(chat_id: string, intra_id: number) {
     return this.getChat({ chat_id }, { users: true }).then(async (chat) => {
       return chat.users.some((user) => user.intra_id === intra_id);
@@ -503,6 +518,12 @@ export class ChatService {
       { chat_id },
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (!chat.admins.some((admin) => admin.intra_id === muter_id)) {
         throw new ForbiddenException('You are not an admin');
       }
@@ -549,6 +570,12 @@ export class ChatService {
       { chat_id },
       { owner: true, admins: true, muted: true, users: true },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (!chat.admins.some((admin) => admin.intra_id === unmuter_id)) {
         throw new ForbiddenException('You are not an admin');
       }
@@ -582,13 +609,6 @@ export class ChatService {
     });
   }
 
-  private async isDirect(chat_id: string) {
-    return this.getChat({ chat_id }, { users: true }).then(async (chat) => {
-      if (chat.users.length === 2) return true;
-      return false;
-    });
-  }
-
   public async isLocked(chat_id: string, intra_id: number) {
     return this.getChat({ chat_id }, { users: true }).then(async (chat) => {
       if (
@@ -612,32 +632,13 @@ export class ChatService {
     );
   }
 
-  // TODO: Delete?
-  public async changePassword(chat_id: string, password: string) {
-    // TODO: Throw if we aren't the owner of the chat
-
-    return await this.getChat({ chat_id }).then(async (chat) => {
-      chat.hashed_password = await this.hashPassword(password);
-      await this.chatRepository.save(chat);
-    });
-  }
-
-  // TODO: Delete?
-  public async changeVisibility(
-    chat_id: string,
-    visibility: Visibility,
-    password: string,
-  ) {
-    return await this.getChat({ chat_id }).then(async (chat) => {
-      chat.visibility = visibility;
-      if (chat.visibility === Visibility.PROTECTED) {
-        chat.hashed_password = await this.hashPassword(password);
-      }
-      await this.chatRepository.save(chat);
-    });
-  }
-
   public async removeChat(chat: Chat) {
+    if (chat.visibility === Visibility.DM) {
+      throw new ForbiddenException(
+        "This action can't be performed in a direct message",
+      );
+    }
+
     chat.users = [];
     chat.history.forEach(
       async (message) => await this.messageRepository.remove(message),
@@ -657,6 +658,12 @@ export class ChatService {
   ) {
     return await this.getChat({ chat_id }, { owner: true }).then(
       async (chat) => {
+        if (chat.visibility === Visibility.DM) {
+          throw new ForbiddenException(
+            "This action can't be performed in a direct message",
+          );
+        }
+
         if (intra_id !== chat.owner.intra_id) {
           throw new UnauthorizedException(
             'You are unauthorized to use this action',
@@ -728,6 +735,12 @@ export class ChatService {
         muted: true,
       },
     ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
       if (!chat.users.some((user) => user.intra_id === intra_id)) {
         throw new UnauthorizedException('You are not in this chat');
       }
