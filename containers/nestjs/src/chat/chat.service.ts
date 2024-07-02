@@ -44,6 +44,12 @@ type UserInfo = {
   is_mute: boolean;
 };
 
+type BannedUserInfo = {
+  intra_id: number;
+  username: string;
+  is_banned: boolean;
+};
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -175,6 +181,28 @@ export class ChatService {
     );
 
     return users;
+  }
+
+  public async getBannedUsers(
+    chat_id: string,
+    intra_id: number,
+  ): Promise<BannedUserInfo[]> {
+    const chat = await this.getChat({ chat_id }, { users: true, admins: true, banned: true });
+
+    if (!chat.admins.some((other) => other.intra_id === intra_id)) {
+      throw new WsException('You are not an admin in this chat');
+    }
+    const bannedUsers = chat.banned.map((user) => {
+      return {
+        intra_id: user.intra_id,
+        username: user.username,
+        is_banned: chat.banned.some(
+          (other) => other.intra_id === user.intra_id,
+        ),
+      };
+    });
+
+    return bannedUsers;
   }
 
   async addUser(chat_id: string, intra_id: number) {
@@ -395,6 +423,7 @@ export class ChatService {
 
       this.chatSockets.removeUserFromChat(chat_id, banned_id);
       this.chatSockets.emitToChat(chat_id, 'removeUser', banned_id);
+      this.chatSockets.emitToChat(chat_id, 'addBannedUser', user);
       this.chatSockets.emitToClient(banned_id, 'banned', {
         chat_id: chat_id,
         name: chat.name,
@@ -402,6 +431,43 @@ export class ChatService {
       });
     });
   }
+
+  public async unbanUser(chat_id: string, unbanned_id: number, unbanner_id: number) {
+    return this.getChat(
+      { chat_id },
+      { users: true, banned: true, owner: true, admins: true },
+    ).then(async (chat) => {
+      if (chat.visibility === Visibility.DM) {
+        throw new ForbiddenException(
+          "This action can't be performed in a direct message",
+        );
+      }
+
+      if (!chat.admins.some((admin) => admin.intra_id === unbanner_id)) {
+        throw new ForbiddenException('You are not an admin');
+      }
+
+      if (!chat.banned.some((ban) => ban.intra_id === unbanned_id)) {
+        throw new BadRequestException('User is not banned');
+      }
+
+      if (chat.owner.intra_id === unbanned_id) {
+        throw new ForbiddenException("Can't unban the owner");
+      }
+
+      const user = await this.userService.findOne(unbanned_id);
+      if (!user) {
+        throw new BadRequestException("Couldn't fetch user from database");
+      }
+
+      chat.banned = chat.banned.filter((user) => user.intra_id !== unbanned_id);
+
+      await this.chatRepository.save(chat);
+
+      this.chatSockets.emitToChat(chat_id, 'removeUnbannedUser', unbanned_id);
+    });
+  }
+
 
   public async kickUser(chat_id: string, kicked_id: number, kicker_id: number) {
     return this.getChat(

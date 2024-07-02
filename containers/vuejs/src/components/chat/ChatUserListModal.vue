@@ -1,7 +1,7 @@
 <template>
   <dialog ref="modal" class="modal">
     <span class="grid" style="grid-column-start: 1; grid-row-start: 1">
-      <div class="modal-box w-auto justify-self-center">
+      <div class="modal-box w-[450px] justify-self-center">
         <!-- Adds a little close button in the top-right corner -->
         <form method="dialog">
           <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">✕</button>
@@ -42,7 +42,7 @@
             </button>
           </div>
         </div>
-        <div v-if="myInfo.admin && selectedUser" class="flex flex-row space-x-1 mt-1">
+        <div v-if="props.myInfo?.admin && selectedUser" class="flex flex-row space-x-1 mt-1">
           <button
             v-if="!selectedUser.is_mute"
             class="flex-1 btn btn-warning"
@@ -54,14 +54,14 @@
           <button class="flex-1 btn btn-warning" @click="kick">Kick</button>
           <button class="flex-1 btn btn-warning" @click="ban">Ban</button>
           <button
-            v-if="myInfo.owner && !selectedUser.is_admin"
+            v-if="props.myInfo?.owner && !selectedUser.is_admin"
             class="flex-1 btn btn-warning"
             @click="admin"
           >
             Admin
           </button>
           <button
-            v-if="myInfo.owner && selectedUser.is_admin"
+            v-if="props.myInfo?.owner && selectedUser.is_admin"
             class="flex-1 btn btn-warning"
             @click="unadmin"
           >
@@ -106,7 +106,8 @@ const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const props = defineProps({
-  currentChat: Object as PropType<Chat>
+  currentChat: Object as PropType<Chat>,
+  myInfo: Object as PropType<MyInfo>
 })
 
 defineExpose({
@@ -117,8 +118,6 @@ defineExpose({
     modal.value.close()
   }
 })
-
-const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 
 const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
 
