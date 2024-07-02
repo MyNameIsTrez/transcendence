@@ -492,7 +492,11 @@ export class UserService {
       );
     }
 
-    return await this.declineFriendRequest(other_id, user_id);
+    await this.declineFriendRequest(other_id, user_id);
+
+    this.userSockets.emitToClient(other_id, 'removeFriendRequest', {
+      intraId: user_id,
+    });
   }
 
   public async removeFriend(user_id: number, friend_id: number) {
