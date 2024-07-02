@@ -97,22 +97,14 @@ const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
-const friends = ref(await get('api/user/friends'))
-
 const searchUserRef = ref('')
 
 const router = useRouter()
 
-class Invitation {
+type Invitation = {
   inviterIntraId: number
   inviterName: string
   gamemode: string
-
-  constructor(inviterIntraId: number, inviterName: string, gamemode: string) {
-    this.inviterIntraId = inviterIntraId
-    this.inviterName = inviterName
-    this.gamemode = gamemode
-  }
 }
 const invitations = ref<Invitation[]>(await get('api/game/invitations'))
 gameSocket.on('addInvitation', (invitation: Invitation) => {
@@ -122,6 +114,21 @@ gameSocket.on('addInvitation', (invitation: Invitation) => {
 })
 gameSocket.on('removeInvitation', (inviterIntraId: number) => {
   invitations.value = invitations.value.filter((invite) => invite.inviterIntraId !== inviterIntraId)
+})
+
+type FriendClass = {
+  name: string
+  isOnline: boolean
+  intraId: number
+}
+const friends = ref<FriendClass[]>(await get('api/user/friends'))
+userSocket.on('addFriend', (addedFriend: FriendClass) => {
+  if (!friends.value.some((friend) => friend.intraId === addedFriend.intraId)) {
+    friends.value.push(addedFriend)
+  }
+})
+userSocket.on('removeFriend', ({ intraId }: FriendClass) => {
+  friends.value = friends.value.filter((friend) => friend.intraId !== intraId)
 })
 
 async function searchUser() {
