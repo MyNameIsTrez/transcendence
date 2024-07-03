@@ -23,6 +23,35 @@ export class UserService {
     private readonly chatSockets: ChatSockets,
   ) {}
 
+  public async updateOffline() {
+    const users = await this.usersRepository.find({
+      relations: { friends: true },
+    });
+
+    const offline_timeout_ms = this.configService.get('OFFLINE_TIMEOUT_MS');
+
+    users.forEach((user) => {
+      const nowMs = Date.now();
+      const lastOnlineMs = user.lastOnline.getTime();
+      const diffMs = nowMs - lastOnlineMs;
+
+      const wiggleRoomMs = 2000;
+
+      if (
+        diffMs >= offline_timeout_ms &&
+        diffMs < offline_timeout_ms + wiggleRoomMs
+      ) {
+        user.friends.forEach((friend) => {
+          this.userSockets.emitToClient(
+            friend.intra_id,
+            'offlineFriend',
+            user.intra_id,
+          );
+        });
+      }
+    });
+  }
+
   // Adds a dummy user that is used to play against oneself during development
   async createFooUser() {
     const foo_intra_id = 42;
