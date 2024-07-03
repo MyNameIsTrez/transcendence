@@ -77,10 +77,13 @@ export class AuthService {
       .then(async (j) => {
         // intra likes to troll us by sometimes putting id in j.data
         const intra_id = j.id ?? j.data.id;
+        const url = j.id
+          ? j.image.versions.medium
+          : j.data.attributes.image.versions.medium;
+        const login = j.login ?? j.data.attributes.login;
+        const email = j.email ?? j.data.attributes.email;
 
         if (!(await this.userService.hasUser(intra_id))) {
-          const url = j.image.versions.medium;
-
           const { data } = await firstValueFrom(
             this.httpService.get(url, {
               responseType: 'arraybuffer',
@@ -91,7 +94,7 @@ export class AuthService {
             if (err) throw err;
           });
 
-          await this.userService.create(intra_id, j.login, j.login, j.email);
+          await this.userService.create(intra_id, login, login, email);
         }
 
         const jwt = this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
