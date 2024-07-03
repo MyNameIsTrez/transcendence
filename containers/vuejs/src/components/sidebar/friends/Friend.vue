@@ -1,7 +1,9 @@
 <template>
   <div class="card lg:card-side bg-base-200">
     <figure>
-      <div :class="`w-28 avatar ${isOnline ? 'online' : 'offline'}`">
+      <div
+        :class="`w-28 avatar ${isOnline === friendStatus.ONLINE ? 'online' : isOnline === friendStatus.GAMING ? 'gaming' : 'offline'}`"
+      >
         <router-link :to="{ path: `user/${intraId}` }">
           <img class="rounded" :src="`${profilePicture}`" />
         </router-link>
@@ -23,13 +25,41 @@
 </template>
 
 <script setup lang="ts">
+import type { PropType } from 'vue'
 import { getImage } from '../../../httpRequests'
+
+enum friendStatus {
+  OFFLINE,
+  ONLINE,
+  GAMING
+}
 
 const props = defineProps({
   name: String,
-  isOnline: Boolean,
+  isOnline: Object as PropType<friendStatus>,
   intraId: Number
 })
 
+console.log(props.isOnline)
+
 const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`)
 </script>
+<style>
+.avatar.gaming:before {
+  content: '';
+  position: absolute;
+  z-index: 10;
+  display: block;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  /* background-color: var(--fallback-su, oklch(var(--su) / var(--tw-bg-opacity))); */
+  background-color: cornflowerblue;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: var(--fallback-b1, oklch(var(--b1) / 1));
+  width: 15%;
+  height: 15%;
+  top: 7%;
+  right: 7%;
+}
+</style>

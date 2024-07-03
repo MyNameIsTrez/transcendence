@@ -116,9 +116,15 @@ gameSocket.on('removeInvitation', (inviterIntraId: number) => {
   invitations.value = invitations.value.filter((invite) => invite.inviterIntraId !== inviterIntraId)
 })
 
+enum friendStatus {
+  OFFLINE,
+  ONLINE,
+  GAMING
+}
+
 type FriendClass = {
   name: string
-  isOnline: boolean
+  isOnline: friendStatus
   intraId: number
 }
 const friends = ref<FriendClass[]>(await get('api/user/friends'))
@@ -133,7 +139,19 @@ userSocket.on('removeFriend', (intraId: number) => {
 userSocket.on('offlineFriend', (intraId: number) => {
   const friend = friends.value.find((friend) => friend.intraId === intraId)
   if (friend) {
-    friend.isOnline = false
+    friend.isOnline = friendStatus.OFFLINE
+  }
+})
+userSocket.on('onlineFriend', (intraId: number) => {
+  const friend = friends.value.find((friend) => friend.intraId === intraId)
+  if (friend) {
+    friend.isOnline = friendStatus.ONLINE
+  }
+})
+userSocket.on('gamingFriend', (intraId: number) => {
+  const friend = friends.value.find((friend) => friend.intraId === intraId)
+  if (friend) {
+    friend.isOnline = friendStatus.GAMING
   }
 })
 
