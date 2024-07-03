@@ -78,6 +78,8 @@ const joinGame = () => {
 }
 
 const leaveQueue = () => {
+  reset()
+  queueing.value = false
   gameSocket.emit('leaveQueue')
 }
 
@@ -96,8 +98,12 @@ gameSocket.on('gameOver', (won: boolean) => {
 gameSocket.on('gameStart', () => {
   startOfGame.value = true
 })
-gameSocket.on('inQueue', (data: any) => {
+gameSocket.on('enteredQueue', () => {
   reset()
-  queueing.value = data.inQueue
+  queueing.value = true
+})
+gameSocket.on('leftQueue', () => {
+  reset()
+  queueing.value = false
 })
 </script>

@@ -24,7 +24,7 @@ export default class LobbyManager {
       throw new WsException('Already in a lobby');
     }
 
-    client.emit('inQueue', { inQueue: true });
+    client.emit('enteredQueue');
 
     const lobby = this.getLobby(gamemode);
     await lobby.addClient(client);
