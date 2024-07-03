@@ -8,6 +8,7 @@ import { MatchService } from '../user/match.service';
 import { WsException } from '@nestjs/websockets';
 import { User } from '../user/user.entity';
 import { Gamemode } from '../user/match.entity';
+import { ConfigService } from '@nestjs/config';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -38,12 +39,15 @@ export default class Lobby {
     private readonly server: Server,
     private readonly userService: UserService,
     private readonly matchService: MatchService,
+    private readonly configService: ConfigService,
   ) {
     // console.log('Initializing lobby with gamemode:', gamemode);
     if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
     }
-    this.pong = this.gamemodes.get(gamemode)(3);
+    this.pong = this.gamemodes.get(gamemode)(
+      this.configService.get('SCORE_TO_WIN'),
+    );
   }
 
   public async addClient(client: Socket) {

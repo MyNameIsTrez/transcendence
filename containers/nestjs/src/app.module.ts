@@ -21,6 +21,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         FRONTEND_PORT: Joi.number().integer().positive(),
         BACKEND_PORT: Joi.number().integer().positive(),
 
+        SCORE_TO_WIN: Joi.number().integer().positive(),
+
         OFFLINE_TIMEOUT_MS: Joi.number().integer().positive(),
 
         INTRA_CLIENT_SECRET: Joi.string(),

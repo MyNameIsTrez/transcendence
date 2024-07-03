@@ -43,6 +43,7 @@
       :inviterName="invite.inviterName"
       :inviterIntraId="invite.inviterIntraId"
       :gamemode="invite.gamemode"
+      @on-remove-game-invite="removeGameInvite"
       class="my-3"
     />
 
@@ -96,22 +97,14 @@ const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
 
-const friends = ref(await get('api/user/friends'))
-
 const searchUserRef = ref('')
 
 const router = useRouter()
 
-class Invitation {
+type Invitation = {
   inviterIntraId: number
   inviterName: string
   gamemode: string
-
-  constructor(inviterIntraId: number, inviterName: string, gamemode: string) {
-    this.inviterIntraId = inviterIntraId
-    this.inviterName = inviterName
-    this.gamemode = gamemode
-  }
 }
 const invitations = ref<Invitation[]>(await get('api/game/invitations'))
 gameSocket.on('addInvitation', (invitation: Invitation) => {
@@ -121,6 +114,21 @@ gameSocket.on('addInvitation', (invitation: Invitation) => {
 })
 gameSocket.on('removeInvitation', (inviterIntraId: number) => {
   invitations.value = invitations.value.filter((invite) => invite.inviterIntraId !== inviterIntraId)
+})
+
+type FriendClass = {
+  name: string
+  isOnline: boolean
+  intraId: number
+}
+const friends = ref<FriendClass[]>(await get('api/user/friends'))
+userSocket.on('addFriend', (addedFriend: FriendClass) => {
+  if (!friends.value.some((friend) => friend.intraId === addedFriend.intraId)) {
+    friends.value.push(addedFriend)
+  }
+})
+userSocket.on('removeFriend', (intraId: number) => {
+  friends.value = friends.value.filter((friend) => friend.intraId !== intraId)
 })
 
 async function searchUser() {
@@ -153,14 +161,28 @@ class IncomingFriendRequest {
 const incomingFriendRequests = ref<IncomingFriendRequest[]>(
   await get('api/user/incomingFriendRequests')
 )
-
-userSocket.on('newIncomingFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
-  incomingFriendRequests.value.push(incomingFriendRequest)
+userSocket.on('addFriendRequest', (incomingFriendRequest: IncomingFriendRequest) => {
+  if (
+    !incomingFriendRequests.value.some(
+      (request) => request.intraId === incomingFriendRequest.intraId
+    )
+  ) {
+    incomingFriendRequests.value.push(incomingFriendRequest)
+  }
 })
+userSocket.on('removeFriendRequest', (intraId: number) => {
+  incomingFriendRequests.value = incomingFriendRequests.value.filter(
+    (request) => request.intraId !== intraId
+  )
+})
+
+function removeGameInvite(intraId: number) {
+  invitations.value = invitations.value.filter((req) => req.inviterIntraId !== intraId)
+}
 
 function removeFriendRequest(intraId: number) {
   incomingFriendRequests.value = incomingFriendRequests.value.filter(
-    (req) => req.intraId != intraId
+    (req) => req.intraId !== intraId
   )
 }
 </script>

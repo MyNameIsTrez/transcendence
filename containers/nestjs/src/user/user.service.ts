@@ -253,24 +253,9 @@ export class UserService {
   async blocked(intra_id: number) {
     return await this.findOne(intra_id, {
       blocked: true,
-    }).then(async (user) => {
-      return await Promise.all(
-        user.blocked.map(async (blockedUser) => {
-          const nowMs = Date.now();
-          const lastOnlineMs = (
-            await this.getLastOnline(blockedUser.intra_id)
-          ).getTime();
-          const isOnline =
-            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
-
-          return {
-            name: blockedUser.username,
-            isOnline,
-            intraId: blockedUser.intra_id,
-          };
-        }),
-      );
-    });
+    }).then((user) =>
+      user.blocked.map((blockedUser) => this.getFrontendUser(blockedUser)),
+    );
   }
 
   async addWin(intra_id: number) {
@@ -384,6 +369,18 @@ export class UserService {
       );
 
       await this.usersRepository.save([sender, receiver]);
+
+      this.userSockets.emitToClient(
+        receiver_id,
+        'acceptedFriendRequest',
+        sender_id,
+      );
+
+      this.userSockets.emitToClient(
+        sender_id,
+        'acceptedFriendRequest',
+        receiver_id,
+      );
     } else {
       receiver.incoming_friend_requests.push(sender);
       await this.usersRepository.save(receiver);
@@ -391,7 +388,7 @@ export class UserService {
       const receiverSockets = this.userSockets.get(receiver.intra_id);
 
       receiverSockets.forEach((receiverSocket) =>
-        receiverSocket.emit('newIncomingFriendRequest', {
+        receiverSocket.emit('addFriendRequest', {
           intraId: sender_id,
           name: sender.username,
         }),
@@ -402,24 +399,9 @@ export class UserService {
   async getFriends(intra_id: number) {
     return await this.findOne(intra_id, {
       friends: true,
-    }).then(async (user) => {
-      return await Promise.all(
-        user.friends.map(async (friend) => {
-          const nowMs = Date.now();
-          const lastOnlineMs = (
-            await this.getLastOnline(friend.intra_id)
-          ).getTime();
-          const isOnline =
-            nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
-
-          return {
-            name: friend.username,
-            isOnline,
-            intraId: friend.intra_id,
-          };
-        }),
-      );
-    });
+    }).then((user) =>
+      user.friends.map((friend) => this.getFrontendUser(friend)),
+    );
   }
 
   async getIncomingFriendRequests(intra_id: number) {
@@ -455,6 +437,16 @@ export class UserService {
       incoming_friend_requests: true,
       friends: true,
     });
+    if (
+      !receiver.incoming_friend_requests.some(
+        (request) => request.intra_id === sender_id,
+      )
+    ) {
+      throw new BadRequestException(
+        "This person hasn't sent you a friend request",
+      );
+    }
+
     const sender = await this.findOne(sender_id, {
       friends: true,
     });
@@ -467,6 +459,18 @@ export class UserService {
       1,
     );
     await this.usersRepository.save([sender, receiver]);
+
+    this.userSockets.emitToClient(
+      receiver_id,
+      'addFriend',
+      this.getFrontendUser(sender),
+    );
+
+    this.userSockets.emitToClient(
+      sender_id,
+      'acceptedFriendRequest',
+      receiver_id,
+    );
   }
 
   public async declineFriendRequest(receiver_id: number, sender_id: number) {
@@ -481,6 +485,12 @@ export class UserService {
       1,
     );
     await this.usersRepository.save(receiver);
+
+    this.userSockets.emitToClient(
+      sender_id,
+      'declinedFriendRequest',
+      receiver_id,
+    );
   }
 
   public async revokeFriendRequest(user_id: number, other_id: number) {
@@ -506,7 +516,9 @@ export class UserService {
       );
     }
 
-    return await this.declineFriendRequest(other_id, user_id);
+    await this.declineFriendRequest(other_id, user_id);
+
+    this.userSockets.emitToClient(other_id, 'removeFriendRequest', user_id);
   }
 
   public async removeFriend(user_id: number, friend_id: number) {
@@ -541,16 +553,26 @@ export class UserService {
     await this.usersRepository.save(user);
 
     await this.usersRepository.save(friend);
+
+    this.userSockets.emitToClient(friend_id, 'removeFriend', user_id);
   }
 
   public async updateLastOnline(intra_id: number) {
     await this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
   }
 
-  private async getLastOnline(intra_id: number) {
-    return await this.findOne(intra_id).then((user) => {
-      return user.lastOnline;
-    });
+  private getFrontendUser(user: User) {
+    return {
+      name: user.username,
+      isOnline: this.isOnline(user),
+      intraId: user.intra_id,
+    };
+  }
+
+  private isOnline(user: User) {
+    const nowMs = Date.now();
+    const lastOnlineMs = user.lastOnline.getTime();
+    return nowMs - lastOnlineMs < this.configService.get('OFFLINE_TIMEOUT_MS');
   }
 
   public async getMatchHistory(intra_id: number) {

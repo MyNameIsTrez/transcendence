@@ -6,6 +6,7 @@ import LobbyManager from './LobbyManager';
 import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GameService {
@@ -14,6 +15,7 @@ export class GameService {
   constructor(
     private readonly userService: UserService,
     private readonly matchService: MatchService,
+    private readonly configService: ConfigService,
   ) {}
 
   async init(server: Server) {
@@ -21,12 +23,12 @@ export class GameService {
       server,
       this.userService,
       this.matchService,
+      this.configService,
     );
     await this.lobbyManager.startUpdateLoop();
   }
 
   public async queue(client: Socket, gamemode: Gamemode) {
-    // TODO: Don't allow user to join regular queue while waiting in an invite only queue
     await this.lobbyManager.queue(client, gamemode);
   }
 
@@ -64,7 +66,7 @@ export class GameService {
       gamemode,
     );
 
-    inviter.emit('inQueue', { inQueue: true });
+    inviter.emit('enteredQueue');
 
     const inviterName = await this.userService.getUsername(inviterIntraId);
 
@@ -108,7 +110,7 @@ export class GameService {
       throw new WsException("This lobby doesn't exist");
     }
 
-    client.emit('inQueue', { inQueue: true });
+    client.emit('enteredQueue');
 
     await lobby.addClient(client);
     this.lobbyManager.intraIdToLobby.set(client.data.intra_id, lobby);
@@ -133,7 +135,7 @@ export class GameService {
     await this.removeClient(declinedSockets[0], clients);
 
     clients.get(declinedIntraId).forEach((socket) => {
-      socket.emit('inQueue', { inQueue: false });
+      socket.emit('leftQueue');
     });
   }
 

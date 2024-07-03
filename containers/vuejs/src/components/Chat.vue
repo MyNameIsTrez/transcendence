@@ -184,7 +184,9 @@ async function getChats() {
 }
 
 chatSocket.on('addMyChat', (chat: Chat) => {
-  myChats.value.push(chat)
+  if (!myChats.value.some((myChat) => myChat.chat_id === chat.chat_id)) {
+    myChats.value.push(chat)
+  }
 })
 
 chatSocket.on('addChat', (chat: Chat) => {
@@ -254,10 +256,6 @@ chatSocket.on('editChatInfo', (chat: Chat) => {
 
   foundChat.name = chat.name
   foundChat.visibility = chat.visibility
-})
-
-chatSocket.on('exception', (data) => {
-  alertPopup.value.showWarning(data.message)
 })
 
 function getDMs() {
