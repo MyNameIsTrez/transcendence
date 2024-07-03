@@ -83,10 +83,6 @@ export default class Lobby {
   }
 
   public async update() {
-    if (!this.gameHasStarted) {
-      return;
-    }
-
     this.pong.update();
 
     this.emit('pong', this.pong.getData());

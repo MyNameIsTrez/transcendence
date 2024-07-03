@@ -110,42 +110,46 @@ export default class LobbyManager {
   public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
-    if (lobby) {
-      // If a client disconnect while queueing, lobby.clients.size is 1
-      const client_count = lobby.clients.size;
-
-      const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
-      invitedSockets.forEach((otherSocket) =>
-        otherSocket.emit('removeGameInvite', client.data.intra_id),
-      );
-
-      if (client_count >= 2) {
-        await lobby.saveMatch(
-          await this.userService.findOne(client.data.intra_id),
-        );
-        await this.userService.addLoss(client.data.intra_id);
-      }
-
-      this.intraIdToLobby.delete(client.data.intra_id);
-      await lobby.removeClient(client);
-
-      // If one of the clients disconnects, the other client wins
-      lobby.emit('gameOver', true);
-
-      if (client_count >= 2) {
-        lobby.clients.forEach(async (otherClient) => {
-          await this.userService.addWin(otherClient.data.intra_id);
-        });
-      }
-
-      await this.removeLobby(lobby);
+    if (!lobby) {
+      return;
     }
+
+    // If a client disconnect while queueing, lobby.clients.size is 1
+    const client_count = lobby.clients.size;
+
+    const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
+    invitedSockets.forEach((otherSocket) =>
+      otherSocket.emit('removeGameInvite', client.data.intra_id),
+    );
+
+    if (client_count >= 2) {
+      await lobby.saveMatch(
+        await this.userService.findOne(client.data.intra_id),
+      );
+      await this.userService.addLoss(client.data.intra_id);
+    }
+
+    this.intraIdToLobby.delete(client.data.intra_id);
+    await lobby.removeClient(client);
+
+    // If one of the clients disconnects, the other client wins
+    lobby.emit('gameOver', true);
+
+    if (client_count >= 2) {
+      lobby.clients.forEach(async (otherClient) => {
+        await this.userService.addWin(otherClient.data.intra_id);
+      });
+    }
+
+    await this.removeLobby(lobby);
   }
 
   public async startUpdateLoop() {
     setInterval(async () => {
       await this.lobbies.forEach(async (lobby) => {
-        await lobby.update();
+        if (lobby.gameHasStarted) {
+          await lobby.update();
+        }
         if (lobby.didSomeoneWin()) {
           await this.removeLobby(lobby);
         }
