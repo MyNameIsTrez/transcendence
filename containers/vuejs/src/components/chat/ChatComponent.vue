@@ -75,20 +75,17 @@
     <ChatUserListModal
       ref="chatUserListModal"
       @onCloseUserListModal="chatUserListModal.$.exposed.hide()"
-      :currentChat="currentChat"
-	  :myInfo="myInfo"
+      :myInfo="myInfo"
     />
     <ChatBannedListModal
       v-if="myInfo.admin"
       ref="chatBannedListModal"
       @onCloseBannedListModal="chatBannedListModal.$.exposed.hide()"
-      :currentChat="currentChat"
     />
     <ChatSettingsModal
       ref="chatSettingsModal"
       @onCloseSettingsModal="chatSettingsModal.$.exposed.hide()"
       @onCloseChat="emit('onCloseChat')"
-      :currentChat="currentChat"
     />
   </div>
 </template>
@@ -108,12 +105,9 @@ import MyInfo from './MyInfoClass'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
-const props = defineProps({
-  currentChat: Object as PropType<Chat>
-})
-
-const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+const myInfo = ref<MyInfo>(await get(`api/chats/${currentChat.value?.chat_id}/me`))
 
 const muted = ref(false)
 const sentMessageRef = ref('')
@@ -129,9 +123,9 @@ const blocked = ref(new Set<number>())
 const emit = defineEmits(['onCloseChat'])
 
 function sendMessage() {
-  if (props.currentChat) {
+  if (currentChat.value) {
     const message = {
-      chatId: props.currentChat.chat_id,
+      chatId: currentChat.value.chat_id,
       body: sentMessageRef.value
     }
 
@@ -209,7 +203,7 @@ async function scrollToBottom() {
 }
 
 async function getChat() {
-  if (props.currentChat) {
+  if (currentChat.value) {
     const blockedUsers = await get('api/user/blocked')
       .then((blockedUsers) =>
         blockedUsers.map((user: any) => {
@@ -221,7 +215,7 @@ async function getChat() {
       })
     blocked.value = new Set<number>(blockedUsers)
 
-    chatHistory.value = await get('api/chats/history/' + props.currentChat.chat_id)
+    chatHistory.value = await get('api/chats/history/' + currentChat.value.chat_id)
       .then((messages) =>
         messages.map((message: Message) => {
           return {

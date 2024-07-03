@@ -69,7 +69,7 @@
       <ChatCreationModal ref="chatCreationModal" @onCreatedChat="createdChat" />
     </div>
 
-    <ChatComponent v-if="currentChat" @onCloseChat="closeChat" :currentChat="currentChat" />
+    <ChatComponent v-if="currentChat" @onCloseChat="closeChat" />
 
     <PasswordModal ref="passwordModal" @onEnter="enterProtectedChat"> </PasswordModal>
   </div>
@@ -96,11 +96,11 @@ enum ViewedBrowser {
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
 const viewedBrowserRef = ref(ViewedBrowser.DMS)
 const publicAndProtectedChats = ref<Chat[]>([])
 const myChats = ref<Chat[]>([])
-const currentChat = ref<Chat | null>(null)
 const selectedChat = ref<Chat | null>(null)
 const passwordModal = ref()
 const chatCreationModal = ref()

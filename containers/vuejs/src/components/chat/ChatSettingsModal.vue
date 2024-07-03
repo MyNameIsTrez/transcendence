@@ -56,10 +56,7 @@ import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
-
-const props = defineProps({
-  currentChat: Object as PropType<Chat>
-})
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
 defineExpose({
   show() {
@@ -70,11 +67,11 @@ defineExpose({
   }
 })
 
-const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+const myInfo = ref<MyInfo>(await get(`api/chats/${currentChat.value?.chat_id}/me`))
 
 const modal = ref()
-const visibility = ref(props.currentChat?.visibility)
-const chatName = ref(props.currentChat?.name)
+const visibility = ref(currentChat.value?.visibility)
+const chatName = ref(currentChat.value?.name)
 const password = ref('')
 
 const emit = defineEmits(['onCloseSettingsModal', 'onCloseChat'])
@@ -106,7 +103,7 @@ function getVisibilityIcon(visibility: Visibility) {
 }
 
 function leaveChat() {
-  post(`api/chats/${props.currentChat?.chat_id}/leave`, {})
+  post(`api/chats/${currentChat.value?.chat_id}/leave`, {})
     .then((res) => {
       emit('onCloseChat')
     })
@@ -116,7 +113,7 @@ function leaveChat() {
 }
 
 async function saveChatSettings() {
-  post(`api/chats/${props.currentChat?.chat_id}/edit`, {
+  post(`api/chats/${currentChat.value?.chat_id}/edit`, {
     name: chatName.value,
     password: visibility.value === Visibility.PROTECTED ? password.value : undefined,
     visibility: visibility.value

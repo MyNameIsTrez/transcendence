@@ -7,6 +7,16 @@
         </div>
 
         <div class="justify-self-end space-x-3">
+          <div class="tooltip justify-self-end" data-tip="Add to current chat">
+            <button
+              v-if="currentChat"
+              :class="`btn btn-square btn-success justify-self-end`"
+              @click="inviteToCurrentChat"
+            >
+              <span class="material-symbols-outlined">chat_add_on</span>
+            </button>
+          </div>
+
           <div class="tooltip justify-self-end" data-tip="Open direct message">
             <button v-if="true" :class="`btn btn-square btn-info justify-self-end`" @click="openDM">
               <span class="material-symbols-outlined">chat</span>
@@ -96,6 +106,7 @@ import { computed, inject, ref, watch, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 import router from '@/router'
+import type Chat from '../chat/ChatClass'
 
 onBeforeRouteUpdate(async (to) => {
   let me = await get(`api/user/me`)
@@ -114,6 +125,7 @@ const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 const chatSocket: Socket = inject('chatSocket')!
 const gameSocket: Socket = inject('gameSocket')!
 const userSocket: Socket = inject('userSocket')!
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
 const props = defineProps({ intraId: String })
 const intra_id = computed(() => parseInt(props.intraId!))
@@ -196,6 +208,13 @@ async function handleBlock() {
       console.error('handleBlock error', err)
       alertPopup.value.showWarning(err.response.data.message)
     })
+}
+
+function inviteToCurrentChat() {
+  chatSocket.emit('inviteToCurrentChat', {
+    invitedIntraId: intra_id.value,
+    chatId: currentChat.value?.chat_id
+  })
 }
 
 function openDM() {

@@ -97,6 +97,15 @@ class ChatDto {
   chatId: string;
 }
 
+class InviteToCurrentChatDto {
+  @IsInt()
+  @IsPositive()
+  invitedIntraId: number;
+
+  @IsUUID()
+  chatId: string;
+}
+
 class DMDto {
   @IsInt()
   @IsPositive()
@@ -221,6 +230,20 @@ export class ChatGateway {
     @MessageBody() dto: ChatDto,
   ) {
     this.chatSockets.removeSocketFromChat(dto.chatId, client);
+
+    return {};
+  }
+
+  @SubscribeMessage('inviteToCurrentChat')
+  async inviteToCurrentChat(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() dto: InviteToCurrentChatDto,
+  ) {
+    await this.chatService.inviteToCurrentChat(
+      dto.invitedIntraId,
+      client.data.intra_id,
+      dto.chatId,
+    );
 
     return {};
   }

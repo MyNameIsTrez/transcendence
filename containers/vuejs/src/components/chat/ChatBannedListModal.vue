@@ -50,11 +50,11 @@
 
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
-import { inject, ref, type PropType, type Ref } from 'vue'
+import { inject, ref, type Ref } from 'vue'
 import { get, getImage, post } from '@/httpRequests'
-import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
+import type Chat from './ChatClass'
 
 type BannedUserInfo = {
   intra_id: number
@@ -64,10 +64,7 @@ type BannedUserInfo = {
 
 const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
-
-const props = defineProps({
-  currentChat: Object as PropType<Chat>
-})
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
 defineExpose({
   show() {
@@ -78,10 +75,10 @@ defineExpose({
   }
 })
 
-const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
+const myInfo = ref<MyInfo>(await get(`api/chats/${currentChat.value?.chat_id}/me`))
 
 const bannedUsers = ref<BannedUserInfo[]>(
-  await get(`api/chats/${props.currentChat?.chat_id}/banned_users`)
+  await get(`api/chats/${currentChat.value?.chat_id}/banned_users`)
 )
 
 const profilePictures = ref(new Map<BannedUserInfo['intra_id'], string>())
@@ -115,7 +112,7 @@ const selectedUser = ref<BannedUserInfo>()
 const modal = ref()
 
 async function unban() {
-  await post(`api/chats/${props.currentChat?.chat_id}/unban`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/unban`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)

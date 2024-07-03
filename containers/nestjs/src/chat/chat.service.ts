@@ -187,7 +187,10 @@ export class ChatService {
     chat_id: string,
     intra_id: number,
   ): Promise<BannedUserInfo[]> {
-    const chat = await this.getChat({ chat_id }, { users: true, admins: true, banned: true });
+    const chat = await this.getChat(
+      { chat_id },
+      { users: true, admins: true, banned: true },
+    );
 
     if (!chat.admins.some((other) => other.intra_id === intra_id)) {
       throw new WsException('You are not an admin in this chat');
@@ -232,6 +235,32 @@ export class ChatService {
       if (!chat.users.some((other) => other.intra_id === user.intra_id)) {
         throw new WsException("You can't open a chat you haven't joined yet");
       }
+    });
+  }
+
+  async inviteToCurrentChat(
+    invitedIntraId: number,
+    intra_id: number,
+    chat_id: string,
+  ) {
+    console.log(`${intra_id} invited ${invitedIntraId} to chat ${chat_id}`);
+
+    if (invitedIntraId === intra_id) {
+      throw new WsException("You can't invite yourself to a chat");
+    }
+
+    const chat = await this.getChat({ chat_id }, { admins: true });
+
+    if (!chat.admins.some((admin) => admin.intra_id === intra_id)) {
+      throw new WsException('Only admins can invite someone to a chat');
+    }
+
+    await this.addUser(chat_id, invitedIntraId);
+
+    this.chatSockets.emitToClient(invitedIntraId, 'addMyChat', {
+      chat_id: chat_id,
+      name: chat.name,
+      visibility: chat.visibility,
     });
   }
 
@@ -432,7 +461,11 @@ export class ChatService {
     });
   }
 
-  public async unbanUser(chat_id: string, unbanned_id: number, unbanner_id: number) {
+  public async unbanUser(
+    chat_id: string,
+    unbanned_id: number,
+    unbanner_id: number,
+  ) {
     return this.getChat(
       { chat_id },
       { users: true, banned: true, owner: true, admins: true },
@@ -467,7 +500,6 @@ export class ChatService {
       this.chatSockets.emitToChat(chat_id, 'removeUnbannedUser', unbanned_id);
     });
   }
-
 
   public async kickUser(chat_id: string, kicked_id: number, kicker_id: number) {
     return this.getChat(
