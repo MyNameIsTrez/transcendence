@@ -6,6 +6,7 @@ import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from 'src/user/user.sockets';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -18,6 +19,7 @@ export default class LobbyManager {
     private readonly userService: UserService,
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {}
 
   public async queue(client: Socket, gamemode: Gamemode) {
@@ -58,6 +60,7 @@ export default class LobbyManager {
       this.userService,
       this.matchService,
       this.configService,
+      this.userSockets,
     );
 
     lobby.inviterIntraId = inviterIntraId;
@@ -91,6 +94,7 @@ export default class LobbyManager {
       this.userService,
       this.matchService,
       this.configService,
+      this.userSockets,
     );
     this.lobbies.set(newLobby.id, newLobby);
     // console.log('Created a new lobby');
@@ -158,7 +162,20 @@ export default class LobbyManager {
   }
 
   private async removeLobby(lobby: Lobby) {
-    lobby.clients.forEach((client) => {
+    lobby.clients.forEach(async (client) => {
+      const user = await this.userService.findOne(client.data.intra_id, {
+        friends: true,
+      });
+      if (user) {
+        user.friends.forEach((friend) => {
+          this.userSockets.emitToClient(
+            friend.intra_id,
+            'onlineFriend',
+            client.data.intra_id,
+          );
+        });
+      }
+
       this.intraIdToLobby.delete(client.data.intra_id);
     });
 

@@ -53,7 +53,7 @@ const profilePicture = await getImage(`api/user/profilePicture/${props.intraId}`
   border-radius: 9999px;
   --tw-bg-opacity: 1;
   /* background-color: var(--fallback-su, oklch(var(--su) / var(--tw-bg-opacity))); */
-  background-color: blue;
+  background-color: cornflowerblue;
   outline-style: solid;
   outline-width: 2px;
   outline-color: var(--fallback-b1, oklch(var(--b1) / 1));

@@ -9,6 +9,7 @@ import { WsException } from '@nestjs/websockets';
 import { User } from '../user/user.entity';
 import { Gamemode } from '../user/match.entity';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from 'src/user/user.sockets';
 
 export default class Lobby {
   public readonly id: string = uuid();
@@ -40,6 +41,7 @@ export default class Lobby {
     private readonly userService: UserService,
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {
     // console.log('Initializing lobby with gamemode:', gamemode);
     if (!this.gamemodes.has(gamemode)) {
@@ -66,6 +68,20 @@ export default class Lobby {
     if (this.isFull()) {
       this.gameHasStarted = true;
       this.emit('gameStart');
+      Array.from(this.clients.keys()).forEach(async (intra_id) => {
+        const user = await this.userService.findOne(intra_id, {
+          friends: true,
+        });
+        if (user) {
+          user.friends.forEach((friend) => {
+            this.userSockets.emitToClient(
+              friend.intra_id,
+              'gamingFriend',
+              intra_id,
+            );
+          });
+        }
+      });
     }
   }
 
