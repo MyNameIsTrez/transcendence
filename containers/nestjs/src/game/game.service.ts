@@ -85,8 +85,8 @@ export class GameService {
     this.lobbyManager.movePaddle(intra_id, playerIndex, keydown, north);
   }
 
-  public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
-    await this.lobbyManager.removeClient(client, clients);
+  public async removeClient(client: Socket) {
+    await this.lobbyManager.removeClient(client);
   }
 
   public async acceptInvitation(
@@ -94,7 +94,9 @@ export class GameService {
     acceptedIntraId: number,
     clients: Map<number, Socket[]>,
   ) {
-    // console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
+    if (this.lobbyManager.isUserAlreadyInLobby(client.data.intra_id)) {
+      await this.removeClient(client);
+    }
 
     if (!(await this.userService.hasUser(acceptedIntraId))) {
       throw new WsException('Could not find user');
@@ -132,7 +134,7 @@ export class GameService {
       throw new WsException('Declined user is not online');
     }
 
-    await this.removeClient(declinedSockets[0], clients);
+    await this.removeClient(declinedSockets[0]);
 
     clients.get(declinedIntraId).forEach((socket) => {
       socket.emit('leftQueue');

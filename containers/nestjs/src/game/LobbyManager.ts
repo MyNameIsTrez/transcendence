@@ -107,7 +107,7 @@ export default class LobbyManager {
     lobby?.movePaddle(playerIndex, keydown, north);
   }
 
-  public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
+  public async removeClient(client: Socket) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
     if (lobby) {
