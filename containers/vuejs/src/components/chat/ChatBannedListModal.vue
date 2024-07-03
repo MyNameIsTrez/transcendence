@@ -18,7 +18,7 @@
               @click="selectedUser = user"
             >
               <div class="flex flex-row gap-x-2">
-                <router-link :to="`/user/${user.intra_id}`">
+                <router-link :to="`/user/${user.intra_id}`" @click="emit('onCloseBannedListModal')">
                   <div :class="`w-16 h-16 avatar`">
                     <img
                       class="rounded"
@@ -56,14 +56,6 @@ import Chat from './ChatClass'
 import MyInfo from './MyInfoClass'
 import AlertPopup from '../AlertPopup.vue'
 
-type UserInfo = {
-  intra_id: number
-  username?: string
-  is_owner?: boolean
-  is_admin?: boolean
-  is_mute?: boolean
-}
-
 type BannedUserInfo = {
   intra_id: number
   username?: string
@@ -88,15 +80,9 @@ defineExpose({
 
 const myInfo = ref<MyInfo>(await get(`api/chats/${props.currentChat?.chat_id}/me`))
 
-const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
-
-console.log('users: ', users)
-
 const bannedUsers = ref<BannedUserInfo[]>(
   await get(`api/chats/${props.currentChat?.chat_id}/banned_users`)
 )
-
-console.log('banned users: ', bannedUsers)
 
 const profilePictures = ref(new Map<BannedUserInfo['intra_id'], string>())
 bannedUsers.value.forEach(

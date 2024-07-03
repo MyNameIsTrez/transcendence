@@ -40,7 +40,7 @@
             <img :src="profilePicture" />
           </div>
         </div>
-        <div>
+        <div class="ml-4">
           <div class="text">
             W/L ratio: <span class="text text-green-500">{{ wins }}</span
             >/<span class="text text-red-600">{{ losses }}</span>

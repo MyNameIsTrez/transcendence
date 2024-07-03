@@ -18,7 +18,7 @@
               @click="selectedUser = user"
             >
               <div class="flex flex-row gap-x-2">
-                <router-link :to="`/user/${user.intra_id}`">
+                <router-link :to="`/user/${user.intra_id}`" @click="emit('onCloseUserListModal')">
                   <div :class="`w-16 h-16 avatar`">
                     <img
                       class="rounded"
