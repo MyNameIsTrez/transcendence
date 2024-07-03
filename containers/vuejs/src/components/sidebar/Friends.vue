@@ -179,6 +179,7 @@ userSocket.on('removeFriendRequest', (intraId: number) => {
 function removeGameInvite(intraId: number) {
   invitations.value = invitations.value.filter((req) => req.inviterIntraId !== intraId)
 }
+gameSocket.on('removeGameInvite', (intraId: number) => removeGameInvite(intraId))
 
 function removeFriendRequest(intraId: number) {
   incomingFriendRequests.value = incomingFriendRequests.value.filter(

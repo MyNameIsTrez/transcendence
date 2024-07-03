@@ -107,12 +107,17 @@ export default class LobbyManager {
     lobby?.movePaddle(playerIndex, keydown, north);
   }
 
-  public async removeClient(client: Socket) {
+  public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
     if (lobby) {
       // If a client disconnect while queueing, lobby.clients.size is 1
       const client_count = lobby.clients.size;
+
+      const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
+      invitedSockets.forEach((otherSocket) =>
+        otherSocket.emit('removeGameInvite', client.data.intra_id),
+      );
 
       if (client_count >= 2) {
         await lobby.saveMatch(
