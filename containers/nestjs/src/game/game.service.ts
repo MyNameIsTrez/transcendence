@@ -6,6 +6,7 @@ import LobbyManager from './LobbyManager';
 import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GameService {
@@ -14,6 +15,7 @@ export class GameService {
   constructor(
     private readonly userService: UserService,
     private readonly matchService: MatchService,
+    private readonly configService: ConfigService,
   ) {}
 
   async init(server: Server) {
@@ -21,6 +23,7 @@ export class GameService {
       server,
       this.userService,
       this.matchService,
+      this.configService,
     );
     await this.lobbyManager.startUpdateLoop();
   }

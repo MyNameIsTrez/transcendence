@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
+import { ConfigService } from '@nestjs/config';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -16,6 +17,7 @@ export default class LobbyManager {
     private readonly server: Server,
     private readonly userService: UserService,
     private readonly matchService: MatchService,
+    private readonly configService: ConfigService,
   ) {}
 
   public async queue(client: Socket, gamemode: Gamemode) {
@@ -55,6 +57,7 @@ export default class LobbyManager {
       this.server,
       this.userService,
       this.matchService,
+      this.configService,
     );
 
     lobby.inviterIntraId = inviterIntraId;
@@ -87,6 +90,7 @@ export default class LobbyManager {
       this.server,
       this.userService,
       this.matchService,
+      this.configService,
     );
     this.lobbies.set(newLobby.id, newLobby);
     // console.log('Created a new lobby');
