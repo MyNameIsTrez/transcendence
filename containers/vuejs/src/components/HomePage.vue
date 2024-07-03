@@ -1,6 +1,4 @@
 <template>
-  <AlertPopup ref="alertPopup" />
-
   <div class="flex w-full">
     <div class="min-w-96 w-1/4 bg-base-300">
       <Sidebar />
@@ -19,14 +17,13 @@ import Chat from './Chat.vue'
 import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
 import { useRouter } from 'vue-router'
-import { onUnmounted, provide, ref } from 'vue'
+import { inject, onUnmounted, provide, type Ref } from 'vue'
 import { io } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
 
 const router = useRouter()
 
-const alertPopup = ref()
-provide('alertPopup', alertPopup)
+const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
 
 const retrieveJwt = () => {
   const jwt = localStorage.getItem('jwt')
