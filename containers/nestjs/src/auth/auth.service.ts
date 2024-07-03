@@ -69,12 +69,14 @@ export class AuthService {
 
     const requestHeaders = new Headers();
     requestHeaders.set('Authorization', `Bearer ` + access_token);
+
     return fetch('https://api.intra.42.fr/v2/me', {
       headers: requestHeaders,
     })
       .then((response) => response.json())
       .then(async (j) => {
-        const intra_id = j.id;
+        // intra likes to troll us by sometimes putting id in j.data
+        const intra_id = j.id ?? j.data.id;
 
         if (!(await this.userService.hasUser(intra_id))) {
           const url = j.image.versions.medium;
@@ -89,12 +91,7 @@ export class AuthService {
             if (err) throw err;
           });
 
-          await this.userService.create(
-            intra_id,
-            j.login,
-            j.login,
-            j.email,
-          );
+          await this.userService.create(intra_id, j.login, j.login, j.email);
         }
 
         const jwt = this.transJwtService.sign(intra_id, false, false); // TODO: Are the `false` correct?
