@@ -22,16 +22,12 @@
               <span class="material-symbols-outlined">person_cancel</span>
             </button>
           </div>
-          <div v-if="isFriendRef" class="tooltip justify-self-end" data-tip="Remove friend">
+          <div v-else-if="isFriendRef" class="tooltip justify-self-end" data-tip="Remove friend">
             <button :class="`btn btn-square btn-error`" @click="removeFriend">
               <span class="material-symbols-outlined">person_remove</span>
             </button>
           </div>
-          <div
-            v-if="!isFriendRef && !isFriendRequestedRef"
-            class="tooltip justify-self-end"
-            data-tip="Send friend request"
-          >
+          <div v-else class="tooltip justify-self-end" data-tip="Send friend request">
             <button :class="`btn btn-square btn-primary`" @click="sendFriendRequest">
               <span class="material-symbols-outlined">person_add</span>
             </button>
@@ -136,14 +132,10 @@ const friends: Ref<Friend[]> = ref(await get('api/user/friends'))
 const isFriendRef = ref(
   friends.value.findIndex((item) => item.intraId === otherUser.value.intra_id) !== -1
 )
-const outgoingFriendRequests = ref<OutgoingFriendRequest[]>(
-  await get('api/user/outgoingFriendRequests')
-)
 
+let outgoingFriendRequests: OutgoingFriendRequest[] = await get('api/user/outgoingFriendRequests')
 const isFriendRequestedRef = ref(
-  outgoingFriendRequests.value.findIndex(
-    (request) => request.intraId === otherUser.value.intra_id
-  ) !== -1
+  outgoingFriendRequests.findIndex((request) => request.intraId === otherUser.value.intra_id) !== -1
 )
 
 watch(intra_id, async (new_intra_id) => {
@@ -159,12 +151,11 @@ watch(intra_id, async (new_intra_id) => {
 
   isFriendRef.value =
     friends.value.findIndex((item) => item.intraId === otherUser.value.intra_id) !== -1
-  outgoingFriendRequests.value = await get('api/user/outgoingFriendRequests')
 
+  outgoingFriendRequests = await get('api/user/outgoingFriendRequests')
   isFriendRequestedRef.value =
-    outgoingFriendRequests.value.findIndex(
-      (request) => request.intraId === otherUser.value.intra_id
-    ) !== -1
+    outgoingFriendRequests.findIndex((request) => request.intraId === otherUser.value.intra_id) !==
+    -1
 })
 
 class Friend {
@@ -239,7 +230,9 @@ async function sendFriendRequest() {
   await post('api/user/sendFriendRequest', { receiver_intra_id: otherUser.value.intra_id })
     .then(() => {
       alertPopup.value.showSuccess('Friend request sent')
-      isFriendRequestedRef.value = true
+      if (!isFriendRef.value) {
+        isFriendRequestedRef.value = true
+      }
     })
     .catch((err) => {
       console.error('sendFriendRequest error', err)

@@ -369,6 +369,18 @@ export class UserService {
       );
 
       await this.usersRepository.save([sender, receiver]);
+
+      this.userSockets.emitToClient(
+        receiver_id,
+        'acceptedFriendRequest',
+        sender_id,
+      );
+
+      this.userSockets.emitToClient(
+        sender_id,
+        'acceptedFriendRequest',
+        receiver_id,
+      );
     } else {
       receiver.incoming_friend_requests.push(sender);
       await this.usersRepository.save(receiver);
