@@ -17,13 +17,17 @@ import Chat from './Chat.vue'
 import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
 import { useRouter } from 'vue-router'
-import { inject, onUnmounted, provide, type Ref } from 'vue'
+import { inject, onUnmounted, provide, ref, type Ref } from 'vue'
 import { io } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
+import ChatClass from './chat/ChatClass'
 
 const router = useRouter()
 
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
+
+const currentChat = ref<ChatClass | null>(null)
+provide('currentChat', currentChat)
 
 const retrieveJwt = () => {
   const jwt = localStorage.getItem('jwt')

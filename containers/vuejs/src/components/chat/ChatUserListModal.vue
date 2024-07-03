@@ -104,9 +104,9 @@ const chatMuteModal = ref()
 
 const chatSocket: Socket = inject('chatSocket')!
 const alertPopup: Ref<typeof AlertPopup> = inject('alertPopup')!
+const currentChat: Ref<Chat | null> = inject('currentChat')!
 
 const props = defineProps({
-  currentChat: Object as PropType<Chat>,
   myInfo: Object as PropType<MyInfo>
 })
 
@@ -119,7 +119,7 @@ defineExpose({
   }
 })
 
-const users = ref<UserInfo[]>(await get(`api/chats/${props.currentChat?.chat_id}/users`))
+const users = ref<UserInfo[]>(await get(`api/chats/${currentChat.value?.chat_id}/users`))
 
 const profilePictures = ref(new Map<UserInfo['intra_id'], string>())
 users.value.forEach(
@@ -168,7 +168,7 @@ const selectedUser = ref<UserInfo>()
 const modal = ref()
 
 async function mute(endDate: Date) {
-  await post(`api/chats/${props.currentChat?.chat_id}/mute`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/mute`, {
     intra_id: selectedUser.value?.intra_id,
     endDate
   }).catch((err) => {
@@ -177,7 +177,7 @@ async function mute(endDate: Date) {
 }
 
 async function unmute() {
-  await post(`api/chats/${props.currentChat?.chat_id}/unmute`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/unmute`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
@@ -185,7 +185,7 @@ async function unmute() {
 }
 
 async function kick() {
-  await post(`api/chats/${props.currentChat?.chat_id}/kick`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/kick`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
@@ -193,7 +193,7 @@ async function kick() {
 }
 
 async function ban() {
-  await post(`api/chats/${props.currentChat?.chat_id}/ban`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/ban`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
@@ -201,7 +201,7 @@ async function ban() {
 }
 
 async function admin() {
-  await post(`api/chats/${props.currentChat?.chat_id}/admin`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/admin`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
@@ -209,7 +209,7 @@ async function admin() {
 }
 
 async function unadmin() {
-  await post(`api/chats/${props.currentChat?.chat_id}/unadmin`, {
+  await post(`api/chats/${currentChat.value?.chat_id}/unadmin`, {
     intra_id: selectedUser.value?.intra_id
   }).catch((err) => {
     alertPopup.value.showWarning(err.response.data.message)
