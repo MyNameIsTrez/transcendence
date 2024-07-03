@@ -23,6 +23,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
         SCORE_TO_WIN: Joi.number().integer().positive(),
 
+        OFFLINE_UPDATE_MS: Joi.number().integer().positive(),
         OFFLINE_TIMEOUT_MS: Joi.number().integer().positive(),
 
         INTRA_CLIENT_SECRET: Joi.string(),

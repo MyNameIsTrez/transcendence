@@ -130,6 +130,12 @@ userSocket.on('addFriend', (addedFriend: FriendClass) => {
 userSocket.on('removeFriend', (intraId: number) => {
   friends.value = friends.value.filter((friend) => friend.intraId !== intraId)
 })
+userSocket.on('offlineFriend', (intraId: number) => {
+  const friend = friends.value.find((friend) => friend.intraId === intraId)
+  if (friend) {
+    friend.isOnline = false
+  }
+})
 
 async function searchUser() {
   const intra_name = searchUserRef.value
