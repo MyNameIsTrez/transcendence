@@ -94,7 +94,9 @@ export class GameService {
     acceptedIntraId: number,
     clients: Map<number, Socket[]>,
   ) {
-    // console.log('In acceptInvitation(), acceptedIntraId is', acceptedIntraId);
+    if (this.lobbyManager.isUserAlreadyInLobby(client.data.intra_id)) {
+      await this.removeClient(client, clients);
+    }
 
     if (!(await this.userService.hasUser(acceptedIntraId))) {
       throw new WsException('Could not find user');
@@ -117,12 +119,9 @@ export class GameService {
   }
 
   public async declineInvitation(
-    client: Socket,
     declinedIntraId: number,
     clients: Map<number, Socket[]>,
   ) {
-    // console.log('In declineInvitation(), declinedIntraId is', declinedIntraId);
-
     if (!(await this.userService.hasUser(declinedIntraId))) {
       throw new WsException('Could not find user');
     }

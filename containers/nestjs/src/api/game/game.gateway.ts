@@ -139,13 +139,8 @@ export class GameGateway {
 
   @SubscribeMessage('declineInvitation')
   async declineInvitation(
-    @ConnectedSocket() client: Socket,
     @MessageBody('declinedIntraId') declinedIntraId: number,
   ) {
-    await this.gameService.declineInvitation(
-      client,
-      declinedIntraId,
-      this.clients,
-    );
+    await this.gameService.declineInvitation(declinedIntraId, this.clients);
   }
 }

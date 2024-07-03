@@ -114,6 +114,11 @@ export default class LobbyManager {
       // If a client disconnect while queueing, lobby.clients.size is 1
       const client_count = lobby.clients.size;
 
+      const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
+      invitedSockets.forEach((otherSocket) =>
+        otherSocket.emit('removeGameInvite', client.data.intra_id),
+      );
+
       if (client_count >= 2) {
         await lobby.saveMatch(
           await this.userService.findOne(client.data.intra_id),
