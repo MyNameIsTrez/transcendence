@@ -15,6 +15,12 @@ const router = createRouter({
     {
       path: '/',
       component: HomePage,
+      async beforeEnter(to) {
+        const jwt = localStorage.getItem('jwt')
+        if (!jwt) {
+          return '/login'
+        }
+      },
       children: [
         {
           path: '/',
@@ -33,13 +39,18 @@ const router = createRouter({
           component: UserProfile,
           props: true,
           async beforeEnter(to) {
-            const me = await get(`api/user/me`)
-            if (to.params.intraId === me.intra_id.toString()) {
-              return '/'
-            }
-            await get(`api/user/other/${to.params.intraId}`).catch((err) => {
-              router.replace({ path: '/' })
-            })
+            return await get(`api/user/me`)
+              .then(async (me) => {
+                if (to.params.intraId === me.intra_id.toString()) {
+                  return '/'
+                }
+                return await get(`api/user/other/${to.params.intraId}`).catch((err) => {
+                  return '/'
+                })
+              })
+              .catch((err) => {
+                return '/'
+              })
           }
         },
         {

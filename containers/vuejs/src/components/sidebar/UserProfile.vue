@@ -105,18 +105,22 @@ import { Socket } from 'socket.io-client'
 import { computed, inject, ref, watch, type Ref } from 'vue'
 import AlertPopup from '../AlertPopup.vue'
 import { onBeforeRouteUpdate } from 'vue-router'
-import router from '@/router'
 import type Chat from '../chat/ChatClass'
 
 onBeforeRouteUpdate(async (to) => {
-  let me = await get(`api/user/me`)
-  if (to.params.intraId === me.intra_id.toString()) {
-    return '/'
-  }
-  await get(`api/user/other/${to.params.intraId}`).catch((err) => {
-    router.replace({ path: '/' })
-    alertPopup.value.showWarning('User does not exist')
-  })
+  return await get(`api/user/me`)
+    .then(async (me) => {
+      if (to.params.intraId === me.intra_id.toString()) {
+        return '/'
+      }
+      await get(`api/user/other/${to.params.intraId}`).catch((err) => {
+        alertPopup.value.showWarning('User does not exist')
+        return '/'
+      })
+    })
+    .catch((err) => {
+      return '/'
+    })
 })
 
 const emit = defineEmits(['onCreatedChat'])
