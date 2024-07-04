@@ -35,6 +35,7 @@ import { Visibility } from '../../chat/chat.entity';
 import { BaseEntity } from 'typeorm';
 import { Transform, TransformFnParams } from 'class-transformer';
 import ChatSockets from 'src/chat/chat.sockets';
+import humanizeDuration = require('humanize-duration');
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -261,10 +262,19 @@ export class ChatGateway {
     @MessageBody() dto: HandleMessageDto,
   ) {
     // TODO: Move some of these checks to joinChat()?
+
+    const timeOfUnmute = await this.chatService.getTimeOfUnmute(
+      dto.chatId,
+      client.data.intra_id,
+    );
     if (await this.chatService.isMuted(dto.chatId, client.data.intra_id)) {
-      // TODO: Ideally this string would tell the user how long they're still muted for
-      throw new WsException("You're currently muted in this chat");
+      const now = new Date();
+      const durationMs = now.getTime() - timeOfUnmute.getTime();
+      throw new WsException(
+        `You're still muted for ${humanizeDuration(durationMs)} in this chat`,
+      );
     }
+
     if (await this.chatService.isBanned(dto.chatId, client.data.intra_id)) {
       throw new WsException("You're banned from this chat");
     }
