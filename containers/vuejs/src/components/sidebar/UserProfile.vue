@@ -224,6 +224,10 @@ function inviteToCurrentChat() {
 }
 
 function openDM() {
+  if (currentChat.value) {
+    chatSocket.emit('closeChat', { chatId: currentChat.value.chat_id })
+    currentChat.value = null
+  }
   chatSocket.emit('openDM', {
     invitedIntraId: intra_id.value
   })
