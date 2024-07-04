@@ -30,9 +30,11 @@ export class AuthController {
 
     // TODO: Add LoginDto and use it to check this for us
     if (code === undefined) {
-      throw new UnauthorizedException(
-        'Expected an authorization code parameter from the 42 API',
-      );
+      return {
+        url:
+          process.env.VITE_ADDRESS + ':' + process.env.FRONTEND_PORT + '/login',
+        statusCode: 302,
+      };
     }
 
     const { jwt, isTwoFactorAuthenticationEnabled } =
