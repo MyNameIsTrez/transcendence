@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { APP_GUARD } from '@nestjs/core';
@@ -16,7 +16,7 @@ import { CreationModule } from '../creation/creation.module';
   imports: [
     ConfigModule,
     HttpModule,
-    UserModule,
+    forwardRef(() => UserModule),
     CreationModule,
     JwtModule.register({
       global: true,

@@ -6,6 +6,7 @@ import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from 'src/user/user.sockets';
 
 export default class LobbyManager {
   private readonly lobbies = new Map<Lobby['id'], Lobby>();
@@ -18,6 +19,7 @@ export default class LobbyManager {
     private readonly userService: UserService,
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {}
 
   public async queue(client: Socket, gamemode: Gamemode) {
@@ -58,6 +60,7 @@ export default class LobbyManager {
       this.userService,
       this.matchService,
       this.configService,
+      this.userSockets,
     );
 
     lobby.inviterIntraId = inviterIntraId;
@@ -90,6 +93,7 @@ export default class LobbyManager {
       this.userService,
       this.matchService,
       this.configService,
+      this.userSockets,
     );
     this.lobbies.set(newLobby.id, newLobby);
     return newLobby;
@@ -108,42 +112,46 @@ export default class LobbyManager {
   public async removeClient(client: Socket, clients: Map<number, Socket[]>) {
     const lobby = this.intraIdToLobby.get(client.data.intra_id);
 
-    if (lobby) {
-      // If a client disconnect while queueing, lobby.clients.size is 1
-      const client_count = lobby.clients.size;
-
-      const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
-      invitedSockets.forEach((otherSocket) =>
-        otherSocket.emit('removeGameInvite', client.data.intra_id),
-      );
-
-      if (client_count >= 2) {
-        await lobby.saveMatch(
-          await this.userService.findOne(client.data.intra_id),
-        );
-        await this.userService.addLoss(client.data.intra_id);
-      }
-
-      this.intraIdToLobby.delete(client.data.intra_id);
-      await lobby.removeClient(client);
-
-      // If one of the clients disconnects, the other client wins
-      lobby.emit('gameOver', true);
-
-      if (client_count >= 2) {
-        lobby.clients.forEach(async (otherClient) => {
-          await this.userService.addWin(otherClient.data.intra_id);
-        });
-      }
-
-      await this.removeLobby(lobby);
+    if (!lobby) {
+      return;
     }
+
+    // If a client disconnect while queueing, lobby.clients.size is 1
+    const client_count = lobby.clients.size;
+
+    const invitedSockets = clients.get(lobby.invitedIntraId) ?? [];
+    invitedSockets.forEach((otherSocket) =>
+      otherSocket.emit('removeGameInvite', client.data.intra_id),
+    );
+
+    if (client_count >= 2) {
+      await lobby.saveMatch(
+        await this.userService.findOne(client.data.intra_id),
+      );
+      await this.userService.addLoss(client.data.intra_id);
+    }
+
+    this.intraIdToLobby.delete(client.data.intra_id);
+    await lobby.removeClient(client);
+
+    // If one of the clients disconnects, the other client wins
+    lobby.emit('gameOver', true);
+
+    if (client_count >= 2) {
+      lobby.clients.forEach(async (otherClient) => {
+        await this.userService.addWin(otherClient.data.intra_id);
+      });
+    }
+
+    await this.removeLobby(lobby);
   }
 
   public async startUpdateLoop() {
     setInterval(async () => {
-      await this.lobbies.forEach(async (lobby) => {
-        await lobby.update();
+      this.lobbies.forEach(async (lobby) => {
+        if (lobby.gameHasStarted) {
+          await lobby.update();
+        }
         if (lobby.didSomeoneWin()) {
           await this.removeLobby(lobby);
         }
@@ -152,7 +160,20 @@ export default class LobbyManager {
   }
 
   private async removeLobby(lobby: Lobby) {
-    lobby.clients.forEach((client) => {
+    lobby.clients.forEach(async (client) => {
+      const user = await this.userService.findOne(client.data.intra_id, {
+        friends: true,
+      });
+      if (user) {
+        user.friends.forEach((friend) => {
+          this.userSockets.emitToClient(
+            friend.intra_id,
+            'onlineFriend',
+            client.data.intra_id,
+          );
+        });
+      }
+
       this.intraIdToLobby.delete(client.data.intra_id);
     });
 

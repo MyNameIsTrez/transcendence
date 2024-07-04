@@ -247,10 +247,14 @@ export class ChatService {
       throw new WsException("You can't invite yourself to a chat");
     }
 
-    const chat = await this.getChat({ chat_id }, { admins: true });
+    const chat = await this.getChat({ chat_id }, { users: true, admins: true });
 
     if (!chat.admins.some((admin) => admin.intra_id === intra_id)) {
       throw new WsException('Only admins can invite someone to a chat');
+    }
+
+    if (chat.users.some((user) => user.intra_id === invitedIntraId)) {
+      throw new WsException('This user is already in this chat');
     }
 
     await this.addUser(chat_id, invitedIntraId);

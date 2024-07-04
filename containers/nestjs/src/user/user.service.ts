@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   StreamableFile,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsRelations, FindOptionsSelect, Repository } from 'typeorm';
@@ -12,16 +14,28 @@ import { AchievementsService } from './achievements.service';
 import { ConfigService } from '@nestjs/config';
 import UserSockets from './user.sockets';
 import ChatSockets from '../chat/chat.sockets';
+import friendStatus from './friendStatus';
+import { ModuleRef } from '@nestjs/core';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class UserService {
+  // private gameService: GameService;
+
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     private readonly achievementsService: AchievementsService,
     private readonly configService: ConfigService,
     private readonly userSockets: UserSockets,
     private readonly chatSockets: ChatSockets,
+    // private readonly moduleRef: ModuleRef,
+    private readonly gameService: GameService,
   ) {}
+
+  // async onModuleInit() {
+  //   this.gameService = this.moduleRef.get(GameService);
+  //   // this.gameService = await this.moduleRef.resolve(GameService);
+  // }
 
   public async updateOffline() {
     const users = await this.usersRepository.find({
@@ -115,6 +129,9 @@ export class UserService {
     relations?: FindOptionsRelations<User>,
     select?: FindOptionsSelect<User>,
   ): Promise<User> {
+    if (!intra_id) {
+      throw new BadRequestException('No user with this intra_id exists');
+    }
     const user = await this.usersRepository.findOne({
       where: { intra_id },
       relations: relations ?? {},
@@ -586,15 +603,33 @@ export class UserService {
   }
 
   public async updateLastOnline(intra_id: number) {
+    const user = await this.findOne(intra_id, { friends: true });
     await this.usersRepository.update({ intra_id }, { lastOnline: new Date() });
+    if (!this.isOnline(user)) {
+      user.friends.forEach((friend) => {
+        this.userSockets.emitToClient(
+          friend.intra_id,
+          'onlineFriend',
+          intra_id,
+        );
+      });
+    }
   }
 
   private getFrontendUser(user: User) {
     return {
       name: user.username,
-      isOnline: this.isOnline(user),
+      isOnline: this.isGaming(user)
+        ? friendStatus.GAMING
+        : this.isOnline(user)
+          ? friendStatus.ONLINE
+          : friendStatus.OFFLINE,
       intraId: user.intra_id,
     };
+  }
+
+  private isGaming(user: User) {
+    return !!this.gameService.findLobbyByIntraId(user.intra_id)?.gameHasStarted;
   }
 
   private isOnline(user: User) {

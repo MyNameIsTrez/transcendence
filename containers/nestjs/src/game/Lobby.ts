@@ -9,9 +9,11 @@ import { WsException } from '@nestjs/websockets';
 import { User } from '../user/user.entity';
 import { Gamemode } from '../user/match.entity';
 import { ConfigService } from '@nestjs/config';
+import UserSockets from 'src/user/user.sockets';
 
 export default class Lobby {
   public readonly id: string = uuid();
+  private _isSaving = false;
 
   private readonly maxClients = 2;
 
@@ -40,6 +42,7 @@ export default class Lobby {
     private readonly userService: UserService,
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {
     if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
@@ -65,6 +68,20 @@ export default class Lobby {
     if (this.isFull()) {
       this.gameHasStarted = true;
       this.emit('gameStart');
+      Array.from(this.clients.keys()).forEach(async (intra_id) => {
+        const user = await this.userService.findOne(intra_id, {
+          friends: true,
+        });
+        if (user) {
+          user.friends.forEach((friend) => {
+            this.userSockets.emitToClient(
+              friend.intra_id,
+              'gamingFriend',
+              intra_id,
+            );
+          });
+        }
+      });
     }
   }
 
@@ -82,27 +99,30 @@ export default class Lobby {
   }
 
   public async update() {
-    if (!this.gameHasStarted) {
-      return;
-    }
-
     this.pong.update();
 
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      await this.saveMatch(null);
+      if (!this._isSaving) {
+        this._isSaving = true;
+        await this.saveMatch(null);
 
-      const winnerIndex = this.pong.getWinnerIndex();
+        const winnerIndex = this.pong.getWinnerIndex();
 
+        this.clients.forEach(async (client) => {
+          if (client.data.playerIndex === winnerIndex) {
+            await this.userService.addWin(client.data.intra_id);
+          } else {
+            await this.userService.addLoss(client.data.intra_id);
+          }
+        });
+      }
       this.clients.forEach(async (client) => {
-        if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-          await this.userService.addWin(client.data.intra_id);
-        } else {
-          await this.userService.addLoss(client.data.intra_id);
-        }
-
-        client.emit('gameOver', client.data.playerIndex === winnerIndex);
+        client.emit(
+          'gameOver',
+          client.data.playerIndex === this.pong.getWinnerIndex(),
+        );
       });
     }
   }

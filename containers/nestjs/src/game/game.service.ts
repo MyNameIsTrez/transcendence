@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UserService } from '../user/user.service';
@@ -7,15 +7,19 @@ import { MatchService } from '../user/match.service';
 import { Gamemode } from '../user/match.entity';
 import Invitation from './invitation';
 import { ConfigService } from '@nestjs/config';
+import Lobby from './Lobby';
+import UserSockets from 'src/user/user.sockets';
 
 @Injectable()
 export class GameService {
   private lobbyManager: LobbyManager;
 
   constructor(
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
+    private readonly userSockets: UserSockets,
   ) {}
 
   async init(server: Server) {
@@ -24,8 +28,13 @@ export class GameService {
       this.userService,
       this.matchService,
       this.configService,
+      this.userSockets,
     );
     await this.lobbyManager.startUpdateLoop();
+  }
+
+  public findLobbyByIntraId(intra_id: number): Lobby | undefined {
+    return this.lobbyManager.intraIdToLobby.get(intra_id);
   }
 
   public async queue(client: Socket, gamemode: Gamemode) {
