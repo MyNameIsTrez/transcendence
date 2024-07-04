@@ -263,11 +263,12 @@ export class ChatGateway {
   ) {
     // TODO: Move some of these checks to joinChat()?
 
-    const timeOfUnmute = await this.chatService.getTimeOfUnmute(
-      dto.chatId,
-      client.data.intra_id,
-    );
     if (await this.chatService.isMuted(dto.chatId, client.data.intra_id)) {
+      const timeOfUnmute = await this.chatService.getTimeOfUnmute(
+        dto.chatId,
+        client.data.intra_id,
+      );
+
       const now = new Date();
       const durationMs = now.getTime() - timeOfUnmute.getTime();
       throw new WsException(
