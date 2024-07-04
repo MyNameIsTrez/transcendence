@@ -8,20 +8,10 @@ import {
   EditDto,
 } from './chat.dto';
 
-// TODO: Remove
-//	/api/chats GET => alle chats
-//	/api/chats/:chat_id GET
-//	/api/chats/:chat_id/history GET
-//	/api/chats/:chat_id/history GET
-//	/api/chats/:chat_id/kick {intra_id} POST
-//	/api/chats/:chat_id/ban {intra_id} POST
-//	/api/chats/:chat_id/patch {name?,visibility?,password?,owner_id?} POST
-
 @Controller('api/chats')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
-  // TODO: Check if this is correct
   @Get()
   public async getChats() {
     return await this.chatService.getPublicAndProtectedChats();
@@ -113,30 +103,26 @@ export class ChatController {
     );
   }
 
-  // TODO: Delete probs?
+  // TODO: Is this endpoint used by the frontend?
   // TODO: Change to `:chat_id/name`
-  // TODO: Don't allow this if the chat is private and user is not in chat preferably
   @Get('name/:chat_id')
   public async name(@Param() dto: ChatIdDto) {
     return await this.chatService.getName(dto.chat_id);
   }
 
   // TODO: Change to `:chat_id/history`
-  // TODO: Only allow if user is in the chat
   @Get('history/:chat_id')
   public async history(@Param() dto: ChatIdDto) {
     return await this.chatService.getHistory(dto.chat_id);
   }
 
   // TODO: Change to `:chat_id/isAdmin`
-  // TODO: Preferably only allow if user is in the chat but not that important
   @Get('isAdmin/:chat_id/:intra_id')
   public async isAdmin(@Param() dto: OtherUserDto) {
     return await this.chatService.isAdmin(dto.chat_id, dto.intra_id);
   }
 
   // TODO: Change to `:chat_id/isOwner`
-  // TODO: Preferably only allow if user is in the chat but not that important
   @Get('isOwner/:chat_id/:intra_id')
   public async isOwner(@Param() dto: OtherUserDto) {
     return await this.chatService.isOwner(dto.chat_id, dto.intra_id);

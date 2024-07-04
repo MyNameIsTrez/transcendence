@@ -67,14 +67,6 @@ export default class ChatSockets {
     });
   }
 
-  //   public get(intra_id: number): Socket[] {
-  //     return this.clients.get(intra_id) ?? [];
-  //   }
-
-  //   public getAll(): Socket[] {
-  //     return this.clients;
-  //   }
-
   public emitToAllSockets(event: string, body: any) {
     for (const socket of this.connectedClients.values()) {
       socket.emit(event, body);

@@ -31,8 +31,8 @@ async function bootstrap() {
     await userService.createFooUser();
   }
 
-  setInterval(() => {
-    userService.updateOffline();
+  setInterval(async () => {
+    await userService.updateOffline();
   }, configService.get('OFFLINE_UPDATE_MS'));
 
   await app.listen(configService.get('BACKEND_PORT'));

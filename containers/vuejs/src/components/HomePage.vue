@@ -16,11 +16,18 @@
 import Chat from './Chat.vue'
 import PongCanvas from './PongCanvas.vue'
 import Sidebar from './Sidebar.vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { inject, onUnmounted, provide, ref, type Ref } from 'vue'
 import { io } from 'socket.io-client'
 import AlertPopup from './AlertPopup.vue'
 import ChatClass from './chat/ChatClass'
+
+onBeforeRouteUpdate(() => {
+  const jwt = localStorage.getItem('jwt')
+  if (!jwt) {
+    return '/login'
+  }
+})
 
 const router = useRouter()
 

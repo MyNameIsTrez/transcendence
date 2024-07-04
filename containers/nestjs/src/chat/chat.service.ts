@@ -243,8 +243,6 @@ export class ChatService {
     intra_id: number,
     chat_id: string,
   ) {
-    console.log(`${intra_id} invited ${invitedIntraId} to chat ${chat_id}`);
-
     if (invitedIntraId === intra_id) {
       throw new WsException("You can't invite yourself to a chat");
     }
