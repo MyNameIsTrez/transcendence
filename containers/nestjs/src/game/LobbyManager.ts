@@ -150,7 +150,7 @@ export default class LobbyManager {
 
   public async startUpdateLoop() {
     setInterval(async () => {
-      await this.lobbies.forEach(async (lobby) => {
+      this.lobbies.forEach(async (lobby) => {
         if (lobby.gameHasStarted) {
           await lobby.update();
         }

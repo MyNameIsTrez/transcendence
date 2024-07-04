@@ -13,6 +13,7 @@ import UserSockets from 'src/user/user.sockets';
 
 export default class Lobby {
   public readonly id: string = uuid();
+  private _isSaving = false;
 
   private readonly maxClients = 2;
 
@@ -104,18 +105,25 @@ export default class Lobby {
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      await this.saveMatch(null);
+      if (!this._isSaving) {
+        this._isSaving = true;
+        await this.saveMatch(null);
 
-      const winnerIndex = this.pong.getWinnerIndex();
+        const winnerIndex = this.pong.getWinnerIndex();
 
+        this.clients.forEach(async (client) => {
+          if (client.data.playerIndex === winnerIndex) {
+            await this.userService.addWin(client.data.intra_id);
+          } else {
+            await this.userService.addLoss(client.data.intra_id);
+          }
+        });
+      }
       this.clients.forEach(async (client) => {
-        if (client.data.playerIndex === this.pong.getWinnerIndex()) {
-          await this.userService.addWin(client.data.intra_id);
-        } else {
-          await this.userService.addLoss(client.data.intra_id);
-        }
-
-        client.emit('gameOver', client.data.playerIndex === winnerIndex);
+        client.emit(
+          'gameOver',
+          client.data.playerIndex === this.pong.getWinnerIndex(),
+        );
       });
     }
   }
