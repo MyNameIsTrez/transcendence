@@ -56,6 +56,13 @@ const router = createRouter({
         {
           path: '/leaderboard',
           component: Leaderboard
+        },
+        {
+          path: '/:foo',
+          component: Profile,
+          async beforeEnter(to) {
+            return '/'
+          }
         }
       ]
     },
