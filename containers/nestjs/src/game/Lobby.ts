@@ -41,7 +41,6 @@ export default class Lobby {
     private readonly matchService: MatchService,
     private readonly configService: ConfigService,
   ) {
-    // console.log('Initializing lobby with gamemode:', gamemode);
     if (!this.gamemodes.has(gamemode)) {
       throw new WsException('Requested gamemode does not exist');
     }
