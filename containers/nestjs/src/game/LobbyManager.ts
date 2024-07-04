@@ -150,9 +150,9 @@ export default class LobbyManager {
     setInterval(async () => {
       this.lobbies.forEach(async (lobby) => {
         if (lobby.gameHasStarted) {
-          await lobby.update();
+          var toDelete = await lobby.update();
         }
-        if (lobby.didSomeoneWin()) {
+        if (lobby.didSomeoneWin() && toDelete) {
           await this.removeLobby(lobby);
         }
       });

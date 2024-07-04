@@ -98,33 +98,36 @@ export default class Lobby {
     return this.clients.size >= this.maxClients;
   }
 
-  public async update() {
+  public async update(): Promise<boolean> {
     this.pong.update();
 
     this.emit('pong', this.pong.getData());
 
     if (this.pong.didSomeoneWin()) {
-      if (!this._isSaving) {
-        this._isSaving = true;
-        await this.saveMatch(null);
-
-        const winnerIndex = this.pong.getWinnerIndex();
-
-        this.clients.forEach(async (client) => {
-          if (client.data.playerIndex === winnerIndex) {
-            await this.userService.addWin(client.data.intra_id);
-          } else {
-            await this.userService.addLoss(client.data.intra_id);
-          }
-        });
-      }
+      const winnerIndex = this.pong.getWinnerIndex();
       this.clients.forEach(async (client) => {
         client.emit(
           'gameOver',
           client.data.playerIndex === this.pong.getWinnerIndex(),
         );
       });
+
+      if (this._isSaving) {
+        return false;
+      }
+      this._isSaving = true;
+      await this.saveMatch(null);
+
+      this.clients.forEach(async (client) => {
+        if (client.data.playerIndex === winnerIndex) {
+          await this.userService.addWin(client.data.intra_id);
+        } else {
+          await this.userService.addLoss(client.data.intra_id);
+        }
+      });
+      return true;
     }
+    return false;
   }
 
   public didSomeoneWin() {
