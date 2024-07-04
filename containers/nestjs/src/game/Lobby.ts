@@ -106,10 +106,7 @@ export default class Lobby {
     if (this.pong.didSomeoneWin()) {
       const winnerIndex = this.pong.getWinnerIndex();
       this.clients.forEach(async (client) => {
-        client.emit(
-          'gameOver',
-          client.data.playerIndex === this.pong.getWinnerIndex(),
-        );
+        client.emit('gameOver', client.data.playerIndex === winnerIndex);
       });
 
       if (this._isSaving) {
