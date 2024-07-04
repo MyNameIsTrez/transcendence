@@ -166,7 +166,7 @@ async function searchUser() {
   }
 
   await get(`api/user/getIntraId/${encoded_intra_name}`)
-    .then((intra_id) => router.replace({ path: `/user/${intra_id}` }))
+    .then((intra_id) => router.push({ path: `/user/${intra_id}` }))
     .catch((err) => {
       console.error('searchUser error', err)
       alertPopup.value.showWarning(err.response.data.message)

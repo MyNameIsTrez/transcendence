@@ -44,9 +44,11 @@ const router = createRouter({
                 if (to.params.intraId === me.intra_id.toString()) {
                   return '/'
                 }
-                return await get(`api/user/other/${to.params.intraId}`).catch((err) => {
-                  return '/'
-                })
+                return await get(`api/user/other/${to.params.intraId}`)
+                  .then(() => {})
+                  .catch((err) => {
+                    return '/'
+                  })
               })
               .catch((err) => {
                 return '/'

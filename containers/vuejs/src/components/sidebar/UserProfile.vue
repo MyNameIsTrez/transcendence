@@ -113,10 +113,12 @@ onBeforeRouteUpdate(async (to) => {
       if (to.params.intraId === me.intra_id.toString()) {
         return '/'
       }
-      await get(`api/user/other/${to.params.intraId}`).catch((err) => {
-        alertPopup.value.showWarning('User does not exist')
-        return '/'
-      })
+      return await get(`api/user/other/${to.params.intraId}`)
+        .then(() => {})
+        .catch((err) => {
+          alertPopup.value.showWarning('User does not exist')
+          return '/'
+        })
     })
     .catch((err) => {
       return '/'
