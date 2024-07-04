@@ -614,6 +614,16 @@ export class ChatService {
     });
   }
 
+  public async getTimeOfUnmute(chat_id: string, intra_id: number) {
+    return await this.getChat({ chat_id }, { muted: true }).then((chat) => {
+      const mute = chat.muted.find((mute) => mute.intra_id === intra_id);
+      if (!mute) {
+        return null;
+      }
+      return mute.time_of_unmute;
+    });
+  }
+
   private hasTimePassed(date: Date) {
     const current_date = new Date();
     return date < current_date;
